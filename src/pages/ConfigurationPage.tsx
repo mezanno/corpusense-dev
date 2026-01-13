@@ -24,6 +24,7 @@ import { z } from 'zod';
 const formSchema = z.object({
   mistralApiKey: z.string(),
   mistralModel: z.string(),
+  huggingfaceApiKey: z.string(),
   suryaUrl: z.string(),
 });
 
@@ -33,11 +34,25 @@ const ConfigurationPage = () => {
   const { experimentalFeaturesActivated, setExperimentalFeaturesActivated } = useExperimental();
   const { openDialog } = useAlertDialogContext();
 
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      mistralApiKey: '',
+      mistralModel: 'mistral-medium-latest',
+      suryaUrl: 'http://localhost:8000',
+    },
+  });
+
   useEffect(() => {
     // Load the saved Mistral API key from localStorage when the component mounts
     const savedApiKey = localStorage.getItem('mistralApiKey');
     if (savedApiKey !== null) {
       form.setValue('mistralApiKey', savedApiKey);
+    }
+
+    const savedHFApiKey = localStorage.getItem('huggingfaceApiKey');
+    if (savedHFApiKey !== null) {
+      form.setValue('huggingfaceApiKey', savedHFApiKey);
     }
 
     const savedModel = localStorage.getItem('mistralModel');
@@ -51,19 +66,11 @@ const ConfigurationPage = () => {
     }
   }, []);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      mistralApiKey: '',
-      mistralModel: 'mistral-medium-latest',
-      suryaUrl: 'http://localhost:8000',
-    },
-  });
-
   function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       localStorage.setItem('mistralApiKey', values.mistralApiKey);
       localStorage.setItem('mistralModel', values.mistralModel);
+      localStorage.setItem('huggingfaceApiKey', values.huggingfaceApiKey);
       localStorage.setItem('suryaUrl', values.suryaUrl);
       appDispatch(pushInfo(t('info_configuration_saved')));
     } catch (error) {
@@ -118,6 +125,19 @@ const ConfigurationPage = () => {
                   <FormLabel id='form-model'>{t('form_label_mistral_modelname')}</FormLabel>
                   <FormControl>
                     <Input {...field} aria-describedby='form-model' />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='huggingfaceApiKey'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel id='form-label'>{t('form_label_hugginface_api_key')}</FormLabel>
+                  <FormControl>
+                    <Input {...field} aria-describedby='form-label' />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

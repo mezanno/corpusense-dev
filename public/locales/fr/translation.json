@@ -147,6 +147,7 @@
   "form_description_export_collection": "Options d'export pour la/les collection(s) : {{names}}",
   "form_forcev3": "Si posible, utiliser la version 3 de Gallica",
   "form_label_mistral_api_key": "Clé API Mistral",
+  "form_label_hugginface_api_key": "Clé API Huggingface",
   "form_label_mistral_modelname": "Modèle API Mistral",
   "form_label_prompt_mistral": "Prompt Mistral (laissez vide pour utiliser le prompt par défaut - utilisez {{schema}} pour ajouter le schéma du modèle)",
   "form_error_required": "Ce champ est requis",
