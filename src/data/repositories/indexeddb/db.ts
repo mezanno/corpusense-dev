@@ -7,6 +7,7 @@ import { History } from '@/data/models/History';
 import { ItemMetadata } from '@/data/models/Metadata';
 import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
 import { NamedEntity } from '@/data/models/NamedEntity';
+import { Project } from '@/data/models/Project';
 import { Result } from '@/data/models/Result';
 import { StoredManifestContent, StoredManifestDetails } from '@/data/models/StoredManifest';
 import { Tag } from '@/data/models/Tag';
@@ -31,6 +32,7 @@ const db = new Dexie('mezanno') as Dexie & {
   handles: EntityTable<FSHandle, 'id'>;
   convertedFiles: EntityTable<ConvertedFile, 'id'>;
   modifierChains: EntityTable<ModifierChainDTO, 'id'>;
+  projects: EntityTable<Project, 'id'>;
 };
 
 db.version(1).stores({
@@ -54,6 +56,7 @@ db.version(1).stores({
   handles: '&id',
   convertedFiles: '&id, folderName',
   modifierChains: '&id, name',
+  projects: '&id, name',
 });
 
 export const clearDatabase = async () => {

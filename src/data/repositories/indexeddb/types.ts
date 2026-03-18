@@ -8,6 +8,7 @@ import { History } from '@/data/models/History';
 import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
 import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
 import { NamedEntity } from '@/data/models/NamedEntity';
+import { Project } from '@/data/models/Project';
 import { Result, ResultCreateDTO } from '@/data/models/Result';
 import { AnnotationScope, CanvasScope, Scope } from '@/data/models/Scope';
 import { StoredManifestDetails } from '@/data/models/StoredManifest';
@@ -167,4 +168,11 @@ export interface ModifierChainRepository {
   put(chain: ModifierChainDTO): Promise<void>;
 
   delete(id: string): Promise<void>;
+}
+
+export interface ProjectRepository {
+  getAll(): Promise<Project[]>;
+  getById(id: string): Promise<Project>;
+
+  add(project: Project): Promise<void>;
 }
