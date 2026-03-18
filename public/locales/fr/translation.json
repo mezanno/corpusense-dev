@@ -1,4 +1,6 @@
 {
+  "view_expert_mode": "Mode expert",
+  "view_simple_mode": "Mode simple",
   "page_title_manifexplorer": "Manifest Explorer",
   "page_title_collection_manager": "Collections",
   "page_title_collection_inspector": "Inspecteur de collections",

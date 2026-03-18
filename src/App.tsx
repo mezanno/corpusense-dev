@@ -10,12 +10,14 @@ import CollectionInspectorPage from './pages/CollectionInspectorPage';
 import CollectionsManagerPage from './pages/CollectionsManagerPage';
 import ConfigurationPage from './pages/ConfigurationPage';
 import DocumentationPage from './pages/DocumentationPage';
+import ExpertPage from './pages/ExpertPage';
 import Home from './pages/Home';
 import IIIFSourcesPage from './pages/IIIFSourcesPage';
 import Layout from './pages/Layout';
 import ManifestExplorerPage from './pages/ManifestExplorerPage';
 import ModelsManagerPage from './pages/ModelsManagerPage';
 import ModifierChainManagerPage from './pages/ModifierChainManagerPage';
+import ProjectPage from './pages/ProjectPage';
 import StoragePage from './pages/StoragePage';
 import WorkersManagerPage from './pages/WorkersManagerPage';
 import {
@@ -52,6 +54,8 @@ function App() {
                   <Route element={<Layout />}>
                     <Route index element={<Home />} />
                     <Route path={CorpusenseRoutes.MANIFEST} element={<ManifestExplorerPage />} />
+                    <Route path={CorpusenseRoutes.PROJECT} element={<ProjectPage />} />
+                    <Route path={CorpusenseRoutes.EXPERT} element={<ExpertPage />} />
                     <Route
                       path={CorpusenseRoutes.COLLECTIONS}
                       element={<CollectionsManagerPage />}

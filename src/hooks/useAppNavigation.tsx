@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 
 export const CorpusenseRoutes = {
   MANIFEST: 'manifest',
+  PROJECT: 'project',
   COLLECTIONS: 'collections',
   CONFIGURATION: 'configuration',
   MODELS: 'models',
@@ -10,6 +11,7 @@ export const CorpusenseRoutes = {
   IIIF_SOURCES: 'iiifSources',
   WORKERS: 'workers',
   DOCUMENTATION: 'doc',
+  EXPERT: 'expert',
 };
 
 type ManifestParams =
@@ -52,6 +54,12 @@ const useAppNavigation = () => {
   const goToDocumentation = async () => {
     await navigate(`/${CorpusenseRoutes.DOCUMENTATION}`);
   };
+  const goToProjectPage = async () => {
+    await navigate(`/${CorpusenseRoutes.PROJECT}`);
+  };
+  const goToExpertPage = async () => {
+    await navigate(`/${CorpusenseRoutes.EXPERT}`);
+  };
 
   return {
     goToManifestExplorer,
@@ -63,6 +71,8 @@ const useAppNavigation = () => {
     goToLocalSources,
     goToWorkersManager,
     goToDocumentation,
+    goToProjectPage,
+    goToExpertPage,
   };
 };
 
