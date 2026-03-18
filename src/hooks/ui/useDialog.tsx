@@ -10,6 +10,7 @@ import LoadModifierChainForm from '@/components/forms/LoadModifierChainForm';
 import LoginForm from '@/components/forms/LoginForm';
 import NewCollectionForm, { NewCollectionFormParams } from '@/components/forms/NewCollectionForm';
 import NewModelForm from '@/components/forms/NewModelForm';
+import NewProjectForm from '@/components/forms/NewProjectForm';
 import OpenManifestForm from '@/components/forms/OpenManifestForm';
 import RemoveAnnotationsForm from '@/components/forms/RemoveAnnotationsForm';
 import SaveModifierChainForm from '@/components/forms/SaveModifierChainForm';
@@ -18,6 +19,7 @@ import { useAlertDialogContext } from '@/components/reducers/useAlertDialogConte
 import ModelPreview from '@/components/textviewer/ModelPreview';
 import { DataModel } from '@/data/models/DataModel';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
+import { Project } from '@/data/models/Project';
 import { CanvasScope, Scope } from '@/data/models/Scope';
 import { Worker } from '@/data/models/Worker';
 import { ModifierChainData } from '@/data/utils/modifierChain';
@@ -272,6 +274,16 @@ const useDialog = () => {
     });
   };
 
+  const openCreateProjectDialog = (onResult: (project: Project) => void) => {
+    openFormDialog({
+      title: t('btn_create_project'),
+      confirmLabel: t('bnt_create_project'),
+      renderForm: (formRef) => (
+        <NewProjectForm formRef={formRef} setCanSubmit={setCanSubmit} onResult={onResult} />
+      ),
+    });
+  };
+
   return {
     openOpenManifestDialog,
     openImportCollectionDialog,
@@ -289,6 +301,7 @@ const useDialog = () => {
     openSaveModifierChainDialog,
     openLoadModifierChainDialog,
     openStartWorkerDialog,
+    openCreateProjectDialog,
   };
 };
 
