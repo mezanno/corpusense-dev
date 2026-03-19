@@ -1,4 +1,5 @@
 import ProjectSection from '@/components/simpleView/ProjectSection';
+import SourceSection from '@/components/simpleView/SourceSection';
 import { useState } from 'react';
 
 const ProjectPage = () => {
@@ -11,7 +12,7 @@ const ProjectPage = () => {
           selectedProjectId={selectedProjectId}
           setSelectedProjectId={setSelectedProjectId}
         />
-        <div className='h-full w-full border'>Sources</div>
+        <SourceSection selectedProjectId={selectedProjectId} />
         <div className='h-full w-full border'>Collections</div>
         <div className='h-full w-full border'>Modèles</div>
         <div className='h-full w-full border'>Traitements</div>

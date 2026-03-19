@@ -5,6 +5,10 @@ import { v4 as uuid } from 'uuid';
 const useProjectsIO = () => {
   const projectRespository = useMemo(() => getProjectRepository(), []);
 
+  const getProjectById = async (id: string) => {
+    return await projectRespository.getById(id);
+  };
+
   const createProject = async (name: string) => {
     const newProject = {
       id: uuid(),
@@ -20,6 +24,7 @@ const useProjectsIO = () => {
 
   return {
     createProject,
+    getProjectById,
   };
 };
 
