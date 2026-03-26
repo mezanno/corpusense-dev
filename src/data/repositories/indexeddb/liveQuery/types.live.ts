@@ -8,6 +8,7 @@ import { NamedEntity } from '@/data/models/NamedEntity';
 import { Project } from '@/data/models/Project';
 import { Result } from '@/data/models/Result';
 import { CanvasScope, Scope } from '@/data/models/Scope';
+import { Source } from '@/data/models/Sources';
 import { StoredManifestDetails } from '@/data/models/StoredManifest';
 import { Tag } from '@/data/models/Tag';
 import { Worker } from '@/data/models/Worker';
@@ -38,6 +39,10 @@ export interface AnnotationTempLiveRepository {
 export interface ManifestLiveRepository {
   getHistoryEntries(): () => Promise<History[]>;
   getDetailsByManifestIds(manifestIds: string[]): () => Promise<StoredManifestDetails[]>;
+}
+
+export interface SourceLiveRepository {
+  getAll(type: string): () => Promise<Source[]>;
 }
 
 export interface TagLiveRepository {

@@ -11,6 +11,7 @@ import { NamedEntity } from '@/data/models/NamedEntity';
 import { Project } from '@/data/models/Project';
 import { Result, ResultCreateDTO } from '@/data/models/Result';
 import { AnnotationScope, CanvasScope, Scope } from '@/data/models/Scope';
+import { AddSourceDTO, Source, SourceContent } from '@/data/models/Sources';
 import { StoredManifestDetails } from '@/data/models/StoredManifest';
 import { Tag } from '@/data/models/Tag';
 import { Worker } from '@/data/models/Worker';
@@ -84,6 +85,16 @@ export interface ManifestRepository {
   addToHistory(url: string): Promise<History>;
 
   deleteFromHistory(url: string): Promise<void>;
+}
+
+export interface SourceRepository {
+  add(source: AddSourceDTO): Promise<string>;
+
+  getBlob(blobId: string): Promise<Blob>;
+  getById(sourceId: string): Promise<Source>;
+  getContentById(sourceId: string): Promise<SourceContent>;
+
+  deleteById(sourceId: string): Promise<void>;
 }
 
 export interface TagRepository {
