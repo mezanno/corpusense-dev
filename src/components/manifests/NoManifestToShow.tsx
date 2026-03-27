@@ -1,8 +1,8 @@
 import { useManifests } from '@/hooks/data/manifests/useManifests';
 import { useTranslation } from 'react-i18next';
-import HistoryNav from './HistoryNav';
-import NothingToShow from './NothingToShow';
-import Welcome from './Welcome';
+import HistoryNav from '../HistoryNav';
+import NothingToShow from '../NothingToShow';
+import Welcome from '../Welcome';
 
 const NoManifestToShow = () => {
   const { historyDetails } = useManifests();

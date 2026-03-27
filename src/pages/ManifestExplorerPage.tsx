@@ -1,61 +1,31 @@
 import CanvasViewer from '@/components/canvasViewer/CanvasViewer';
 import Loading from '@/components/Loading';
-import ManifestNavigation from '@/components/ManifestNavigation';
-import NoManifestToShow from '@/components/NoManifestToShow';
+import ManifestExplorer from '@/components/manifests/ManifestExplorer';
+import ManifestNavigation from '@/components/manifests/ManifestNavigation';
+import NoManifestToShow from '@/components/manifests/NoManifestToShow';
 import NothingToShow from '@/components/NothingToShow';
 import { CanvasSelectionProvider } from '@/components/reducers/CanvasSelectionContext';
-import { Toggle } from '@/components/ui/toggle';
-import useConvertedFileIO from '@/hooks/data/convertedFiles/useConvertedFileIO';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { fecthManifestRequest } from '@/state/reducers/manifests';
+import useSource from '@/hooks/data/sources/useSource';
 import { Canvas } from '@iiif/presentation-3';
-import { ArrowLeftToLine, ArrowRightToLine } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import CanvasGallery from '../components/CanvasGallery';
-import ManifestDetails from '../components/ManifestDetails';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../components/ui/resizable';
 
 const ManifestExplorerPage = () => {
-  const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
-  const { isLoading, isLoaded, loadedData } = useAppSelector((state) => state.manifests);
-  const { loadManifest } = useConvertedFileIO();
-
   const [searchParams] = useSearchParams();
   const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | null>(null);
   const [metadataVisible, setMetadataVisible] = useState(true);
 
-  useEffect(() => {
-    if (isLoading) {
-      setCanvasToDisplay(null);
-    }
-  }, [isLoading]);
+  const id = searchParams.get('manifestId');
 
-  useEffect(() => {
-    const id = searchParams.get('manifestId');
-    if (id != null) {
-      appDispatch(fecthManifestRequest(id));
-    } else {
-      const indexeddbId = searchParams.get('indexeddbId');
-
-      if (indexeddbId != null) {
-        try {
-          void loadManifest(indexeddbId);
-        } catch (error) {
-          console.error('Error loading manifest from IndexedDB:', error);
-        }
-      }
-    }
-    setCanvasToDisplay(null);
-  }, [searchParams]);
+  const { isLoading, manifest, sourceWithContent } = useSource(id ?? ''); //permet de charger la source et d'avoir accès à son contenu dans le cache de react-query (notamment pour les annotations)
 
   if (isLoading) {
     return <Loading />;
   }
 
-  if (!isLoaded || loadedData == null) {
+  if (manifest == null || sourceWithContent == null) {
     return (
       <div className='flex h-full w-full flex-col items-center justify-center space-y-2 p-2'>
         <NoManifestToShow />
@@ -63,11 +33,9 @@ const ManifestExplorerPage = () => {
     );
   }
 
-  const manifest = loadedData.content;
-
   return (
     <div className='flex h-full w-full'>
-      <div className='h-full'>
+      {/* <div className='h-full'>
         <Toggle
           className='soft-button mt-4'
           onClick={() => setMetadataVisible(!metadataVisible)}
@@ -76,7 +44,7 @@ const ManifestExplorerPage = () => {
         >
           {metadataVisible ? <ArrowLeftToLine /> : <ArrowRightToLine />}
         </Toggle>
-      </div>
+      </div> */}
       <ResizablePanelGroup direction='horizontal' className='flex-1 space-x-2'>
         {metadataVisible && (
           <>
@@ -86,7 +54,7 @@ const ManifestExplorerPage = () => {
               className='panel grow justify-center'
               minSize={25}
             >
-              <ManifestDetails manifest={manifest} />
+              <ManifestExplorer manifest={manifest} source={sourceWithContent} />
             </ResizablePanel>
 
             <ResizableHandle withHandle className='w-1 cursor-col-resize bg-dark-slate-gray' />
@@ -100,6 +68,7 @@ const ManifestExplorerPage = () => {
                 <CanvasGallery
                   setCanvasToDisplay={setCanvasToDisplay}
                   canvasToDisplay={canvasToDisplay}
+                  manifest={manifest}
                 />
               </CanvasSelectionProvider>
             </ResizablePanel>

@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AlertDialogProvider } from './components/reducers/AlertDialogContext';
 import { CollectionProvider } from './components/reducers/CollectionContext';
@@ -42,56 +43,63 @@ initI18n()
     console.error('Error initializing i18n:', error);
   });
 
+const queryClient = new QueryClient();
+
 function App() {
   return (
     <BrowserRouter basename={basePath}>
-      <ExperimentalProvider>
-        <ConnectedUserProvider>
-          <CollectionProvider>
-            <WorkerProvider>
-              <AlertDialogProvider>
-                <Routes>
-                  <Route element={<Layout />}>
-                    <Route index element={<Home />} />
-                    <Route path={CorpusenseRoutes.MANIFEST} element={<ManifestExplorerPage />} />
-                    <Route path={CorpusenseRoutes.PROJECT} element={<ProjectPage />} />
-                    <Route path={CorpusenseRoutes.EXPERT} element={<ExpertPage />} />
-                    <Route
-                      path={CorpusenseRoutes.COLLECTIONS}
-                      element={<CollectionsManagerPage />}
-                    />
-                    <Route
-                      path={`${CorpusenseRoutes.COLLECTIONS}/:collectionId`}
-                      element={<CollectionInspectorPage />}
-                    />
-                    <Route path={CorpusenseRoutes.MODELS} element={<ModelsManagerPage />} />
-                    <Route
-                      path={CorpusenseRoutes.MODIFIERCHAIN}
-                      element={<ModifierChainManagerPage />}
-                    />
-                    <Route path={CorpusenseRoutes.CONFIGURATION} element={<ConfigurationPage />} />
-                    <Route path={CorpusenseRoutes.LOCAL_SOURCES} element={<StoragePage />} />
-                    <Route path={CorpusenseRoutes.IIIF_SOURCES} element={<IIIFSourcesPage />} />
-                    <Route path={CorpusenseRoutes.WORKERS} element={<WorkersManagerPage />} />
-                    <Route
-                      path={`${CorpusenseRoutes.WORKERS}/:workerId`}
-                      element={<WorkersManagerPage />}
-                    />
-                    <Route
-                      path={`${CorpusenseRoutes.DOCUMENTATION}`}
-                      element={<DocumentationPage />}
-                    />
-                    <Route
-                      path={`${CorpusenseRoutes.DOCUMENTATION}/:page`}
-                      element={<DocumentationPage />}
-                    />
-                  </Route>
-                </Routes>
-              </AlertDialogProvider>
-            </WorkerProvider>
-          </CollectionProvider>
-        </ConnectedUserProvider>
-      </ExperimentalProvider>
+      <QueryClientProvider client={queryClient}>
+        <ExperimentalProvider>
+          <ConnectedUserProvider>
+            <CollectionProvider>
+              <WorkerProvider>
+                <AlertDialogProvider>
+                  <Routes>
+                    <Route element={<Layout />}>
+                      <Route index element={<Home />} />
+                      <Route path={CorpusenseRoutes.MANIFEST} element={<ManifestExplorerPage />} />
+                      <Route path={CorpusenseRoutes.PROJECT} element={<ProjectPage />} />
+                      <Route path={CorpusenseRoutes.EXPERT} element={<ExpertPage />} />
+                      <Route
+                        path={CorpusenseRoutes.COLLECTIONS}
+                        element={<CollectionsManagerPage />}
+                      />
+                      <Route
+                        path={`${CorpusenseRoutes.COLLECTIONS}/:collectionId`}
+                        element={<CollectionInspectorPage />}
+                      />
+                      <Route path={CorpusenseRoutes.MODELS} element={<ModelsManagerPage />} />
+                      <Route
+                        path={CorpusenseRoutes.MODIFIERCHAIN}
+                        element={<ModifierChainManagerPage />}
+                      />
+                      <Route
+                        path={CorpusenseRoutes.CONFIGURATION}
+                        element={<ConfigurationPage />}
+                      />
+                      <Route path={CorpusenseRoutes.LOCAL_SOURCES} element={<StoragePage />} />
+                      <Route path={CorpusenseRoutes.IIIF_SOURCES} element={<IIIFSourcesPage />} />
+                      <Route path={CorpusenseRoutes.WORKERS} element={<WorkersManagerPage />} />
+                      <Route
+                        path={`${CorpusenseRoutes.WORKERS}/:workerId`}
+                        element={<WorkersManagerPage />}
+                      />
+                      <Route
+                        path={`${CorpusenseRoutes.DOCUMENTATION}`}
+                        element={<DocumentationPage />}
+                      />
+                      <Route
+                        path={`${CorpusenseRoutes.DOCUMENTATION}/:page`}
+                        element={<DocumentationPage />}
+                      />
+                    </Route>
+                  </Routes>
+                </AlertDialogProvider>
+              </WorkerProvider>
+            </CollectionProvider>
+          </ConnectedUserProvider>
+        </ExperimentalProvider>
+      </QueryClientProvider>
     </BrowserRouter>
   );
 }

@@ -1,7 +1,4 @@
 import { ItemMetadataAttribute } from '@/data/models/Metadata';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { saveMetadataRequest } from '@/state/reducers/manifests';
-import { selectLoadedManifest } from '@/state/selectors/manifests';
 import { CirclePlus, CircleX } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -9,11 +6,10 @@ import { Input } from './ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 
 const MetadataTable = ({ manifestId }: { manifestId: string }) => {
-  const metadata = useAppSelector(selectLoadedManifest)?.metadata;
-  const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
-  const [formMetadata, setFormMetadata] = useState<ItemMetadataAttribute[]>(metadata ?? []);
+  const [formMetadata, setFormMetadata] = useState<ItemMetadataAttribute[]>([]);
+  // const [formMetadata, setFormMetadata] = useState<ItemMetadataAttribute[]>(metadata ?? []);
 
   const handleAddMetadata = () => {
     setFormMetadata([...formMetadata, { label: '', value: '' }]);
@@ -23,7 +19,7 @@ const MetadataTable = ({ manifestId }: { manifestId: string }) => {
     //delete empty inputs
     const newMetadata = formMetadata.filter((item) => item.label !== '' && item.value !== '');
     setFormMetadata(newMetadata);
-    dispatch(saveMetadataRequest({ manifestId, metadata: newMetadata }));
+    // dispatch(saveMetadataRequest({ manifestId, metadata: newMetadata }));
   };
 
   const updateMetadata = (index: number, newValue: Partial<ItemMetadataAttribute>) => {

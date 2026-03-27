@@ -14,20 +14,14 @@ export const CorpusenseRoutes = {
   EXPERT: 'expert',
 };
 
-type ManifestParams =
-  | { manifestId: string; indexeddbId?: never }
-  | { indexeddbId: string; manifestId?: never };
-
 const useAppNavigation = () => {
   const navigate = useNavigate();
 
-  const goToManifestExplorer = async (manifest?: ManifestParams) => {
-    if (manifest === undefined) {
+  const goToManifestExplorer = async (sourceId?: string) => {
+    if (sourceId === undefined) {
       await navigate(`/${CorpusenseRoutes.MANIFEST}`);
-    } else if (manifest.indexeddbId === undefined) {
-      await navigate(`/${CorpusenseRoutes.MANIFEST}?manifestId=${manifest.manifestId}`);
     } else {
-      await navigate(`/${CorpusenseRoutes.MANIFEST}?indexeddbId=${manifest.indexeddbId}`);
+      await navigate(`/${CorpusenseRoutes.MANIFEST}?manifestId=${sourceId}`);
     }
   };
   const goToCollectionsManager = async () => {

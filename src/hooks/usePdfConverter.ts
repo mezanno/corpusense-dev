@@ -3,9 +3,10 @@ import { useCallback, useState } from 'react';
 
 // Worker setup should ideally be done once at the app level or in a singleton,
 // but for the hook it's okay to ensure it's set.
-import { getConvertedFileRepository } from '@/data/repositories/indexeddb/dbFactory';
+import { getSourceRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { generateManifest } from '@/utils/manifest';
 import { getErrorMessage } from '@/utils/utils';
+import { Manifest } from '@iiif/presentation-3';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 import { useTranslation } from 'react-i18next';
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
@@ -15,6 +16,15 @@ type ImageData = {
   width: number;
   height: number;
   filename?: string;
+};
+
+export type ConvertedFileInfo = {
+  title: string;
+  thumbnailBlob: Blob | null;
+  outputDirectoryHandle: FileSystemDirectoryHandle;
+  manifestName: string;
+  folderName: string;
+  manifest: Manifest;
 };
 
 export function usePdfConverter() {
@@ -61,6 +71,26 @@ export function usePdfConverter() {
     }
   }, [addLog, t]);
 
+  const addConvertedFileToLibrary = useCallback(async (fileInfo: ConvertedFileInfo) => {
+    const thumbnailBlob = fileInfo.thumbnailBlob ?? new Blob();
+
+    const newLocalSourceDTO = {
+      type: 'local' as const,
+      name: fileInfo.title,
+      pageCount: fileInfo.manifest.items.length,
+      thumbnailBlob,
+      manifest: fileInfo.manifest,
+      localFile: {
+        outputDirectoryHandle: fileInfo.outputDirectoryHandle,
+        timestamp: Date.now(),
+        manifestName: fileInfo.manifestName,
+        folderName: fileInfo.folderName,
+      },
+    };
+    const sourceRepository = getSourceRepository();
+    return await sourceRepository.add(newLocalSourceDTO);
+  }, []);
+
   const renderPageToBlob = async (
     pdfDoc: pdfjsLib.PDFDocumentProxy,
     pageNum: number,
@@ -91,8 +121,8 @@ export function usePdfConverter() {
     });
   };
 
-  const convert = useCallback(async () => {
-    if (!fileHandle) return;
+  const convert = useCallback(async (): Promise<ConvertedFileInfo> => {
+    if (!fileHandle) throw new Error(t('error_no_file_selected'));
 
     try {
       setStatus('processing');
@@ -158,46 +188,44 @@ export function usePdfConverter() {
         const writable = await newFileHandle.createWritable();
         await writable.write(firstPageBlob.blob);
         await writable.close();
-
-        //generate the manifest
-        const manifestName = `${baseName}_manifest.json`;
-        const newManifest = generateManifest({
-          documentName: manifestName,
-          canvasInfo: imagesData.map((img) => ({
-            id: `${dirHandle.name}/${img.filename!}`,
-            thumb: `${dirHandle.name}/${img.filename!}`,
-            width: img.width,
-            height: img.height,
-          })),
-          manifestId: manifestName,
-          isFileSystem: true,
-          folder: dirHandle.name, // Ajouter le préfixe de nom de fichier comme dossier),
-        });
-        const manifestFileHandle = await dirHandle.getFileHandle(manifestName, {
-          create: true,
-        });
-        const manifestWritable = await manifestFileHandle.createWritable();
-        await manifestWritable.write(JSON.stringify(newManifest, null, 2));
-        await manifestWritable.close();
-
-        console.log(newManifest);
-
-        const convertedFileRepository = getConvertedFileRepository();
-        await convertedFileRepository.add({
-          id: crypto.randomUUID(),
-          title: fileName,
-          pageCount: numPages,
-          thumbnailBlob: firstPageBlob.blob,
-          outputDirectoryHandle: dirHandle,
-          timestamp: Date.now(),
-          manifestName,
-          folderName: dirHandle.name,
-        });
       }
+      //generate the manifest
+      const manifestName = `${baseName}_manifest.json`;
+      const newManifest = generateManifest({
+        documentName: manifestName,
+        canvasInfo: imagesData.map((img) => ({
+          id: `${dirHandle.name}/${img.filename!}`,
+          thumb: `${dirHandle.name}/${img.filename!}`,
+          width: img.width,
+          height: img.height,
+        })),
+        manifestId: manifestName,
+        isFileSystem: true,
+        folder: dirHandle.name, // Ajouter le préfixe de nom de fichier comme dossier),
+      });
+      const manifestFileHandle = await dirHandle.getFileHandle(manifestName, {
+        create: true,
+      });
+      const manifestWritable = await manifestFileHandle.createWritable();
+      await manifestWritable.write(JSON.stringify(newManifest, null, 2));
+      await manifestWritable.close();
+
+      console.log(newManifest);
+
+      // const convertedFileRepository = getConvertedFileRepository();
+      return {
+        title: fileName,
+        thumbnailBlob: firstPageBlob && firstPageBlob.blob,
+        outputDirectoryHandle: dirHandle,
+        manifestName,
+        folderName: dirHandle.name,
+        manifest: newManifest,
+      };
     } catch (err) {
       console.error(err);
       setStatus('error');
       addLog(t('log_error', { message: getErrorMessage(err) }));
+      throw err;
     }
   }, [fileHandle, fileName, addLog, t]);
 
@@ -210,5 +238,6 @@ export function usePdfConverter() {
     selectFile,
     convert,
     reset,
+    addConvertedFileToLibrary,
   };
 }

@@ -35,7 +35,7 @@ export type FormProps<TResult = unknown> = {
 
 type FormDialogOptions = {
   title: string;
-  confirmLabel: string;
+  confirmLabel?: string;
   renderForm: (
     formRef: RefObject<HTMLFormElement | null>, //référence au formulaire pour pouvoir déclencher le submit
     setCanSubmit: (can: boolean) => void, //indique si le bouton de confirmation doit être actif (en fonction de la validité du formulaire)
@@ -58,15 +58,22 @@ const useDialog = () => {
   }: FormDialogOptions) => {
     const formRef = { current: null } as RefObject<HTMLFormElement | null>; // Create a new ref for each dialog
 
-    openDialog({
-      title,
-      children: renderForm(formRef, setCanSubmit, closeDialog),
-      onConfirm: {
-        message: confirmLabel,
-        action: () => formRef.current?.requestSubmit(),
-        closeOnAction,
-      },
-    });
+    if (confirmLabel === undefined) {
+      openDialog({
+        title,
+        children: renderForm(formRef, setCanSubmit, closeDialog),
+      });
+    } else {
+      openDialog({
+        title,
+        children: renderForm(formRef, setCanSubmit, closeDialog),
+        onConfirm: {
+          message: confirmLabel,
+          action: () => formRef.current?.requestSubmit(),
+          closeOnAction,
+        },
+      });
+    }
   };
 
   const openImportCollectionDialog = () => {
@@ -122,14 +129,33 @@ const useDialog = () => {
     });
   };
 
-  const openOpenManifestDialog = () => {
+  const openOpenManifestDialog = (onResult: (sourceAddedId: string) => void) => {
     openFormDialog({
       title: t('btn_open_manifest'),
-      confirmLabel: t('btn_open_manifest'),
       renderForm: (formRef) => (
-        <OpenManifestForm formRef={formRef} setCanSubmit={setCanSubmit} closeDialog={closeDialog} />
+        <OpenManifestForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          closeDialog={closeDialog}
+          onResult={onResult}
+        />
       ),
       closeOnAction: false,
+    });
+  };
+
+  const openConvertPdfDialog = (onResult: (sourceAddedId: string) => void) => {
+    openFormDialog({
+      title: t('title_import_pdf'),
+      // description: t('description_select_pdf'),
+      renderForm: (formRef) => (
+        <ConvertPdfForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          closeDialog={closeDialog}
+          onResult={onResult}
+        />
+      ),
     });
   };
 
@@ -207,14 +233,6 @@ const useDialog = () => {
       title: t('btn_model_preview'),
       description: t('info_preview_model'),
       children: <ModelPreview model={model} />,
-    });
-  };
-
-  const openConvertPdfDialog = () => {
-    openDialog({
-      title: t('title_import_pdf'),
-      description: t('description_select_pdf'),
-      children: <ConvertPdfForm />,
     });
   };
 
@@ -297,7 +315,7 @@ const useDialog = () => {
     openDuplicateLayoutDialog,
     openRemoveAnnotationsDialog,
     openExportCollectionDialog,
-    openConvertPdfForm: openConvertPdfDialog,
+    openConvertPdfDialog,
     openSaveModifierChainDialog,
     openLoadModifierChainDialog,
     openStartWorkerDialog,

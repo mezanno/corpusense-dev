@@ -16,7 +16,6 @@ import { generateManifestFromCollection } from '@/data/utils/export';
 import { useAppDispatch } from '@/hooks/hooks';
 import i18n from '@/i18n';
 import { pushError, pushInfo } from '@/state/reducers/events';
-import { fecthManifestRequest } from '@/state/reducers/manifests';
 import { getErrorMessage } from '@/utils/utils';
 import FileSaver from 'file-saver';
 import { default as JSZip } from 'jszip';
@@ -69,7 +68,8 @@ export const useCollectionIO = () => {
     const manifests = uniq(collection.content.map((item) => item.manifestId));
     manifests.forEach((manifestId) => {
       if (manifestId.startsWith('http://') || manifestId.startsWith('https://')) {
-        appDispatch(fecthManifestRequest(manifestId));
+        // appDispatch(fecthManifestRequest(manifestId));
+        //TODO! il faut réimporter les manifestes liés à la collection (s'ils ne sont pas déjà dans la base)
       }
     });
 

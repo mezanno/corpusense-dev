@@ -1,5 +1,5 @@
 import { ConvertedFile } from '@/data/models/ConvertedFile';
-import useConvertedFileIO from '@/hooks/data/convertedFiles/useConvertedFileIO';
+import useSources from '@/hooks/data/sources/useSources';
 import useAppNavigation from '@/hooks/useAppNavigation';
 import { Clock, Layers, Trash2 } from 'lucide-react';
 import { useMemo } from 'react';
@@ -13,9 +13,9 @@ interface FileCardProps {
 
 export function FileCard({ file }: FileCardProps) {
   const { t } = useTranslation();
-  const { removeConvertedFile } = useConvertedFileIO();
   const { goToManifestExplorer } = useAppNavigation();
   const { openDialog } = useAlertDialogContext();
+  const { removeSourceFromLibrary } = useSources();
 
   const thumbUrl = useMemo(() => URL.createObjectURL(file.thumbnailBlob), [file.thumbnailBlob]);
 
@@ -26,7 +26,7 @@ export function FileCard({ file }: FileCardProps) {
       description: t('description_delete_converted_file'),
       onConfirm: {
         message: t('btn_yes'),
-        action: () => void removeConvertedFile(file.id),
+        action: () => void removeSourceFromLibrary(file.id),
       },
     });
   };
@@ -34,7 +34,7 @@ export function FileCard({ file }: FileCardProps) {
   return (
     <Card
       className='card-file flex flex-col overflow-hidden bg-white'
-      onClick={() => void goToManifestExplorer({ indexeddbId: file.id })}
+      onClick={() => void goToManifestExplorer(file.id)}
       style={{ cursor: 'pointer' }}
     >
       <CardHeader className='overflow-hidden'>

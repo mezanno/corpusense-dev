@@ -1,11 +1,9 @@
-import manifest from '@/__tests__/manifestWith3Canvas.json';
 import { getPreloadedState } from '@/__tests__/preloadedState';
 import { renderWithProviders } from '@/__tests__/utils';
 import { useManifests } from '@/hooks/data/manifests/useManifests';
 import { RootState } from '@/state/store';
-import { Manifest } from '@iiif/presentation-3';
 import { screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi, Mock } from 'vitest';
+import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
 import ManifestExplorerPage from '../ManifestExplorerPage';
 
 vi.mock('@/hooks/data/manifests/useManifests');
@@ -30,15 +28,7 @@ describe('ManifestExplorerPage', () => {
   });
 
   it('affiche les détails et la galerie quand un manifest est chargé', () => {
-    const data = manifest as unknown as Manifest;
-    const preloadedState: RootState = getPreloadedState({
-      manifests: {
-        isLoading: false,
-        isLoaded: true,
-        loadedData: { content: data, metadata: [] },
-        error: null,
-      },
-    });
+    const preloadedState: RootState = getPreloadedState();
 
     renderWithProviders(<ManifestExplorerPage />, { preloadedState });
 
@@ -48,14 +38,7 @@ describe('ManifestExplorerPage', () => {
   });
 
   it('affiche Loading quand isLoading est vrai', () => {
-    const preloadedState: RootState = getPreloadedState({
-      manifests: {
-        isLoading: true,
-        isLoaded: false,
-        loadedData: null,
-        error: null,
-      },
-    });
+    const preloadedState: RootState = getPreloadedState();
 
     renderWithProviders(<ManifestExplorerPage />, { preloadedState });
 

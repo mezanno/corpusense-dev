@@ -8,7 +8,7 @@ export const extractManifestDetails = (manifest: Manifest) => {
   if (parsed.type !== 'manifest') {
     throw new Error(i18n.t('error_invalid_manifest_input'));
   }
-  const name = parsed.resource.getLabel() ?? i18n.t('error_manifest_empty_name');
+  const name = parsed.resource.getSummary() ?? i18n.t('error_manifest_empty_name');
   const thumbnail = manifest.thumbnail?.[0];
 
   return { name, thumbnail };
