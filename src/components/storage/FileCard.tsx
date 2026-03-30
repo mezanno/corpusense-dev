@@ -19,7 +19,7 @@ export function FileCard({ file }: FileCardProps) {
 
   const thumbUrl = useMemo(() => URL.createObjectURL(file.thumbnailBlob), [file.thumbnailBlob]);
 
-  const handleRemoveConvertedFile: React.MouseEventHandler<HTMLDivElement> = (event) => {
+  const handleRemoveLocalSource: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.stopPropagation();
     openDialog({
       title: t('title_are_you_sure'),
@@ -52,7 +52,7 @@ export function FileCard({ file }: FileCardProps) {
         </div>
       </CardContent>
       <CardFooter
-        onClick={handleRemoveConvertedFile}
+        onClick={handleRemoveLocalSource}
         title={t('btn_delete')}
         aria-label={t('btn_delete')}
         className='cursor-pointer justify-end text-red-400 hover:text-red-600'

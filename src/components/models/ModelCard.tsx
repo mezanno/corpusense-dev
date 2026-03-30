@@ -19,7 +19,7 @@ export function ModelCard({
   const { openDialog } = useAlertDialogContext();
   const { removeModel, exportModel } = useModelIO();
 
-  const handleRemoveConvertedFile: React.MouseEventHandler<HTMLDivElement> = (event) => {
+  const handleRemoveModel: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.stopPropagation();
     openDialog({
       title: t('title_are_you_sure'),
@@ -62,7 +62,7 @@ export function ModelCard({
       </CardContent>
       <CardFooter className='flex justify-end space-x-2'>
         <div
-          onClick={handleRemoveConvertedFile}
+          onClick={handleRemoveModel}
           title={t('btn_delete')}
           aria-label={t('btn_delete')}
           className='cursor-pointer text-red-400 hover:text-red-600'

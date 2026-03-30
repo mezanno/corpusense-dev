@@ -18,7 +18,7 @@ export function ModifierChainCard({
   const { openDialog } = useAlertDialogContext();
   const { removeModifierChain } = useModifierChainIO();
 
-  const handleRemoveConvertedFile: React.MouseEventHandler<HTMLDivElement> = (event) => {
+  const handleRemoveModifierChain: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.stopPropagation();
     openDialog({
       title: t('title_are_you_sure'),
@@ -55,7 +55,7 @@ export function ModifierChainCard({
       </CardContent>
       <CardFooter className='flex justify-end space-x-2'>
         <div
-          onClick={handleRemoveConvertedFile}
+          onClick={handleRemoveModifierChain}
           title={t('btn_delete')}
           aria-label={t('btn_delete')}
           className='cursor-pointer text-red-400 hover:text-red-600'

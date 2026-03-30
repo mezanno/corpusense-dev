@@ -20,7 +20,7 @@ export function ManifestCard({ source, isHighlighted }: ManifestCardProps) {
   const { removeSourceFromLibrary } = useSources();
   const { thumbUrl } = useBlob(source.thumbnailBlobId);
 
-  const handleRemoveConvertedFile: React.MouseEventHandler<HTMLDivElement> = (event) => {
+  const handleRemoveRemoteSource: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.stopPropagation();
     openDialog({
       title: t('title_are_you_sure'),
@@ -57,7 +57,7 @@ export function ManifestCard({ source, isHighlighted }: ManifestCardProps) {
       </CardContent>
       <CardFooter
         className='cursor-pointer justify-end rounded-b-xl bg-white p-1 text-red-400 hover:text-red-600'
-        onClick={handleRemoveConvertedFile}
+        onClick={handleRemoveRemoteSource}
       >
         <Trash2 size={14} />
       </CardFooter>
