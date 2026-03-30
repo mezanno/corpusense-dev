@@ -1,9 +1,8 @@
 import { getPreloadedState } from '@/__tests__/preloadedState';
 import { renderWithProviders } from '@/__tests__/utils';
-import { useManifests } from '@/hooks/data/manifests/useManifests';
 import { RootState } from '@/state/store';
 import { screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import ManifestExplorerPage from '../ManifestExplorerPage';
 
 vi.mock('@/hooks/data/manifests/useManifests');
@@ -14,13 +13,6 @@ vi.mock('@/hooks/data/convertedFiles/useConvertedFileIO', () => ({
 }));
 
 describe('ManifestExplorerPage', () => {
-  beforeEach(() => {
-    (useManifests as Mock).mockReturnValue({
-      historyDetails: [],
-      removeFromHistory: vi.fn(),
-    });
-  });
-
   it("affiche Welcome quand aucun manifest n'est chargé et l'historique est vide", () => {
     renderWithProviders(<ManifestExplorerPage />, { preloadedState: getPreloadedState() });
 

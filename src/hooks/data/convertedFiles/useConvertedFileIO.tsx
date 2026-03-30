@@ -1,10 +1,8 @@
-import { getConvertedFileRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { useFSHandleStore } from '@/state/zustand/useFSHandleStore';
-import { useMemo } from 'react';
 
 const useConvertedFileIO = () => {
   // const appDispatch = useAppDispatch();
-  const convertedFilesRepository = useMemo(() => getConvertedFileRepository(), []);
+  // const convertedFilesRepository = useMemo(() => getConvertedFileRepository(), []);
   const { addDirectoryHandle } = useFSHandleStore();
 
   // const loadManifest = useCallback(async (id: string) => {

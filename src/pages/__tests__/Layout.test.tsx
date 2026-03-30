@@ -3,8 +3,7 @@ import { useCollectionContext } from '@/components/reducers/CollectionContext';
 import { useConnectedUserContext } from '@/components/reducers/ConnectedUserContext';
 import { useWorkerContext } from '@/components/reducers/WorkerContext';
 import { useCollections } from '@/hooks/data/collections/useCollections';
-import { useManifests } from '@/hooks/data/manifests/useManifests';
-import { fireEvent, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
 import Layout from '../Layout';
@@ -49,10 +48,6 @@ vi.mock('@/components/reducers/AlertDialogContext', () => ({
 describe('Layout', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (useManifests as Mock).mockReturnValue({
-      historyDetails: [],
-      removeFromHistory: vi.fn(),
-    });
     (useCollections as Mock).mockReturnValue({
       collections: [],
     });
@@ -67,26 +62,6 @@ describe('Layout', () => {
       user: null,
       logout: vi.fn(),
     });
-  });
-
-  it("HistoryDrawer affiche les liens de l'historique", async () => {
-    (useManifests as Mock).mockReturnValue({
-      historyDetails: [
-        { id: '1', name: 'Manifest 1', thumbnail: undefined },
-        { id: '2', name: 'Manifest 2', thumbnail: undefined },
-      ],
-      removeFromHistory: vi.fn(),
-    });
-
-    renderWithProviders(<Layout />);
-
-    // The button has aria-label='btn_open_history'
-    const trigger = screen.getByLabelText('btn_open_history');
-    fireEvent.click(trigger);
-
-    const nav = await screen.findByRole('navigation', { name: 'historique' });
-    expect(nav.querySelectorAll('a').length).toBe(2);
-    expect(screen.getByText('Manifest 1')).toBeInTheDocument();
   });
 
   it('Layout affiche le nombre de collections dans le gestionnaire', () => {

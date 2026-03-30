@@ -1,4 +1,4 @@
-import useLoadManifest from '@/hooks/data/manifests/useLoadManifest';
+import useSources from '@/hooks/data/sources/useSources';
 import { FormProps } from '@/hooks/ui/useDialog';
 import i18n from '@/i18n';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,7 +26,7 @@ const addManifestFormSchema = z.object({
 
 const OpenManifestForm = ({ closeDialog, onResult }: FormProps<string>) => {
   const { t } = useTranslation();
-  const { fetchManifest, addManifestToLibrary } = useLoadManifest();
+  const { fetchManifest, addManifestToLibrary } = useSources();
   const [loadedManifest, setLoadedManifest] = useState<Manifest | null>(null);
 
   const parsedManifest = loadedManifest ? Cozy.parse(loadedManifest) : null;
