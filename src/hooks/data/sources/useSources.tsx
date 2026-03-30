@@ -1,4 +1,5 @@
 import { getSourceRepository } from '@/data/repositories/indexeddb/dbFactory';
+import { getThumbnailBlob } from '@/data/utils/manifest';
 import { containsArkIdentifier, fetchManifestFromURL, isManifestUrl } from '@/utils/manifest';
 import { Manifest } from '@iiif/presentation-3';
 import { useCallback } from 'react';
@@ -30,16 +31,7 @@ const useSources = () => {
   }, []);
 
   const addManifestToLibrary = useCallback(async (manifest: Manifest, name: string) => {
-    const thumbnailURL = manifest.thumbnail?.[0]?.id;
-    const thumbnailBlob =
-      thumbnailURL !== undefined
-        ? await fetch(thumbnailURL)
-            .then((response) => response.blob())
-            .catch((error) => {
-              console.warn('Error fetching thumbnail: ', error);
-              return new Blob();
-            })
-        : new Blob();
+    const thumbnailBlob = await getThumbnailBlob(manifest);
 
     const newRemoteSourceDTO = {
       type: 'remote' as const,

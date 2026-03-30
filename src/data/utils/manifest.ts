@@ -25,3 +25,15 @@ export const extractCanvasById = (manifest: Manifest, canvasId: string): Canvas 
 export const extractCanvasesByIds = (manifest: Manifest, canvasIds: string[]): Canvas[] => {
   return manifest.items?.filter((item) => canvasIds.includes(item.id)) ?? [];
 };
+
+export const getThumbnailBlob = async (manifest: Manifest): Promise<Blob> => {
+  const thumbnailURL = manifest.thumbnail?.[0]?.id;
+  return thumbnailURL !== undefined
+    ? await fetch(thumbnailURL)
+        .then((response) => response.blob())
+        .catch((error) => {
+          console.warn('Error fetching thumbnail: ', error);
+          return new Blob();
+        })
+    : new Blob();
+};
