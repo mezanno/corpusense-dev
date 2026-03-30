@@ -7,10 +7,6 @@ const useConvertedFileIO = () => {
   const convertedFilesRepository = useMemo(() => getConvertedFileRepository(), []);
   const { addDirectoryHandle } = useFSHandleStore();
 
-  const removeConvertedFile = async (id: string) => {
-    await convertedFilesRepository.delete(id);
-  };
-
   // const loadManifest = useCallback(async (id: string) => {
   //   try {
   //     const convertedFile = await convertedFilesRepository.getById(id);
@@ -36,7 +32,6 @@ const useConvertedFileIO = () => {
 
   return {
     // loadManifest,
-    removeConvertedFile,
     requestPermission,
   };
 };
