@@ -1,4 +1,5 @@
 import { importerPlugins } from '@/App';
+import { ConvertedFile } from '@/data/models/ConvertedFile';
 import { getManifestRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { convertPresentation2 } from '@iiif/parser/presentation-2';
 import { Manifest } from '@iiif/presentation-3';
@@ -163,3 +164,18 @@ async function fetchManifestWithPlugin({
 
   return manifest;
 }
+
+export const getManifestFromConvertedFile = async (
+  file: ConvertedFile,
+): Promise<Manifest | null> => {
+  const handle = file.outputDirectoryHandle;
+  const perm = await handle.queryPermission({ mode: 'read' });
+  if (perm !== 'granted') {
+    console.error('No permission to read the manifest directory');
+    return null;
+  }
+  const manifestFileHandle = await handle.getFileHandle(file.manifestName);
+  const manifestFile = await manifestFileHandle.getFile();
+  const manifestText = await manifestFile.text();
+  return convertJsonToManifest(JSON.parse(manifestText) as object);
+};
