@@ -2,7 +2,7 @@ import { Collection, CollectionDetails } from '@/data/models/Collection';
 import { Canvas } from '@iiif/presentation-3';
 import { groupBy, mapValues } from 'lodash';
 import { db } from '../db';
-import { getManifestRepository } from '../dbFactory';
+import { getManifestRepository, getSourceRepository } from '../dbFactory';
 import { CollectionLiveRepository } from './types.live';
 
 export class IndexedDBCollectionLiveRepository implements CollectionLiveRepository {
@@ -28,6 +28,7 @@ export class IndexedDBCollectionLiveRepository implements CollectionLiveReposito
 
   getCanvasesByCollectionId(collectionId: string): () => Promise<Canvas[]> {
     const manifestRepository = getManifestRepository();
+    const sourceRepository = getSourceRepository();
     return async () => {
       const collectionContent = await db.collectionContents.get(collectionId);
       const content = collectionContent?.content || [];
@@ -36,13 +37,20 @@ export class IndexedDBCollectionLiveRepository implements CollectionLiveReposito
       }
 
       //get the list of canvases in the collection (with their manifestId)
-      const canvasesByManifest = groupBy(
-        content.map((elt) => ({
-          canvasId: elt.canvasId,
-          manifestId: elt.manifestId,
-        })),
-        'manifestId',
+      const canvasesWithManifest = await Promise.all(
+        content.map(async (elt) => {
+          const sourceId = elt.sourceId;
+          const source = await sourceRepository.getContentById(sourceId);
+
+          return {
+            canvasId: elt.canvasId,
+            manifestId: source.manifest.id,
+          };
+        }),
       );
+
+      const canvasesByManifest = groupBy(canvasesWithManifest, 'manifestId');
+
       //group the canvases by manifestId
       const groupedCanvasesIds = mapValues(canvasesByManifest, (value) =>
         value.map((elt) => elt.canvasId),

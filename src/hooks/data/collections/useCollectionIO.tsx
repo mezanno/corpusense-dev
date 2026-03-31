@@ -19,7 +19,6 @@ import { pushError, pushInfo } from '@/state/reducers/events';
 import { getErrorMessage } from '@/utils/utils';
 import FileSaver from 'file-saver';
 import { default as JSZip } from 'jszip';
-import { uniq } from 'lodash';
 import { useMemo } from 'react';
 
 export interface ExportCollectionOptions {
@@ -65,13 +64,13 @@ export const useCollectionIO = () => {
     };
 
     //réimporte les manifestes liés à la collection (si besoin)
-    const manifests = uniq(collection.content.map((item) => item.manifestId));
-    manifests.forEach((manifestId) => {
-      if (manifestId.startsWith('http://') || manifestId.startsWith('https://')) {
-        // appDispatch(fecthManifestRequest(manifestId));
-        //TODO! il faut réimporter les manifestes liés à la collection (s'ils ne sont pas déjà dans la base)
-      }
-    });
+    // const manifests = uniq(collection.content.map((item) => item.sourceId));
+    // manifests.forEach((sourceId) => {
+    //   if (sourceId.startsWith('http://') || sourceId.startsWith('https://')) {
+    //     // appDispatch(fecthManifestRequest(manifestId));
+    //     //TODO! il faut réimporter les manifestes liés à la collection (s'ils ne sont pas déjà dans la base) --> utiliser les sources
+    //   }
+    // });
 
     try {
       await collectionRepository.create(collection);
@@ -226,7 +225,7 @@ export const useCollectionIO = () => {
         const imageUrls = [];
         for (let i = 0; i < collection.content.length; i++) {
           const canvas = await manifestRepository.getCanvasById(
-            collection.content[i].manifestId,
+            collection.content[i].sourceId,
             collection.content[i].canvasId,
           );
           try {

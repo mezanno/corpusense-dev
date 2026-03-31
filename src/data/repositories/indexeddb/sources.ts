@@ -1,4 +1,6 @@
 import { AddSourceDTO, SourceContent } from '@/data/models/Sources';
+import { extractCanvasById } from '@/data/utils/manifest';
+import { Canvas } from '@iiif/presentation-3';
 import { v4 as uuid } from 'uuid';
 import { db } from './db';
 import { SourceRepository } from './types';
@@ -68,6 +70,14 @@ export class IndexedDBSourceRepository implements SourceRepository {
       throw new Error(`Content for source with id ${sourceId} not found`);
     }
     return content;
+  }
+
+  async getCanvasById(sourceId: string, canvasId: string): Promise<Canvas> {
+    const content = await db.sourceContents.get(sourceId);
+    if (!content) {
+      throw new Error(`Content for source with id ${sourceId} not found`);
+    }
+    return extractCanvasById(content.manifest, canvasId);
   }
 
   async deleteById(sourceId: string): Promise<void> {

@@ -21,7 +21,7 @@ import { z } from 'zod';
 
 export type NewCollectionFormParams = AllOrNothing<{
   selection: Canvas[];
-  manifestId: string;
+  sourceId: string;
 }>;
 
 type NewCollectionFormProps = FormProps & NewCollectionFormParams;
@@ -66,11 +66,11 @@ const NewCollectionForm = ({
   }, [form.formState]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (selection && selection.length > 0 && manifestId !== undefined) {
+    if (selection && selection.length > 0 && sourceId !== undefined) {
       await createCollectionWithSelection({
         selection,
         name: values.name,
-        manifestId,
+        sourceId,
       });
     } else {
       await createCollection(values.name);

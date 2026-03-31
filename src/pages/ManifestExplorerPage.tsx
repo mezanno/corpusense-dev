@@ -69,6 +69,7 @@ const ManifestExplorerPage = () => {
                   setCanvasToDisplay={setCanvasToDisplay}
                   canvasToDisplay={canvasToDisplay}
                   manifest={manifest}
+                  sourceId={sourceWithContent.id}
                 />
               </CanvasSelectionProvider>
             </ResizablePanel>

@@ -45,7 +45,7 @@ const QuickCanvasViewer = () => {
   useEffect(() => {
     async function fetchCanvasData(elt: CollectionElement) {
       const manifestRepository = getManifestRepository();
-      const c = await manifestRepository.getCanvasById(elt.manifestId, elt.canvasId);
+      const c = await manifestRepository.getCanvasById(elt.sourceId, elt.canvasId);
       setCanvas(c);
     }
     if (selectedElement !== '') {

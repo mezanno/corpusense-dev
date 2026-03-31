@@ -8,6 +8,7 @@ import { db } from './db';
 import {
   getAnnotationRepository,
   getManifestRepository,
+  getSourceRepository,
   getTagRepository,
   getWorkerRepository,
 } from './dbFactory';
@@ -44,19 +45,35 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
       throw new Error(`Collection with id ${collectionId} not found`);
     }
 
+    const collectionContent = await db.collectionContents.get(collectionId);
+    const content = collectionContent?.content || [];
+    if (content.length === 0) {
+      return [];
+    }
+
+    const manifestRepository = getManifestRepository();
+    const sourceRepository = getSourceRepository();
+
     //get the list of canvases in the collection (with their manifestId)
-    const canvasesByManifest = groupBy(
-      collection.content.map((elt) => ({
-        canvasId: elt.canvasId,
-        manifestId: elt.manifestId,
-      })),
-      'manifestId',
+    const canvasesWithManifest = await Promise.all(
+      content.map(async (elt) => {
+        const sourceId = elt.sourceId;
+        const source = await sourceRepository.getContentById(sourceId);
+
+        return {
+          canvasId: elt.canvasId,
+          manifestId: source.manifest.id,
+        };
+      }),
     );
+
+    const canvasesByManifest = groupBy(canvasesWithManifest, 'manifestId');
+
     //group the canvases by manifestId
     const groupedCanvasesIds = mapValues(canvasesByManifest, (value) =>
       value.map((elt) => elt.canvasId),
     );
-    const manifestRepository = getManifestRepository();
+
     const canvases: Canvas[] = [];
     for (const manifestId in groupedCanvasesIds) {
       const canvasIds = groupedCanvasesIds[manifestId];
@@ -95,10 +112,7 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
       );
     }
 
-    return await getManifestRepository().getCanvasById(
-      collectionElement.manifestId,
-      scope.canvasId,
-    );
+    return await getSourceRepository().getCanvasById(collectionElement.sourceId, scope.canvasId);
   }
 
   async exists(id: string): Promise<boolean> {

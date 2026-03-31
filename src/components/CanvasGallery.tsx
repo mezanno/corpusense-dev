@@ -8,10 +8,12 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import CanvasCard from './CanvasCard';
 
 const CanvasGallery = ({
+  sourceId,
   manifest,
   canvasToDisplay,
   setCanvasToDisplay,
 }: {
+  sourceId: string;
   manifest: Manifest;
   canvasToDisplay: Canvas | null;
   setCanvasToDisplay: (canvas: Canvas | null) => void;
@@ -156,7 +158,7 @@ const CanvasGallery = ({
                                 <CanvasCard
                                   canvas={canvas}
                                   index={index}
-                                  manifestId={manifest.id}
+                                  sourceId={sourceId}
                                   thumbWidth={virtualColumn.size}
                                   thumbHeight={virtualRow.size}
                                   setCanvasToDisplay={setCanvasToDisplay}

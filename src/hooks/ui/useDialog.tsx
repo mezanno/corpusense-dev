@@ -88,10 +88,10 @@ const useDialog = () => {
 
   const openNewCollectionDialog = (params?: NewCollectionFormParams) => {
     const extraProps =
-      params?.selection !== undefined && params.manifestId !== undefined
+      params?.selection !== undefined && params.sourceId !== undefined
         ? {
             selection: params.selection,
-            manifestId: params.manifestId,
+            sourceId: params.sourceId,
           }
         : {};
     openFormDialog({

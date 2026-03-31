@@ -1,6 +1,6 @@
 export interface CollectionElement {
   canvasId: string;
-  manifestId: string;
-  sourceId?: string;
+  sourceId: string;
   position: number;
+  manifestId?: string;
 }

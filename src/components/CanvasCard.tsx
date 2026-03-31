@@ -22,7 +22,7 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 interface CanvasCardProps {
   index: number;
   canvas: Canvas;
-  manifestId: string;
+  sourceId: string;
   thumbWidth: number;
   thumbHeight: number;
   canvasToDisplay: Canvas | null;
@@ -32,7 +32,7 @@ interface CanvasCardProps {
 const CanvasCard = ({
   index,
   canvas,
-  manifestId,
+  sourceId,
   thumbWidth,
   thumbHeight,
   setCanvasToDisplay,
@@ -97,8 +97,8 @@ const CanvasCard = ({
 
       await addSelectionToCollection({
         selection: getSelectedCanvases(),
-        collectionId: collectionId,
-        manifestId,
+        collectionId,
+        sourceId,
       });
     })();
   };
@@ -117,7 +117,7 @@ const CanvasCard = ({
   };
 
   const handleCreateCollection = () => {
-    openNewCollectionDialog({ selection: getSelectedCanvases(), manifestId });
+    openNewCollectionDialog({ selection: getSelectedCanvases(), sourceId });
   };
 
   const idDisplayed = canvasToDisplay?.id === canvas?.id;
