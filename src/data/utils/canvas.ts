@@ -1,7 +1,7 @@
 import { getConvertedFileRepository } from '@/data/repositories/indexeddb/dbFactory';
+import i18n from '@/i18n';
 import { useFSHandleStore } from '@/state/zustand/useFSHandleStore';
 import { Canvas, IIIFExternalWebResource, ImageService } from '@iiif/presentation-3';
-import i18n from '@/i18n';
 import { TileSource } from 'openseadragon';
 
 const getLabel = (canvas: Canvas): string => {

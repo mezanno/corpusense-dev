@@ -7,8 +7,6 @@ import { IndexedDBItemMetadataRepository } from './itemMetadata';
 import { IndexedDBAnnotationLiveRepository } from './liveQuery/annotations.live';
 import { IndexedDBAnnotationTempLiveRepository } from './liveQuery/annotationsTemp.live';
 import { IndexedDBCollectionLiveRepository } from './liveQuery/collections.live';
-import { IndexedDBConvertedFileLiveRepository } from './liveQuery/convertedFile.live';
-import { IndexedDBManifestLiveRepository } from './liveQuery/manifests.live';
 import { IndexedDBModelLiveRepository } from './liveQuery/models.live';
 import { IndexedDBModifierChainlLiveRepository } from './liveQuery/modifierChain.live';
 import { IndexedDBNamedEntityLiveRepository } from './liveQuery/namedEntity.live';
@@ -53,10 +51,6 @@ export function getCollectonLiveRepository() {
 
 export function getManifestRepository() {
   return new IndexedDBManifestRepository();
-}
-
-export function getManifestLiveRepository() {
-  return new IndexedDBManifestLiveRepository();
 }
 
 export function getSourceRepository() {
@@ -117,10 +111,6 @@ export function getFSHandleRepository() {
 
 export function getConvertedFileRepository() {
   return new IndexedDBConvertedFileRepository();
-}
-
-export function getConvertedFileLiveRepository() {
-  return new IndexedDBConvertedFileLiveRepository();
 }
 
 export function getModifierChainRepository() {

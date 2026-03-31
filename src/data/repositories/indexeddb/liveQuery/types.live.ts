@@ -1,15 +1,12 @@
 import { Annotation, ElementType } from '@/data/models/Annotation';
 import { Collection, CollectionDetails } from '@/data/models/Collection';
-import { ConvertedFile } from '@/data/models/ConvertedFile';
 import { DataModel } from '@/data/models/DataModel';
-import { History } from '@/data/models/History';
 import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
 import { NamedEntity } from '@/data/models/NamedEntity';
 import { Project } from '@/data/models/Project';
 import { Result } from '@/data/models/Result';
 import { CanvasScope, Scope } from '@/data/models/Scope';
 import { Source } from '@/data/models/Sources';
-import { StoredManifestDetails } from '@/data/models/StoredManifest';
 import { Tag } from '@/data/models/Tag';
 import { Worker } from '@/data/models/Worker';
 import { Canvas } from '@iiif/presentation-3';
@@ -36,11 +33,6 @@ export interface AnnotationTempLiveRepository {
   getByScope(scope: Scope): () => Promise<Annotation[]>;
 }
 
-export interface ManifestLiveRepository {
-  getHistoryEntries(): () => Promise<History[]>;
-  getDetailsByManifestIds(manifestIds: string[]): () => Promise<StoredManifestDetails[]>;
-}
-
 export interface SourceLiveRepository {
   getAll(type: string): () => Promise<Source[]>;
 }
@@ -60,10 +52,6 @@ export interface WorkerLiveRepository {
 
 export interface ResultLiveRepository {
   getAll(): () => Promise<Result[]>;
-}
-
-export interface ConvertedFileLiveRepository {
-  getAll(): () => Promise<ConvertedFile[]>;
 }
 
 export interface ModifierChainLiveRepository {

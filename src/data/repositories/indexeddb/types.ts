@@ -4,7 +4,6 @@ import { CollectionElement } from '@/data/models/CollectionElement';
 import { ConvertedFile } from '@/data/models/ConvertedFile';
 import { DataModel } from '@/data/models/DataModel';
 import { FSHandle } from '@/data/models/FSHandle';
-import { History } from '@/data/models/History';
 import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
 import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
 import { NamedEntity } from '@/data/models/NamedEntity';
@@ -79,12 +78,6 @@ export interface ManifestRepository {
   getById(manifestId: string): Promise<Manifest>;
   getDetailsByManifestIds(manifestIds: string[]): Promise<StoredManifestDetails[]>;
   getMetadata(manifestId: string): Promise<ItemMetadataAttribute[]>;
-  getHistoryEntries(): Promise<History[]>;
-
-  add(manifest: Manifest): Promise<void>;
-  addToHistory(url: string): Promise<History>;
-
-  deleteFromHistory(url: string): Promise<void>;
 }
 
 export interface SourceRepository {
