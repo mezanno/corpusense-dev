@@ -1,8 +1,9 @@
+import { SourceWithContent } from '@/data/models/Sources';
 import useSources from '@/hooks/data/sources/useSources';
 import { FormProps } from '@/hooks/ui/useDialog';
 import i18n from '@/i18n';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { IIIFExternalWebResource, Manifest } from '@iiif/presentation-3';
+import { IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import { Cozy } from 'cozy-iiif';
 import { Layers } from 'lucide-react';
@@ -24,10 +25,14 @@ const addManifestFormSchema = z.object({
   manifestName: z.string().optional(),
 });
 
-const OpenManifestForm = ({ closeDialog, onResult }: FormProps<string>) => {
+export type OpenManifestFormProps = FormProps<string> & {
+  existingSource?: SourceWithContent;
+};
+
+const OpenManifestForm = ({ closeDialog, onResult, existingSource }: OpenManifestFormProps) => {
   const { t } = useTranslation();
   const { fetchManifest, addManifestToLibrary } = useSources();
-  const [loadedManifest, setLoadedManifest] = useState<Manifest | null>(null);
+  const [loadedManifest, setLoadedManifest] = useState(existingSource?.content.manifest);
 
   const parsedManifest = loadedManifest ? Cozy.parse(loadedManifest) : null;
 
@@ -36,15 +41,21 @@ const OpenManifestForm = ({ closeDialog, onResult }: FormProps<string>) => {
 
   const loadManifestForm = useForm<z.infer<typeof loadManifestFormSchema>>({
     resolver: zodResolver(loadManifestFormSchema),
+    defaultValues: {
+      manifestInput: existingSource?.content.manifest.id ?? '',
+    },
     mode: 'all',
   });
 
   const addManifestForm = useForm<z.infer<typeof addManifestFormSchema>>({
     resolver: zodResolver(addManifestFormSchema),
+    defaultValues: {
+      manifestName: existingSource?.name,
+    },
   });
 
   useEffect(() => {
-    if (parsedManifest?.type === 'manifest') {
+    if (!existingSource && parsedManifest?.type === 'manifest') {
       addManifestForm.setValue('manifestName', parsedManifest.resource.getSummary() ?? '');
     }
   }, [parsedManifest]);
@@ -132,7 +143,7 @@ const OpenManifestForm = ({ closeDialog, onResult }: FormProps<string>) => {
   }
 
   async function onLoadManifestSubmit(values: z.infer<typeof loadManifestFormSchema>) {
-    setLoadedManifest(null);
+    setLoadedManifest(undefined);
     const newManifest = await fetchManifest(values.manifestInput);
 
     if (newManifest) {

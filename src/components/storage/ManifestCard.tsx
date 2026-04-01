@@ -1,9 +1,10 @@
 import { Source } from '@/data/models/Sources';
 import useBlob from '@/hooks/data/sources/useBlob';
 import useSources from '@/hooks/data/sources/useSources';
+import useDialog from '@/hooks/ui/useDialog';
 import useAppNavigation from '@/hooks/useAppNavigation';
 import { cn } from '@/lib/utils';
-import { Trash2 } from 'lucide-react';
+import { Pen, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAlertDialogContext } from '../reducers/useAlertDialogContext';
 import { Card, CardContent, CardFooter } from '../ui/card';
@@ -17,7 +18,8 @@ export function ManifestCard({ source, isHighlighted }: ManifestCardProps) {
   const { t } = useTranslation();
   const { goToManifestExplorer } = useAppNavigation();
   const { openDialog } = useAlertDialogContext();
-  const { removeSourceFromLibrary } = useSources();
+  const { openOpenManifestDialog } = useDialog();
+  const { removeSourceFromLibrary, getSourceWithContent } = useSources();
   const { thumbUrl } = useBlob(source.thumbnailBlobId);
 
   const handleRemoveRemoteSource: React.MouseEventHandler<HTMLDivElement> = (event) => {
@@ -30,6 +32,15 @@ export function ManifestCard({ source, isHighlighted }: ManifestCardProps) {
         action: () => void removeSourceFromLibrary(source.id),
       },
     });
+  };
+
+  const handleEditRemoteSource: React.MouseEventHandler<HTMLDivElement> = (event) => {
+    event.stopPropagation();
+
+    void (async () => {
+      const sourceWithContent = await getSourceWithContent(source.id);
+      openOpenManifestDialog({ existingSource: sourceWithContent });
+    })();
   };
 
   return (
@@ -55,11 +66,21 @@ export function ManifestCard({ source, isHighlighted }: ManifestCardProps) {
           {source.name}
         </h3>
       </CardContent>
-      <CardFooter
-        className='cursor-pointer justify-end rounded-b-xl bg-white p-1 text-red-400 hover:text-red-600'
-        onClick={handleRemoveRemoteSource}
-      >
-        <Trash2 size={14} />
+      <CardFooter className='flex justify-between rounded-b-xl bg-white p-2'>
+        <div
+          onClick={handleEditRemoteSource}
+          className='cursor-pointer'
+          title={t('btn_edit_source')}
+        >
+          <Pen size={20} className='text-blue-400 hover:text-blue-600' />
+        </div>
+        <div
+          onClick={handleRemoveRemoteSource}
+          className='cursor-pointer'
+          title={t('btn_delete_source')}
+        >
+          <Trash2 size={20} className='text-red-400 hover:text-red-600' />
+        </div>
       </CardFooter>
     </Card>
   );

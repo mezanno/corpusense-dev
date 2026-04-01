@@ -25,7 +25,7 @@ const IIIFSourcesDashboard = () => {
       <div className='flex max-h-[70vh] flex-wrap gap-2 overflow-y-auto'>
         <Card
           className='card-file border-dashed'
-          onClick={() => openOpenManifestDialog(onManifestAdded)}
+          onClick={() => openOpenManifestDialog({ onResult: onManifestAdded })}
         >
           <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
             <Plus size={48} />

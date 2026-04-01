@@ -44,10 +44,21 @@ const useSources = () => {
     return await sourceRepository.add(newRemoteSourceDTO);
   }, []);
 
+  const getSourceWithContent = async (sourceId: string) => {
+    const sourceRepository = getSourceRepository();
+    const source = await sourceRepository.getById(sourceId);
+    const content = await sourceRepository.getContentById(sourceId);
+    return {
+      ...source,
+      content,
+    };
+  };
+
   return {
     removeSourceFromLibrary,
     fetchManifest,
     addManifestToLibrary,
+    getSourceWithContent,
   };
 };
 

@@ -21,6 +21,7 @@ import { DataModel } from '@/data/models/DataModel';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { Project } from '@/data/models/Project';
 import { CanvasScope, Scope } from '@/data/models/Scope';
+import { SourceWithContent } from '@/data/models/Sources';
 import { Worker } from '@/data/models/Worker';
 import { ModifierChainData } from '@/data/utils/modifierChain';
 import { ReactNode, RefObject } from 'react';
@@ -129,7 +130,12 @@ const useDialog = () => {
     });
   };
 
-  const openOpenManifestDialog = (onResult: (sourceAddedId: string) => void) => {
+  type OpenManifestDialogOptions = {
+    onResult?: (sourceAddedId: string) => void;
+    existingSource?: SourceWithContent;
+  };
+
+  const openOpenManifestDialog = (options: OpenManifestDialogOptions) => {
     openFormDialog({
       title: t('btn_open_manifest'),
       renderForm: (formRef) => (
@@ -137,7 +143,8 @@ const useDialog = () => {
           formRef={formRef}
           setCanSubmit={setCanSubmit}
           closeDialog={closeDialog}
-          onResult={onResult}
+          onResult={options.onResult}
+          existingSource={options.existingSource}
         />
       ),
       closeOnAction: false,

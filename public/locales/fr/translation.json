@@ -44,6 +44,8 @@
   "btn_hide_annotations": "Masquer les annotations",
   "btn_delete_annotation": "Supprimer l'annotation",
   "btn_delete_metadata": "Supprimer la métadonnée",
+  "btn_delete_source": "Supprimer la source",
+  "btn_edit_source": "Modifier la source",
   "btn_open": "Ouvrir",
   "btn_open_menu": "Ouvrir menu",
   "btn_cancel": "Annuler",
