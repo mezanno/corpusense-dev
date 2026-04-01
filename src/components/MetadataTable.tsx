@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 
 const MetadataTable = ({ manifestId }: { manifestId: string }) => {
   const { t } = useTranslation();
+  console.log(manifestId);
 
   const [formMetadata, setFormMetadata] = useState<ItemMetadataAttribute[]>([]);
   // const [formMetadata, setFormMetadata] = useState<ItemMetadataAttribute[]>(metadata ?? []);

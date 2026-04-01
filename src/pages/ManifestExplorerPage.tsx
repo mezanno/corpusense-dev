@@ -15,7 +15,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../compone
 const ManifestExplorerPage = () => {
   const [searchParams] = useSearchParams();
   const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | null>(null);
-  const [metadataVisible, setMetadataVisible] = useState(true);
+  const [metadataVisible, _setMetadataVisible] = useState(true);
 
   const id = searchParams.get('manifestId');
 

@@ -42,7 +42,7 @@ const db = new Dexie('mezanno') as Dexie & {
   storedBlobs: EntityTable<StoredBlob, 'id'>;
 };
 
-db.version(17)
+db.version(18)
   .stores({
     collections: '&id, name, *tags.id',
     collectionContents: '&id',
