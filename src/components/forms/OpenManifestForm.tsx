@@ -61,14 +61,18 @@ const OpenManifestForm = ({ closeDialog, onResult, existingSource }: OpenManifes
   }, [parsedManifest]);
 
   async function onAddManifestSubmit(values: z.infer<typeof addManifestFormSchema>) {
-    if (parsedManifest?.type === 'manifest' && loadedManifest) {
-      const name =
-        values.manifestName ??
-        parsedManifest.resource.getSummary() ??
-        t('manifest_untitled', { date: new Date().toLocaleString() });
-      const newSourceId = await addManifestToLibrary(loadedManifest, name);
-      onResult?.(newSourceId);
-      if (closeDialog) closeDialog();
+    if (existingSource) {
+      //dd+
+    } else {
+      if (parsedManifest?.type === 'manifest' && loadedManifest) {
+        const name =
+          values.manifestName ??
+          parsedManifest.resource.getSummary() ??
+          t('manifest_untitled', { date: new Date().toLocaleString() });
+        const newSourceId = await addManifestToLibrary(loadedManifest, name);
+        onResult?.(newSourceId);
+        if (closeDialog) closeDialog();
+      }
     }
   }
 

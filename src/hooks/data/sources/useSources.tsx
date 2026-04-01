@@ -54,11 +54,17 @@ const useSources = () => {
     };
   };
 
+  const updateSourceName = async (sourceId: string, name: string) => {
+    const sourceRepository = getSourceRepository();
+    await sourceRepository.updateName(sourceId, name);
+  };
+
   return {
     removeSourceFromLibrary,
     fetchManifest,
     addManifestToLibrary,
     getSourceWithContent,
+    updateSourceName,
   };
 };
 

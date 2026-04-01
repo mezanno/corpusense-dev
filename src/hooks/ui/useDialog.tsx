@@ -15,13 +15,14 @@ import OpenManifestForm from '@/components/forms/OpenManifestForm';
 import RemoveAnnotationsForm from '@/components/forms/RemoveAnnotationsForm';
 import SaveModifierChainForm from '@/components/forms/SaveModifierChainForm';
 import StartWorkerForm from '@/components/forms/StartWorkerForm';
+import UpdateSourceNameForm from '@/components/forms/UpdateSourceNameForm';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import ModelPreview from '@/components/textviewer/ModelPreview';
 import { DataModel } from '@/data/models/DataModel';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { Project } from '@/data/models/Project';
 import { CanvasScope, Scope } from '@/data/models/Scope';
-import { SourceWithContent } from '@/data/models/Sources';
+import { Source, SourceWithContent } from '@/data/models/Sources';
 import { Worker } from '@/data/models/Worker';
 import { ModifierChainData } from '@/data/utils/modifierChain';
 import { ReactNode, RefObject } from 'react';
@@ -309,6 +310,21 @@ const useDialog = () => {
     });
   };
 
+  const openChangeSourceNameDialog = (source: Source, onResult: (result: void) => void) => {
+    openFormDialog({
+      title: t('title_rename_source'),
+      confirmLabel: t('btn_rename'),
+      renderForm: (formRef) => (
+        <UpdateSourceNameForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          source={source}
+          onResult={onResult}
+        />
+      ),
+    });
+  };
+
   return {
     openOpenManifestDialog,
     openImportCollectionDialog,
@@ -327,6 +343,7 @@ const useDialog = () => {
     openLoadModifierChainDialog,
     openStartWorkerDialog,
     openCreateProjectDialog,
+    openChangeSourceNameDialog,
   };
 };
 

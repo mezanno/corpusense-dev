@@ -88,6 +88,8 @@ export interface SourceRepository {
   getContentById(sourceId: string): Promise<SourceContent>;
   getCanvasById(sourceId: string, canvasId: string): Promise<Canvas>;
 
+  updateName(sourceId: string, name: string): Promise<void>;
+
   deleteById(sourceId: string): Promise<void>;
 }
 

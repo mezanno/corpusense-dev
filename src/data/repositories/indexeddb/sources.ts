@@ -80,6 +80,10 @@ export class IndexedDBSourceRepository implements SourceRepository {
     return extractCanvasById(content.manifest, canvasId);
   }
 
+  async updateName(sourceId: string, name: string): Promise<void> {
+    await db.sources.update(sourceId, { name });
+  }
+
   async deleteById(sourceId: string): Promise<void> {
     await db.transaction('rw', db.storedBlobs, db.sources, db.sourceContents, async () => {
       const source = await db.sources.get(sourceId);

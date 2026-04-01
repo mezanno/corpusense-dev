@@ -1,7 +1,11 @@
 import { SourceWithContent } from '@/data/models/Sources';
+import { QUERY_KEY_CURRENT_SOURCE } from '@/hooks/data/sources/useSource';
+import useDialog from '@/hooks/ui/useDialog';
 import { InternationalString, Manifest } from '@iiif/presentation-3';
 import { Label, Summary } from '@samvera/clover-iiif/primitives';
+import { useQueryClient } from '@tanstack/react-query';
 import { Cozy } from 'cozy-iiif';
+import { Pen } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import ManifestThumbnail from './ManifestThumbnail';
 import './metadata.css';
@@ -14,9 +18,18 @@ const ManifestDetails = ({
   manifest: Manifest;
 }) => {
   const { t } = useTranslation();
+  const { openChangeSourceNameDialog } = useDialog();
+  const queryClient = useQueryClient();
 
   const parsed = Cozy.parse(manifest);
   const summary = parsed.type === 'manifest' ? parsed.resource.getSummary() : undefined;
+
+  const handleRenameClick = () => {
+    openChangeSourceNameDialog(source, () => {
+      //invalidate current source query to update the name in the UI after renaming
+      void queryClient.invalidateQueries({ queryKey: [QUERY_KEY_CURRENT_SOURCE] });
+    });
+  };
 
   return (
     <section
@@ -25,7 +38,14 @@ const ManifestDetails = ({
     >
       <div className='flex h-full w-full flex-col items-center space-y-2'>
         <h2 className='text-lg font-bold'>{t('title_currently_open')}</h2>
-        <h3 className='text-center text-lg font-bold italic'>{source.name}</h3>
+        <h3 className='flex gap-2 text-center text-lg font-bold italic'>
+          {source.name}
+          <Pen
+            size={14}
+            className='cursor-pointer text-primary-foreground/70 hover:scale-110 hover:text-primary-foreground'
+            onClick={handleRenameClick}
+          />
+        </h3>
         {source.name !== summary && (
           <div className='w-full text-center text-sm italic'>
             <span>{t('info_original_name')}</span>
