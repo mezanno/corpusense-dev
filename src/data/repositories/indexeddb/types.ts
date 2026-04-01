@@ -182,4 +182,6 @@ export interface ProjectRepository {
   getById(id: string): Promise<Project>;
 
   add(project: Project): Promise<void>;
+
+  addSource(projectId: string, sourceId: string): Promise<void>;
 }

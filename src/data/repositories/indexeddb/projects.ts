@@ -18,4 +18,13 @@ export class IndexedDBProjectRepository implements ProjectRepository {
   async add(project: Project): Promise<void> {
     await db.projects.add(project);
   }
+
+  async addSource(projectId: string, sourceId: string): Promise<void> {
+    const project = await this.getById(projectId);
+    if (project.sources.includes(sourceId)) {
+      throw new Error(`Source with id ${sourceId} already exists in project ${projectId}`);
+    }
+    project.sources.push(sourceId);
+    await db.projects.put(project);
+  }
 }

@@ -1,6 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Project } from '@/data/models/Project';
 import useProjectsIO from '@/hooks/data/projects/useProjectsIO';
+import useDialog from '@/hooks/ui/useDialog';
 import { Plus } from 'lucide-react';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,7 +12,8 @@ type SourceSectionProps = {
 
 const SourceSection = ({ selectedProjectId }: SourceSectionProps) => {
   const { t } = useTranslation();
-  const { getProjectById } = useProjectsIO();
+  const { getProjectById, addSourceToProject } = useProjectsIO();
+  const { openOpenManifestDialog } = useDialog();
   const [currentProject, setCurrentProject] = useState<Project | undefined>(undefined);
 
   const onProjectId = useEffectEvent(() => {
@@ -32,6 +34,14 @@ const SourceSection = ({ selectedProjectId }: SourceSectionProps) => {
     }
   }, [selectedProjectId]);
 
+  const handleOnAddRemoteSource = () => {
+    openOpenManifestDialog({
+      onResult: (sourceAddedId) => {
+        void addSourceToProject(currentProject!.id, sourceAddedId);
+      },
+    });
+  };
+
   return (
     <div
       className={`flex h-full w-full rounded-lg ${currentProject === undefined ? 'bg-white/50' : 'bg-white'} shadow`}
@@ -48,7 +58,7 @@ const SourceSection = ({ selectedProjectId }: SourceSectionProps) => {
               <div className='flex flex-col gap-2'>
                 <Card
                   className='card-model h-28 w-24 border-dashed'
-                  //   onClick={() => openCreateProjectDialog(onProjectCreated)}
+                  onClick={handleOnAddRemoteSource}
                 >
                   <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
                     <Plus size={24} />
@@ -67,9 +77,9 @@ const SourceSection = ({ selectedProjectId }: SourceSectionProps) => {
               </div>
               {currentProject?.sources.length !== 0 ? (
                 <div className='grid w-full grid-cols-4 grid-rows-2 gap-4 rounded-2xl border-2 border-dashed p-2'>
-                  {/* {projects.length > 0 && (
-
-            )} */}
+                  {currentProject?.sources.map((sourceId) => (
+                    <div key={sourceId}>Source {sourceId}</div>
+                  ))}
                 </div>
               ) : (
                 <div className='flex flex-1 items-center justify-center rounded-2xl border-2 border-dashed'>

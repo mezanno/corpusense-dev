@@ -22,9 +22,14 @@ const useProjectsIO = () => {
     return newProject;
   };
 
+  const addSourceToProject = async (projectId: string, sourceId: string) => {
+    await projectRespository.addSource(projectId, sourceId);
+  };
+
   return {
     createProject,
     getProjectById,
+    addSourceToProject,
   };
 };
 
