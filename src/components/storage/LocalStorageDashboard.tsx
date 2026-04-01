@@ -23,7 +23,7 @@ const LocalStorageDashboard = () => {
         <Archive className='mr-2' /> {t('page_title_local_storage')}
       </h1>
 
-      <div className='flex max-h-[70vh] flex-wrap gap-2 overflow-y-auto'>
+      <div className='flex h-full flex-wrap gap-2 overflow-y-auto'>
         <Card
           className='card-file border-dashed'
           onClick={() => openConvertPdfDialog(onManifestAdded)}

@@ -22,7 +22,8 @@ const IIIFSourcesDashboard = () => {
         <Globe className='mr-2' /> {t('page_title_iiif_storage')}
       </h1>
 
-      <div className='flex max-h-[70vh] flex-wrap gap-2 overflow-y-auto'>
+      <div className='flex h-full flex-wrap gap-2 overflow-y-auto'>
+        {/* max-h-[70vh] */}
         <Card
           className='card-file border-dashed'
           onClick={() => openOpenManifestDialog({ onResult: onManifestAdded })}
@@ -32,7 +33,6 @@ const IIIFSourcesDashboard = () => {
             <span className='text-center'>{t('btn_add_pdf')}</span>
           </CardContent>
         </Card>
-
         {remoteSources.map((source) => (
           <ManifestCard
             key={source.id}

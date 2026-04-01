@@ -46,7 +46,9 @@ const ManifestGrid = ({ currendManifestId }: { currendManifestId: string }) => {
                   to={`/${CorpusenseRoutes.MANIFEST}?manifestId=${source.id}`}
                   className='flex h-full w-full items-center gap-2 overflow-hidden'
                 >
-                  <ManifestThumbnail thumbnailBlobId={source.thumbnailBlobId} />
+                  <div className='max-w-20 min-w-20'>
+                    <ManifestThumbnail thumbnailBlobId={source.thumbnailBlobId} />
+                  </div>
                   <span className={`${isActive && 'font-black'} min-w-0 truncate`}>
                     {source.name}
                   </span>
