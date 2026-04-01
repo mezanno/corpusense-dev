@@ -1,10 +1,8 @@
 import { SourceWithContent } from '@/data/models/Sources';
-import useExperimental from '@/hooks/useExperimental';
 import { InternationalString, Manifest } from '@iiif/presentation-3';
 import { Label, Summary } from '@samvera/clover-iiif/primitives';
+import { Cozy } from 'cozy-iiif';
 import { useTranslation } from 'react-i18next';
-import MetadataTable from '../MetadataTable';
-import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import ManifestThumbnail from './ManifestThumbnail';
 import './metadata.css';
 
@@ -16,7 +14,9 @@ const ManifestDetails = ({
   manifest: Manifest;
 }) => {
   const { t } = useTranslation();
-  const { experimentalFeaturesActivated } = useExperimental();
+
+  const parsed = Cozy.parse(manifest);
+  const summary = parsed.type === 'manifest' ? parsed.resource.getSummary() : undefined;
 
   return (
     <section
@@ -25,11 +25,13 @@ const ManifestDetails = ({
     >
       <div className='flex h-full w-full flex-col items-center space-y-2'>
         <h2 className='text-lg font-bold'>{t('title_currently_open')}</h2>
-        <Summary
-          as='h2'
-          className='text-center text-lg font-bold italic'
-          summary={manifest.summary as InternationalString}
-        />
+        <h3 className='text-center text-lg font-bold italic'>{source.name}</h3>
+        {source.name !== summary && (
+          <div className='w-full text-center text-sm italic'>
+            <span>{t('info_original_name')}</span>
+            <Summary summary={manifest.summary as InternationalString} className='font-semibold' />
+          </div>
+        )}
         <div className='h-48'>
           <ManifestThumbnail thumbnailBlobId={source.thumbnailBlobId} />
         </div>
@@ -44,7 +46,7 @@ const ManifestDetails = ({
             <ScrollBar orientation='horizontal' />
           </ScrollArea>
         </section> */}
-        {experimentalFeaturesActivated && (
+        {/* {experimentalFeaturesActivated && (
           <section className='w-full rounded-md border p-2' aria-labelledby='metadata_corpusense'>
             <h3 id='metadata_corpusense' className='text-xl'>
               {t('title_metadata_corpusense')}
@@ -54,7 +56,7 @@ const ManifestDetails = ({
               <ScrollBar orientation='horizontal' />
             </ScrollArea>
           </section>
-        )}
+        )} */}
       </div>
     </section>
   );
