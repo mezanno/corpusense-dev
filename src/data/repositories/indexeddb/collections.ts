@@ -86,6 +86,18 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     return canvases;
   }
 
+  async getSourceIdsByCollectionId(collectionId: string): Promise<string[]> {
+    const collection = await this.getById(collectionId);
+    if (collection === undefined) {
+      throw new Error(`Collection with id ${collectionId} not found`);
+    }
+    const content = collection.content;
+    if (content.length === 0) {
+      return [];
+    }
+    return [...new Set(content.map((elt) => elt.sourceId))];
+  }
+
   async getOfflineCollections(): Promise<CollectionDetails[]> {
     return await db.collections.where('offline').equals(1).toArray();
   }
@@ -195,6 +207,10 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
   async delete(
     collectionToRemove: Collection,
   ): Promise<{ workersIds: string[]; collectionId: string }> {
+    return await this.deleteById(collectionToRemove.id);
+  }
+
+  async deleteById(collectionId: string): Promise<{ workersIds: string[]; collectionId: string }> {
     return await db.transaction(
       'rw',
       [db.collections, db.collectionContents, db.annotations, db.workers, db.results],
@@ -202,17 +218,17 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
         //remove the annotations of the collection
         const annotationRepository = getAnnotationRepository();
         await annotationRepository.deleteByScope({
-          collectionId: collectionToRemove.id,
+          collectionId,
         });
         //remove the workers associated to the collection
         const workerRepository = getWorkerRepository();
         const workersIds = await workerRepository.deleteByScope({
-          collectionId: collectionToRemove.id,
+          collectionId,
         });
         //remove the collection
-        await db.collections.delete(collectionToRemove.id);
-        await db.collectionContents.delete(collectionToRemove.id);
-        return { workersIds, collectionId: collectionToRemove.id };
+        await db.collections.delete(collectionId);
+        await db.collectionContents.delete(collectionId);
+        return { workersIds, collectionId };
       },
     );
   }
