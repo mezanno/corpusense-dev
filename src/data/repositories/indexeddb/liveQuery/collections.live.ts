@@ -1,8 +1,7 @@
 import { Collection, CollectionDetails } from '@/data/models/Collection';
 import { Canvas } from '@iiif/presentation-3';
-import { groupBy, mapValues } from 'lodash';
 import { db } from '../db';
-import { getManifestRepository, getSourceRepository } from '../dbFactory';
+import { getSourceRepository } from '../dbFactory';
 import { CollectionLiveRepository } from './types.live';
 
 export class IndexedDBCollectionLiveRepository implements CollectionLiveRepository {
@@ -26,8 +25,9 @@ export class IndexedDBCollectionLiveRepository implements CollectionLiveReposito
     };
   }
 
-  getCanvasesByCollectionId(collectionId: string): () => Promise<Canvas[]> {
-    const manifestRepository = getManifestRepository();
+  getCanvasesByCollectionId(
+    collectionId: string,
+  ): () => Promise<{ canvas: Canvas; sourceId: string }[]> {
     const sourceRepository = getSourceRepository();
     return async () => {
       const collectionContent = await db.collectionContents.get(collectionId);
@@ -36,34 +36,33 @@ export class IndexedDBCollectionLiveRepository implements CollectionLiveReposito
         return [];
       }
 
-      //get the list of canvases in the collection (with their manifestId)
-      const canvasesWithManifest = await Promise.all(
-        content.map(async (elt) => {
-          const sourceId = elt.sourceId;
-          const source = await sourceRepository.getContentById(sourceId);
+      console.log('content ', content);
 
-          return {
-            canvasId: elt.canvasId,
-            manifestId: source.manifest.id,
-          };
-        }),
+      //get the list of canvases in the collection (with their sourceId)
+      const canvases = await Promise.all(
+        content.map(async ({ sourceId, canvasId }) => ({
+          canvas: await sourceRepository.getCanvasById(sourceId, canvasId),
+          sourceId,
+        })),
       );
 
-      const canvasesByManifest = groupBy(canvasesWithManifest, 'manifestId');
+      // const canvasesOrderedBySourceId = groupBy(canvasesWithSourceId, 'sourceId');
 
-      //group the canvases by manifestId
-      const groupedCanvasesIds = mapValues(canvasesByManifest, (value) =>
-        value.map((elt) => elt.canvasId),
-      );
+      // //group the canvases by manifestId
+      // const groupedCanvasesIds = mapValues(canvasesOrderedBySourceId, (value) =>
+      //   value.map((elt) => elt.canvasId),
+      // );
 
-      const canvases: Canvas[] = [];
-      for (const manifestId in groupedCanvasesIds) {
-        const canvasIds = groupedCanvasesIds[manifestId];
-        if (canvasIds.length > 0) {
-          const result = await manifestRepository.getCanvasesByIds(manifestId, canvasIds);
-          canvases.push(...result);
-        }
-      }
+      // const canvases: Canvas[] = [];
+      // for (const sourceId in groupedCanvasesIds) {
+      //   const canvasIds = groupedCanvasesIds[sourceId];
+      //   const results = canvasIds.length
+      //     ? await Promise.all(canvasIds.map((id) => sourceRepository.getCanvasById(sourceId, id)))
+      //     : [];
+      //   canvases.push(...results);
+      // }
+
+      console.log('canvases ', canvases);
 
       return canvases;
     };

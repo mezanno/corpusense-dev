@@ -7,7 +7,6 @@ import { Collection, CollectionDetails } from '../../models/Collection';
 import { db } from './db';
 import {
   getAnnotationRepository,
-  getManifestRepository,
   getSourceRepository,
   getTagRepository,
   getWorkerRepository,
@@ -51,35 +50,36 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
       return [];
     }
 
-    const manifestRepository = getManifestRepository();
     const sourceRepository = getSourceRepository();
 
     //get the list of canvases in the collection (with their manifestId)
-    const canvasesWithManifest = await Promise.all(
+    const canvaseIdsWithSourceIds = await Promise.all(
       content.map(async (elt) => {
         const sourceId = elt.sourceId;
         const source = await sourceRepository.getContentById(sourceId);
 
         return {
           canvasId: elt.canvasId,
-          manifestId: source.manifest.id,
+          sourceId: source.id,
         };
       }),
     );
 
-    const canvasesByManifest = groupBy(canvasesWithManifest, 'manifestId');
+    const canvasesBySourceId = groupBy(canvaseIdsWithSourceIds, 'sourceId');
 
     //group the canvases by manifestId
-    const groupedCanvasesIds = mapValues(canvasesByManifest, (value) =>
+    const groupedCanvasesIds = mapValues(canvasesBySourceId, (value) =>
       value.map((elt) => elt.canvasId),
     );
 
     const canvases: Canvas[] = [];
-    for (const manifestId in groupedCanvasesIds) {
-      const canvasIds = groupedCanvasesIds[manifestId];
+    for (const sourceId in groupedCanvasesIds) {
+      const canvasIds = groupedCanvasesIds[sourceId];
       if (canvasIds.length > 0) {
-        const result = await manifestRepository.getCanvasesByIds(manifestId, canvasIds);
-        canvases.push(...result);
+        const results = canvasIds.length
+          ? await Promise.all(canvasIds.map((id) => sourceRepository.getCanvasById(sourceId, id)))
+          : [];
+        canvases.push(...results);
       }
     }
 

@@ -11,8 +11,10 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
-import { useCollectionContent } from '@/hooks/data/collections/useCollectionContent';
-import { Canvas } from '@iiif/presentation-3';
+import {
+  CanvasWithSourceId,
+  useCollectionContent,
+} from '@/hooks/data/collections/useCollectionContent';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import 'gridstack/dist/gridstack.min.css';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
@@ -28,11 +30,11 @@ const CollectionInspectorContent = ({
   defaultCanvasId: string | null;
 }) => {
   const { t } = useTranslation();
-  const { collection, getCanvasById } = useCollectionContent(collectionId);
+  const { collection, getCanvasById, canvases } = useCollectionContent(collectionId);
   const { openCollection } = useCollectionContext();
   const { setScope } = useAnnotationContext();
   const canvas = defaultCanvasId !== null ? getCanvasById(defaultCanvasId) : null;
-  const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | null>(canvas);
+  const [canvasToDisplay, setCanvasToDisplay] = useState<CanvasWithSourceId | null>(canvas);
   // const [activeTab, setActiveTab] = useState('document');
 
   const [colCount, setColCount] = useState(5);
@@ -54,7 +56,7 @@ const CollectionInspectorContent = ({
 
   useEffect(() => {
     if (canvasToDisplay !== null) {
-      setScope({ canvasId: canvasToDisplay.id, collectionId });
+      setScope({ canvasId: canvasToDisplay.canvas.id, collectionId });
     }
   }, [canvasToDisplay]);
 
@@ -151,11 +153,11 @@ const CollectionInspectorContent = ({
                                 {colVirtualizer.getVirtualItems().map((virtualColumn) => {
                                   const index = virtualRow.index * colCount + virtualColumn.index;
 
-                                  if (index >= collection.contentSize) return null;
-                                  const gtCanvas = getCanvasById(
-                                    collection.content[index].canvasId,
-                                  );
-                                  if (gtCanvas === null) return null;
+                                  if (index >= canvases.length) return null;
+                                  const gtCanvas = canvases[index];
+                                  if (gtCanvas === null || gtCanvas === undefined) return null;
+                                  console.log('gtCanvas ', gtCanvas);
+
                                   return (
                                     <div
                                       key={`${virtualRow.key}-${virtualColumn.key}`}
@@ -169,7 +171,7 @@ const CollectionInspectorContent = ({
                                       }}
                                     >
                                       <GridThumb
-                                        canvas={gtCanvas}
+                                        canvasWithSourceId={gtCanvas}
                                         collectionId={collection.id}
                                         thumbWidth={virtualColumn.size}
                                         thumbHeight={virtualRow.size}
@@ -209,7 +211,8 @@ const CollectionInspectorContent = ({
             <div className='flex h-full w-full flex-col'>
               <CanvasViewer
                 collectionId={collectionId}
-                canvas={canvasToDisplay}
+                sourceId={canvasToDisplay.sourceId}
+                canvas={canvasToDisplay.canvas}
                 setCanvasToDisplay={setCanvasToDisplay}
               />
             </div>

@@ -1,6 +1,7 @@
 {
   "files": [],
   "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
+  "include": ["src", "src/types"],
   "exclude": ["node_modules", "dist", "eslint.config.js"],
   "compilerOptions": {
     "baseUrl": ".",
@@ -14,7 +15,7 @@
     "strictPropertyInitialization": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
-    "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"],
+    "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom", "*"],
     "jsxImportSource": "react",
     "skipLibCheck": true,
     "resolveJsonModule": true

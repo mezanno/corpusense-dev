@@ -88,6 +88,7 @@ export interface SourceRepository {
   getBlob(blobId: string): Promise<Blob>;
   getById(sourceId: string): Promise<Source>;
   getContentById(sourceId: string): Promise<SourceContent>;
+  getContentByManifestUrl(manifestUrl: string): Promise<SourceContent | undefined>;
   getCanvasById(sourceId: string, canvasId: string): Promise<Canvas>;
 
   updateName(sourceId: string, name: string): Promise<void>;

@@ -65,11 +65,19 @@ export class IndexedDBSourceRepository implements SourceRepository {
   }
 
   async getContentById(sourceId: string): Promise<SourceContent> {
+    console.log('getContentById ', sourceId);
+
     const content = await db.sourceContents.get(sourceId);
     if (!content) {
       throw new Error(`Content for source with id ${sourceId} not found`);
     }
     return content;
+  }
+
+  async getContentByManifestUrl(manifestUrl: string): Promise<SourceContent | undefined> {
+    return (await db.sourceContents.toArray()).find(
+      (content) => content.manifest.id === manifestUrl,
+    );
   }
 
   async getCanvasById(sourceId: string, canvasId: string): Promise<Canvas> {

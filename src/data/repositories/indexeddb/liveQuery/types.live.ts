@@ -15,7 +15,9 @@ export interface CollectionLiveRepository {
   getAllDetails(): () => Promise<CollectionDetails[]>;
   getAllDetailsByIds(ids: string[]): () => Promise<CollectionDetails[]>;
   getById(id: string): () => Promise<Collection>;
-  getCanvasesByCollectionId(collectionId: string): () => Promise<Canvas[]>;
+  getCanvasesByCollectionId(
+    collectionId: string,
+  ): () => Promise<{ canvas: Canvas; sourceId: string }[]>;
 }
 
 export interface ModelLiveRepository {

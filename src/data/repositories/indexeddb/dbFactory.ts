@@ -15,7 +15,6 @@ import { IndexedDBResultLiveRepository } from './liveQuery/results.live';
 import { IndexedDBSourceLiveRepository } from './liveQuery/sources.live';
 import { IndexedDBTagLiveRepository } from './liveQuery/tags.live';
 import { IndexedDBWorkerLiveRepository } from './liveQuery/workers.live';
-import { IndexedDBManifestRepository } from './manifest';
 import { IndexedDBModelRepository } from './models';
 import { IndexedDBModifierChainRepository } from './modifierChain';
 import { IndexedDBNamedEntityRepository } from './namedEntities';
@@ -49,9 +48,9 @@ export function getCollectonLiveRepository() {
   return new IndexedDBCollectionLiveRepository();
 }
 
-export function getManifestRepository() {
-  return new IndexedDBManifestRepository();
-}
+// export function getManifestRepository() {
+//   return new IndexedDBManifestRepository();
+// }
 
 export function getSourceRepository() {
   return new IndexedDBSourceRepository();

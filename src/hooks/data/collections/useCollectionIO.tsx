@@ -6,12 +6,10 @@ import { Worker } from '@/data/models/Worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,
-  getManifestRepository,
   getModelRepository,
   getResultRepository,
   getWorkerRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
-import { getImage } from '@/data/utils/canvas';
 import { generateManifestFromCollection } from '@/data/utils/export';
 import { useAppDispatch } from '@/hooks/hooks';
 import i18n from '@/i18n';
@@ -203,48 +201,48 @@ export const useCollectionIO = () => {
     //exportError
   };
 
-  const toggleCollectionOffline = async (collectionId: string) => {
-    try {
-      const collection = await collectionRepository.getById(collectionId);
-      if (collection === undefined) {
-        appDispatch(pushError(i18n.t('error_collection_not_found')));
-        return;
-      }
-      await collectionRepository.updateOffline(collectionId, !collection.offline);
-      // yield put(updateCollectionSuccess({ ...collection, offline: !collection.offline }));
-      if (!collection.offline) {
-        //collection is now available offline
-        appDispatch(pushInfo(i18n.t('toast_collection_offline')));
-      } else {
-        //collection is not available offline anymore
-        appDispatch(pushInfo(i18n.t('toast_collection_online')));
-      }
-      console.log('Notifying service worker');
-      if (navigator.serviceWorker?.controller) {
-        const manifestRepository = getManifestRepository();
-        const imageUrls = [];
-        for (let i = 0; i < collection.content.length; i++) {
-          const canvas = await manifestRepository.getCanvasById(
-            collection.content[i].sourceId,
-            collection.content[i].canvasId,
-          );
-          try {
-            imageUrls.push(getImage(canvas).id);
-          } catch (e) {
-            console.warn(`No image found for canvas ${canvas.id}`);
-          }
-        }
-        console.log(imageUrls);
+  // const toggleCollectionOffline = async (collectionId: string) => {
+  //   try {
+  //     const collection = await collectionRepository.getById(collectionId);
+  //     if (collection === undefined) {
+  //       appDispatch(pushError(i18n.t('error_collection_not_found')));
+  //       return;
+  //     }
+  //     await collectionRepository.updateOffline(collectionId, !collection.offline);
+  //     // yield put(updateCollectionSuccess({ ...collection, offline: !collection.offline }));
+  //     if (!collection.offline) {
+  //       //collection is now available offline
+  //       appDispatch(pushInfo(i18n.t('toast_collection_offline')));
+  //     } else {
+  //       //collection is not available offline anymore
+  //       appDispatch(pushInfo(i18n.t('toast_collection_online')));
+  //     }
+  //     console.log('Notifying service worker');
+  //     if (navigator.serviceWorker?.controller) {
+  //       const manifestRepository = getManifestRepository();
+  //       const imageUrls = [];
+  //       for (let i = 0; i < collection.content.length; i++) {
+  //         const canvas = await manifestRepository.getCanvasById(
+  //           collection.content[i].sourceId,
+  //           collection.content[i].canvasId,
+  //         );
+  //         try {
+  //           imageUrls.push(getImage(canvas).id);
+  //         } catch (e) {
+  //           console.warn(`No image found for canvas ${canvas.id}`);
+  //         }
+  //       }
+  //       console.log(imageUrls);
 
-        navigator.serviceWorker?.controller?.postMessage({
-          action: !collection.offline ? 'addToCache' : 'removeFromCache',
-          imageUrls,
-        });
-      }
-    } catch (e) {
-      appDispatch(pushError(getErrorMessage(e)));
-    }
-  };
+  //       navigator.serviceWorker?.controller?.postMessage({
+  //         action: !collection.offline ? 'addToCache' : 'removeFromCache',
+  //         imageUrls,
+  //       });
+  //     }
+  //   } catch (e) {
+  //     appDispatch(pushError(getErrorMessage(e)));
+  //   }
+  // };
 
-  return { importCollection, importCollections, exportCollections, toggleCollectionOffline };
+  return { importCollection, importCollections, exportCollections };
 };

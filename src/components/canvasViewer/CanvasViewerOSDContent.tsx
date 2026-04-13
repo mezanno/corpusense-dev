@@ -4,8 +4,8 @@ import {
   getDistanceBetweenAnnotations,
   getRectFromBounds,
 } from '@/data/utils/annotations';
-import { getSource } from '@/data/utils/canvas';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
+import useTileSource from '@/hooks/data/sources/useTileSource';
 import { getErrorMessage } from '@/utils/utils';
 import {
   AnnotationState,
@@ -27,7 +27,7 @@ import {
   MoveVertical,
 } from 'lucide-react';
 import OpenSeadragon from 'openseadragon';
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CanvasViewerMode } from './CanvasViewer';
 
@@ -40,11 +40,13 @@ const colors = {
 
 const CanvasViewerOSDContent = ({
   canvas,
+  sourceId,
   mode,
   hovered,
   setHovered,
 }: {
   canvas: Canvas;
+  sourceId: string;
   mode: CanvasViewerMode;
   hovered: string | null;
   setHovered: (id: string | null) => void;
@@ -54,36 +56,39 @@ const CanvasViewerOSDContent = ({
   const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
   const { removeAnnotationsByIds } = useAnnotationActions();
   const [options, setOptions] = useState<OpenSeadragon.Options | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>();
+  const { error, source } = useTileSource({ canvas, sourceId });
+
+  const onSource = useEffectEvent(() => {
+    if (source !== null) {
+      console.log('onSource ', source);
+
+      setOptions({
+        prefixUrl: `${import.meta.env.VITE_BASE_PATH}/images/`,
+        defaultZoomLevel: 0.5,
+        minZoomLevel: 0.1,
+        tileSources: source,
+        loadTilesWithAjax: true,
+        // crossOriginPolicy: 'false',
+        showSequenceControl: true,
+        showHomeControl: true,
+        showFullPageControl: true,
+        gestureSettingsMouse: {
+          clickToZoom: false,
+        },
+      });
+    }
+  });
 
   useEffect(() => {
-    const loadSource = async () => {
-      setError(null);
-      try {
-        const source = await getSource(canvas);
-        setOptions({
-          prefixUrl: `${import.meta.env.VITE_BASE_PATH}/images/`,
-          defaultZoomLevel: 0.5,
-          minZoomLevel: 0.1,
-          tileSources: source,
-          loadTilesWithAjax: true,
-          // crossOriginPolicy: 'false',
-          showSequenceControl: true,
-          showHomeControl: true,
-          showFullPageControl: true,
-          gestureSettingsMouse: {
-            clickToZoom: false,
-          },
-        });
-      } catch (e) {
-        setError(getErrorMessage(e));
-        console.error(e);
-      }
-    };
+    if (source != null) {
+      onSource();
+    }
 
-    void loadSource();
-  }, [canvas]);
+    if (error != null) {
+      console.error(getErrorMessage(error));
+    }
+  }, [source, error]);
 
   useEffect(() => {
     if (hovered != null) {

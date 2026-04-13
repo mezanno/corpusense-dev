@@ -1,9 +1,10 @@
 import { importerPlugins } from '@/App';
 import { ConvertedFile } from '@/data/models/ConvertedFile';
-import { getManifestRepository } from '@/data/repositories/indexeddb/dbFactory';
+import { getSourceRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { convertPresentation2 } from '@iiif/parser/presentation-2';
 import { Manifest } from '@iiif/presentation-3';
 import i18n from 'i18next';
+import { getErrorMessage } from './utils';
 
 export function isManifestUrl(str: string): boolean {
   const regex = /^https?:\/\/[^/\s]+(?:\/\S*)?$/i;
@@ -111,32 +112,31 @@ export const generateManifest = ({
 export async function fetchManifestFromURL(url: string): Promise<Manifest> {
   console.log('handleFetchManifestFromURL ', url);
   const keys = Object.keys(importerPlugins);
-  try {
-    const manifestRepository = getManifestRepository();
-    //if the manifest is already stored in IndexedDB, we return it
-    return await manifestRepository.getById(url);
-  } catch (error) {
-    console.log('Manifest not found in IndexedDB');
-    // If the manifest is not found in IndexedDB, we try to fetch it from the URL
-    const importerKey = keys.find((key) => url.includes(key));
-    const importer =
-      importerKey !== undefined ? importerPlugins[importerKey] : importerPlugins['default'];
-    if (importer !== undefined && importer !== null) {
-      try {
-        const manifest = await fetchManifestWithPlugin({
-          fetchFunction: () => importer.import(url),
-        });
-        // const manifestRepository = getManifestRepository();
-        // await manifestRepository.add(manifest);
-        return manifest;
-      } catch (err) {
-        // const msg = i18n.t('error_loading_manifest', { error: getErrorMessage(err) });
-        // yield put(fetchManifestError(msg));
-        // throw new Error(getErrorMessage(err));
-      }
-    }
-    throw new Error(i18n.t('no_manifest_importer', { url }));
+
+  //check if the manifest is already stored in IndexedDB
+  const sourceRepository = getSourceRepository();
+  const content = await sourceRepository.getContentByManifestUrl(url);
+  if (content) {
+    return content.manifest;
   }
+  console.log('Manifest not found in IndexedDB');
+  // If the manifest is not found in IndexedDB, we try to fetch it from the URL
+  const importerKey = keys.find((key) => url.includes(key));
+  const importer =
+    importerKey !== undefined ? importerPlugins[importerKey] : importerPlugins['default'];
+  if (importer !== undefined && importer !== null) {
+    try {
+      const manifest = await fetchManifestWithPlugin({
+        fetchFunction: () => importer.import(url),
+      });
+      return manifest;
+    } catch (err) {
+      console.error('Error fetching manifest with plugin: ', err);
+      const msg = i18n.t('error_loading_manifest', { error: getErrorMessage(err) });
+      throw new Error(msg);
+    }
+  }
+  throw new Error(getErrorMessage('oups'));
 }
 
 /**

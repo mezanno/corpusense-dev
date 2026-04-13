@@ -30,7 +30,7 @@ const NewCollectionForm = ({
   formRef,
   setCanSubmit,
   selection,
-  manifestId,
+  sourceId,
   closeDialog,
 }: NewCollectionFormProps) => {
   const { t } = useTranslation();

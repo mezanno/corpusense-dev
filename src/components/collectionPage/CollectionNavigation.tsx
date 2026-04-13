@@ -1,5 +1,7 @@
-import { useCollectionContent } from '@/hooks/data/collections/useCollectionContent';
-import { Canvas } from '@iiif/presentation-3';
+import {
+  CanvasWithSourceId,
+  useCollectionContent,
+} from '@/hooks/data/collections/useCollectionContent';
 import { StepBack, StepForward } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -10,7 +12,7 @@ const CollectionNavigation = ({
 }: {
   collectionId: string;
   currentCanvasId: string;
-  setCanvasToDisplay: (canvas: Canvas | null) => void;
+  setCanvasToDisplay: (canvas: CanvasWithSourceId | null) => void;
 }) => {
   const { t } = useTranslation();
   const { hasNextCanvas, hasPreviousCanvas, getNextCanvas, getPreviousCanvas } =

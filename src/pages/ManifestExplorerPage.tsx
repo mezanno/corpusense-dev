@@ -68,8 +68,7 @@ const ManifestExplorerPage = () => {
                 <CanvasGallery
                   setCanvasToDisplay={setCanvasToDisplay}
                   canvasToDisplay={canvasToDisplay}
-                  manifest={manifest}
-                  sourceId={sourceWithContent.id}
+                  sourceWithContent={sourceWithContent}
                 />
               </CanvasSelectionProvider>
             </ResizablePanel>
@@ -86,7 +85,7 @@ const ManifestExplorerPage = () => {
               <NothingToShow />
             ) : (
               <>
-                <CanvasViewer canvas={canvasToDisplay} />
+                <CanvasViewer canvas={canvasToDisplay} sourceId={sourceWithContent.id} />
                 <ManifestNavigation
                   setCanvasToDisplay={setCanvasToDisplay}
                   currentCanvasId={canvasToDisplay.id}
