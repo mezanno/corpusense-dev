@@ -26,8 +26,8 @@ La structure `src` est organisée comme suit :
 
 ### 1. Consolidation de la Gestion d'État (EN COURS)
 La migration vers une approche **Local-First** via `useLiveQuery` est bien avancée.
-- **Réussite** : Les collections, annotations et tags sont désormais gérés via des hooks réactifs directs vers IndexedDB.
-- **Reste à faire** : Migrer la gestion des Workers et la file d'attente d'import des Manifestes pour vider totalement Redux-Saga.
+- **Réussite** : Les collections, annotations et tags sont désormais gérés via des hooks réactifs sur IndexedDB. La gestion des Workers a été migrée vers `useJobRealtime` (Supabase + Polling).
+- **Reste à faire** : Migrer la file d'attente d'import des Manifestes pour vider totalement Redux-Saga.
 
 ### 2. Organisation des Composants (À FAIRE)
 Le dossier `components` reste plat et commence à être difficile à maintenir.
