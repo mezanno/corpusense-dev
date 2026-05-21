@@ -111,6 +111,9 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
 
   useEffect(() => {
     onCollection(collectionTagsDefaultValue);
+    if (!form.formState.isDirty) {
+      form.setValue('tags', collectionTagsDefaultValue);
+    }
   }, [collectionTagsDefaultValue]);
 
   const watchedValues = useWatch({
