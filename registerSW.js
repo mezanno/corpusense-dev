@@ -1,1 +1,1 @@
-if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/corpusense-devsw.js', { scope: '/corpusense-dev' })})}
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/corpusense-dev/sw.js', { scope: '/corpusense-dev/' })})}
