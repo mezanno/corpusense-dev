@@ -18,7 +18,7 @@ export async function initI18n() {
       // Fallback locale used when a translation is
       // missing in the active locale. Again, use your
       // preferred locale here.
-      fallbackLng: 'fr',
+      fallbackLng: 'fr-FR',
       // supportedLngs: ['fr', 'en'],
 
       debug: true,
