@@ -9,7 +9,6 @@ export class IndexedDBManifestLiveRepository implements ManifestLiveRepository {
   }
 
   getDetailsByManifestIds(manifestIds: string[]): () => Promise<StoredManifestDetails[]> {
-    console.log('getDetailsByManifestIds: ', manifestIds);
     return () => db.storedManifests.where('id').anyOf(manifestIds).toArray();
   }
 }
