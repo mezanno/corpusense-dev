@@ -119,7 +119,7 @@ export interface ResultRepository {
   getAll(): Promise<Result[]>;
   // getAllByWorkerName(workerName: string): Promise<Result[]>;
   getAllByWorkerId(workerId: string): Promise<Result[]>;
-  getByScopeAndWorkerName(scope: Scope, workerName: string): Promise<Result>;
+  getByScopeAndWorkerName(scope: Scope, workerName: string): Promise<Result | undefined>;
   getResultByWorkerIdAndTaskId(workerId: string, taskId: number): Promise<Result>;
 
   add(result: ResultCreateDTO): Promise<Result>;

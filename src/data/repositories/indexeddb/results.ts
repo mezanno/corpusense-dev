@@ -44,13 +44,9 @@ export class IndexedDBResultRepository implements ResultRepository {
     return result;
   }
 
-  async getByScopeAndWorkerName(scope: Scope, workerName: string): Promise<Result> {
-    const result = await db.results
+  async getByScopeAndWorkerName(scope: Scope, workerName: string): Promise<Result | undefined> {
+    return await db.results
       .where({ scopeKey: computeScopeKey(scope), workerName: workerName })
       .first();
-    if (result === undefined) {
-      throw new Error(`No result found`);
-    }
-    return result;
   }
 }
