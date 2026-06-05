@@ -43,22 +43,24 @@ export function convertW3CAnnotationsToIIIF(annotations: Annotation[]): Annotati
     const bounds = w3cAnnotation.target.selector.geometry.bounds;
     const bodies = w3cAnnotation.bodies;
     for (let b = 0; b < bodies.length; b++) {
-      const body = bodies[b];
-      const iifAnnotation = {
-        '@context': IIIF_CONTEXT,
-        type: 'Annotation',
-        id: `${annotationPageId}/${body.id}`,
-        motivation: body.purpose !== undefined ? body.purpose : W3CMotivationEnum.Commenting,
-        target: `${canvasId}#xywh=${bounds.minX},${bounds.minY},${bounds.maxX - bounds.minX},${bounds.maxY - bounds.minY}`,
-        body: {
-          type: 'TextualBody',
-          value: body.value,
-          format: 'text/plain',
-        },
-      };
+      if (bodies[b].purpose === W3CMotivationEnum.Tagging) {
+        const body = bodies[b];
+        const iifAnnotation = {
+          '@context': IIIF_CONTEXT,
+          type: 'Annotation',
+          id: `${annotationPageId}/${body.id}`,
+          motivation: body.purpose !== undefined ? body.purpose : W3CMotivationEnum.Commenting,
+          target: `${canvasId}#xywh=${bounds.minX},${bounds.minY},${bounds.maxX - bounds.minX},${bounds.maxY - bounds.minY}`,
+          body: {
+            type: 'TextualBody',
+            value: body.value,
+            format: 'text/plain',
+          },
+        };
 
-      //@ts-expect-error annotationsIff
-      annotationsIff.push(iifAnnotation);
+        //@ts-expect-error annotationsIff
+        annotationsIff.push(iifAnnotation);
+      }
     }
   }
 

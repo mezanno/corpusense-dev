@@ -1,5 +1,5 @@
-import { AnnotationPage, Canvas, Manifest } from '@iiif/presentation-3';
 import i18n from '@/i18n';
+import { AnnotationPage, Canvas, Manifest } from '@iiif/presentation-3';
 import {
   Annotation,
   ElementType,
@@ -10,9 +10,11 @@ import { convertW3CAnnotationsToIIIF, IIIF_CONTEXT } from '../models/converters/
 import {
   getAnnotationRepository,
   getCollectionRepository,
+  getResultRepository,
   getTagRepository,
 } from '../repositories/indexeddb/dbFactory';
 import { contains } from './annotations';
+import { convertResultToIIIFAnnotation } from './result';
 
 export interface ManifestExport {
   name: string;
@@ -94,12 +96,23 @@ const generateCanvas = async (
 };
 
 const generateAnnotationPage = async (canvasId: string, collectionId: string) => {
-  const result = await getAnnotationRepository().getByScope({ canvasId, collectionId });
-  if (result === undefined || result.length === 0) {
-    throw new Error(`No annotations found in canvas ${canvasId}`);
+  const result = await getResultRepository().getByScopeAndWorkerName(
+    {
+      collectionId,
+      canvasId,
+    },
+    'mistral',
+  );
+
+  const lineAnnotations = await getAnnotationRepository().getByScopeAndTypes(
+    { canvasId, collectionId },
+    [ElementType.TEXT_LINE],
+  );
+  if (result === undefined || lineAnnotations.length === 0) {
+    return convertW3CAnnotationsToIIIF(lineAnnotations);
   }
 
-  return convertW3CAnnotationsToIIIF(result);
+  return await convertResultToIIIFAnnotation(result);
 };
 
 const generateTextForAnnotation = async (annotation: Annotation) => {
