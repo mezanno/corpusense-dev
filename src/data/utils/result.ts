@@ -1,6 +1,6 @@
 import { AnnotationPage } from '@iiif/presentation-3';
 import { isNumberArray } from '@tanstack/react-table';
-import { Annotation, changeValue, ElementType } from '../models/Annotation';
+import { Annotation, changeValue, createAnnotation, ElementType } from '../models/Annotation';
 import { convertW3CAnnotationsToIIIF } from '../models/converters/iiif';
 import { Result } from '../models/Result';
 import { isCanvasScope } from '../models/Scope';
@@ -15,7 +15,8 @@ export const convertResultToIIIFAnnotation = async (result: Result): Promise<Ann
   if (!isCanvasScope(result.scope)) {
     throw new Error(`Result scope is not a canvas scope`);
   }
-  const collection = await getCollectionRepository().getById(result.scope.collectionId);
+  const { canvasId, collectionId } = result.scope;
+  const collection = await getCollectionRepository().getById(collectionId);
   const modelId = collection.modelId;
   if (modelId === undefined) {
     throw new Error(`No model found for collection ${collection.name}`);
@@ -26,7 +27,7 @@ export const convertResultToIIIFAnnotation = async (result: Result): Promise<Ann
   ]);
   if (lineAnnotations.length === 0) {
     throw new Error(
-      `No line annotations found for canvas ${result.scope.canvasId} in collection ${result.scope.collectionId}`,
+      `No line annotations found for canvas ${canvasId} in collection ${collectionId}`,
     );
   }
 
@@ -45,9 +46,26 @@ export const convertResultToIIIFAnnotation = async (result: Result): Promise<Ann
       const annotationsForItem: Annotation[] = lineAnnotations.filter((_, index) =>
         positions.includes(index),
       );
-      console.log(annotationsForItem.map((a) => a.id));
       const stringValue = JSON.stringify(item);
-      const mergedAnnotation = mergeMultipleAnnotations(annotationsForItem);
+
+      //if there is no annotation for the item, we create a new one at position 0,0
+      const mergedAnnotation =
+        annotationsForItem.length === 0
+          ? {
+              ...createAnnotation({
+                canvasId,
+                collectionId,
+                minX: 0,
+                minY: 0,
+                maxX: 200,
+                maxY: 100,
+                type: ElementType.TEXT_LINE,
+                value: JSON.stringify(item),
+              }),
+              order: 0,
+            }
+          : mergeMultipleAnnotations(annotationsForItem);
+
       const mergedAnnotationUpdated = changeValue(mergedAnnotation, stringValue);
       entityAnnotations.push(mergedAnnotationUpdated);
     }
