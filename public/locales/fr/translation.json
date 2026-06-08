@@ -151,6 +151,8 @@
   "form_label_model": "Modèle de données de la collection",
   "form_label_include_annotations": "Inclure les annotations",
   "form_label_include_workers": "Inclure les résultats des traitements",
+  "form_label_workers_scope_collection": "Seulement s'ils portent sur la collection (par défaut)",
+  "form_label_workers_scope_all": "Tous",
   "form_label_include_manifest": "Inclure un manifest IIIF (canvas + annotations)",
   "form_label_include_model": "Inclure le modèle de données (si associé)",
   "form_label_collection_manifest": "Manifests utilisés dans cette collection",

@@ -27,6 +27,7 @@ export interface ExportCollectionOptions {
   annotations?: boolean;
   model?: boolean;
   workers?: boolean;
+  workersScope?: 'collection' | 'all';
   manifest?: boolean;
 }
 
@@ -164,7 +165,8 @@ export const useCollectionIO = () => {
       if (options.workers === true) {
         try {
           const workerRepository = getWorkerRepository();
-          const workers = await workerRepository.getByScope({ collectionId: id }, true);
+          const subScope = options.workersScope !== 'collection';
+          const workers = await workerRepository.getByScope({ collectionId: id }, subScope);
 
           if (workers.length > 0) {
             const allTheResults: Result[] = [];

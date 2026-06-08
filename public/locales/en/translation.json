@@ -151,6 +151,8 @@
   "form_label_model": "Collection data model",
   "form_label_include_annotations": "Include annotations",
   "form_label_include_workers": "Include process results",
+  "form_label_workers_scope_collection": "Collection (default)",
+  "form_label_workers_scope_all": "All",
   "form_label_include_manifest": "Include IIIF Manifest (canvas + annotations)",
   "form_label_include_model": "Include Data Model (if associated)",
   "form_label_collection_manifest": "Manifests used in this collection",
