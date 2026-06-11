@@ -109,6 +109,8 @@
   "btn_collection_next_page": "Page suivante",
   "btn_collection_first_page": "Première page",
   "btn_collection_last_page": "Dernière page",
+  "btn_upload_to_cloud": "Lier à un dépôt en ligne",
+  "btn_upload": "Uploader",
   "link_open_collection": "ouvrir la collection",
   "link_open_canvas": "ouvrir le canvas",
   "form_placeholder_key": "Une clé",
