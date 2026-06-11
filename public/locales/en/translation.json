@@ -145,6 +145,8 @@
   "form_label_datafield_description": "Field description",
   "form_label_email": "Email address",
   "form_label_password": "Password",
+  "form_label_github_token": "GitHub Personal Access Token",
+  "form_label_repository_name": "Online repository name",
   "form_label_conctact_name": "Your name",
   "form_label_conctact_email": "Your email address",
   "form_label_conctact_message": "Your message",

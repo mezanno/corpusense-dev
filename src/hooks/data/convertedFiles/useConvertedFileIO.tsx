@@ -13,6 +13,10 @@ const useConvertedFileIO = () => {
     await convertedFilesRepository.delete(id);
   };
 
+  const getConvertedFile = async (id: string) => {
+    return await convertedFilesRepository.getById(id);
+  };
+
   const loadManifest = useCallback(async (id: string) => {
     try {
       const convertedFile = await convertedFilesRepository.getById(id);
@@ -37,6 +41,7 @@ const useConvertedFileIO = () => {
   };
 
   return {
+    getConvertedFile,
     loadManifest,
     removeConvertedFile,
     requestPermission,

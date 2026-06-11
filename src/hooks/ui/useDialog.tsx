@@ -15,6 +15,7 @@ import OpenManifestForm from '@/components/forms/OpenManifestForm';
 import RemoveAnnotationsForm from '@/components/forms/RemoveAnnotationsForm';
 import SaveModifierChainForm from '@/components/forms/SaveModifierChainForm';
 import StartWorkerForm from '@/components/forms/StartWorkerForm';
+import UploadSourceForm, { UploadSourceFormParams } from '@/components/forms/UploadSourceForm';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import ModelPreview from '@/components/textviewer/ModelPreview';
 import { CollectionDetails } from '@/data/models/Collection';
@@ -288,6 +289,21 @@ const useDialog = () => {
     });
   };
 
+  const openUploadSourceDialog = (params: UploadSourceFormParams) => {
+    openFormDialog({
+      title: t('btn_upload_to_cloud'),
+      confirmLabel: t('btn_upload'),
+      renderForm: (formRef) => (
+        <UploadSourceForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          {...params}
+          closeDialog={closeDialog}
+        />
+      ),
+    });
+  };
+
   return {
     openOpenManifestDialog,
     openImportCollectionDialog,
@@ -306,6 +322,7 @@ const useDialog = () => {
     openLoadModifierChainDialog,
     openStartWorkerDialog,
     openDupicateCollectionDialog,
+    openUploadSourceDialog,
   };
 };
 

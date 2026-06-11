@@ -156,6 +156,11 @@ export interface ConvertedFileRepository {
 
   add(file: ConvertedFile): Promise<void>;
 
+  update(
+    id: string,
+    changes: Partial<Omit<ConvertedFile, 'thumbnailBlob' | 'outputDirectoryHandle'>>,
+  ): Promise<void>;
+
   delete(id: string): Promise<void>;
 }
 
