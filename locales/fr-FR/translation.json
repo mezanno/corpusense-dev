@@ -424,6 +424,11 @@
   "log_saving": "Enregistrement de {{filename}}...",
   "log_conversion_completed": "Conversion terminée avec succès !",
   "log_error": "Erreur : {{message}}",
+  "log_upload_start": "Démarrage de l'envoi vers GitHub...",
+  "log_upload_repo_created": "Dépôt {{repoName}} créé.",
+  "log_upload_file": "Envoi de {{filename}}...",
+  "log_upload_manifest": "Envoi du manifest...",
+  "log_upload_completed": "Envoi terminé avec succès !",
   "plugin_layout_description": "Détecter les éléments de mise en page (titres, paragraphes, images, etc.) sur les pages d'un manifest IIIF.",
   "plugin_layoutextraction_description": "Modèle utilisé pour la détection"
 }
