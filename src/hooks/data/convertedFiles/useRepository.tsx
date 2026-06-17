@@ -1,11 +1,22 @@
 import { ConvertedFile } from '@/data/models/ConvertedFile';
 import { getConvertedFileRepository } from '@/data/repositories/indexeddb/dbFactory';
+import { getErrorMessage } from '@/utils/utils';
 import { Octokit } from '@octokit/rest';
+import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const GITHUB_TOKEN_STORAGE_KEY = 'github_token';
 const GITHUB_RAW_BASE_URL = 'https://raw.githubusercontent.com';
 
 const useRepository = () => {
+  const { t } = useTranslation();
+  const [logs, setLogs] = useState<string[]>([]);
+  const [status, setStatus] = useState<'idle' | 'processing' | 'done' | 'error'>('idle');
+  const [progress, setProgress] = useState<number>(0);
+
+  const addLog = useCallback((msg: string) => {
+    setLogs((prev) => [...prev, `${new Date().toLocaleTimeString()} - ${msg}`]);
+  }, []);
   const getToken = (): string | null => {
     return localStorage.getItem(GITHUB_TOKEN_STORAGE_KEY);
   };
@@ -45,6 +56,8 @@ const useRepository = () => {
     owner: string,
     repo: string,
     skipFileName: string,
+    totalFiles: number,
+    uploadedRef: { count: number },
     basePath = '',
   ): Promise<void> => {
     for await (const [name, entry] of handle.entries()) {
@@ -54,6 +67,7 @@ const useRepository = () => {
         const fileHandle = entry as FileSystemFileHandle;
         const fileObj = await fileHandle.getFile();
         const content = await fileToBase64(fileObj);
+        addLog(t('log_upload_file', { filename: entryPath }));
         await octokit.rest.repos.createOrUpdateFileContents({
           owner,
           repo,
@@ -61,6 +75,8 @@ const useRepository = () => {
           message: `Add ${entryPath}`,
           content,
         });
+        uploadedRef.count++;
+        setProgress(Math.round((uploadedRef.count / totalFiles) * 90));
       } else if (entry.kind === 'directory') {
         await uploadDirectoryContents(
           octokit,
@@ -68,6 +84,8 @@ const useRepository = () => {
           owner,
           repo,
           skipFileName,
+          totalFiles,
+          uploadedRef,
           entryPath,
         );
       }
@@ -86,59 +104,102 @@ const useRepository = () => {
       throw new Error('No permission to read the output directory');
     }
 
-    const octokit = new Octokit({ auth: token });
+    try {
+      setStatus('processing');
+      setLogs([]);
+      setProgress(0);
+      addLog(t('log_upload_start'));
 
-    const { data: newRepo } = await octokit.rest.repos.createForAuthenticatedUser({
-      name: repositoryName,
-      private: false,
-      auto_init: false,
-    });
+      const octokit = new Octokit({ auth: token });
 
-    const folderName = handle.name;
+      const { data: newRepo } = await octokit.rest.repos.createForAuthenticatedUser({
+        name: repositoryName,
+        private: false,
+        auto_init: false,
+      });
+      addLog(t('log_upload_repo_created', { repoName: newRepo.full_name }));
 
-    // Upload all files except the manifest first
-    await uploadDirectoryContents(
-      octokit,
-      handle,
-      newRepo.owner.login,
-      newRepo.name,
-      file.manifestName,
-      folderName,
-    );
+      const folderName = handle.name;
 
-    // Read the manifest, replace image paths with GitHub raw URLs, then upload it last
-    const manifestFileHandle = await handle.getFileHandle(file.manifestName);
-    const manifestFile = await manifestFileHandle.getFile();
-    const manifestContent = await manifestFile.text();
-    const updatedManifest = updateManifestImageUrls(
-      manifestContent,
-      newRepo.owner.login,
-      newRepo.name,
-      folderName,
-    );
+      // Count files first (excluding manifest) for progress tracking
+      let totalFiles = 0;
+      for await (const [name, entry] of handle.entries()) {
+        if (entry.kind === 'file' && name !== file.manifestName) totalFiles++;
+      }
+      const uploadedRef = { count: 0 };
 
-    await octokit.rest.repos.createOrUpdateFileContents({
-      owner: newRepo.owner.login,
-      repo: newRepo.name,
-      path: `${folderName}/${file.manifestName}`,
-      message: `Add ${folderName}/${file.manifestName}`,
-      content: textToBase64(updatedManifest),
-    });
+      await uploadDirectoryContents(
+        octokit,
+        handle,
+        newRepo.owner.login,
+        newRepo.name,
+        file.manifestName,
+        totalFiles,
+        uploadedRef,
+        folderName,
+      );
 
-    const githubManifestUrl = `${GITHUB_RAW_BASE_URL}/${newRepo.owner.login}/${newRepo.name}/main/${folderName}/${file.manifestName}`;
-    console.log('Manifest uploaded to:', githubManifestUrl);
-    const convertedFileRepository = getConvertedFileRepository();
-    await convertedFileRepository.update(file.id, { githubManifestUrl });
+      addLog(t('log_upload_manifest'));
+      const manifestFileHandle = await handle.getFileHandle(file.manifestName);
+      const manifestFile = await manifestFileHandle.getFile();
+      const manifestContent = await manifestFile.text();
+      const updatedManifest = updateManifestImageUrls(
+        manifestContent,
+        newRepo.owner.login,
+        newRepo.name,
+        folderName,
+      );
+
+      await octokit.rest.repos.createOrUpdateFileContents({
+        owner: newRepo.owner.login,
+        repo: newRepo.name,
+        path: `${folderName}/${file.manifestName}`,
+        message: `Add ${folderName}/${file.manifestName}`,
+        content: textToBase64(updatedManifest),
+      });
+
+      setProgress(100);
+
+      const githubManifestUrl = `${GITHUB_RAW_BASE_URL}/${newRepo.owner.login}/${newRepo.name}/main/${folderName}/${file.manifestName}`;
+      const convertedFileRepository = getConvertedFileRepository();
+      await convertedFileRepository.update(file.id, { githubManifestUrl });
+
+      addLog(t('log_upload_completed'));
+      setStatus('done');
+    } catch (err) {
+      setStatus('error');
+      addLog(t('log_error', { message: getErrorMessage(err) }));
+      throw err;
+    }
   };
 
-  const nameAlreadyExists = (name: string): boolean => {
-    console.log(name);
-    return false;
+  const nameAlreadyExists = async (name: string): Promise<boolean> => {
+    const token = getToken();
+    if (token === null || token.trim().length === 0) return false;
+    try {
+      const octokit = new Octokit({ auth: token });
+      const { data: user } = await octokit.rest.users.getAuthenticated();
+      await octokit.rest.repos.get({ owner: user.login, repo: name });
+      return true;
+    } catch (err: unknown) {
+      if (
+        typeof err === 'object' &&
+        err !== null &&
+        'status' in err &&
+        (err as { status: number }).status === 404
+      ) {
+        return false;
+      }
+      return false;
+    }
   };
 
   return {
     uploadToRepository,
     nameAlreadyExists,
+    logs,
+    status,
+    progress,
   };
 };
 

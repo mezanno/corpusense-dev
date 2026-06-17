@@ -293,6 +293,7 @@ const useDialog = () => {
     openFormDialog({
       title: t('btn_upload_to_cloud'),
       confirmLabel: t('btn_upload'),
+      closeOnAction: false,
       renderForm: (formRef) => (
         <UploadSourceForm
           formRef={formRef}

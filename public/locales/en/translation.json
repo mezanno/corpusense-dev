@@ -424,6 +424,11 @@
   "log_saving": "Saving {{filename}}...",
   "log_conversion_completed": "Conversion completed successfully!",
   "log_error": "Error: {{message}}",
+  "log_upload_start": "Starting upload to GitHub...",
+  "log_upload_repo_created": "Repository {{repoName}} created.",
+  "log_upload_file": "Uploading {{filename}}...",
+  "log_upload_manifest": "Uploading manifest...",
+  "log_upload_completed": "Upload completed successfully!",
   "plugin_layout_description": "Detect layout elements (titles, paragraphs, images, etc.) on the pages of a IIIF manifest.",
   "plugin_layoutextraction_description": "Model used for detection"
 }
