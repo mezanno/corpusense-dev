@@ -80,17 +80,15 @@ export function usePdfConverter() {
 
     await page.render({ canvasContext: context, viewport, canvas }).promise;
 
-    return new Promise((resolve) => {
-      // Use JPEG for thumbnail compression if scale is small, otherwise PNG
-      const type = scale < 1 ? 'image/jpeg' : 'image/png';
-      const quality = scale < 1 ? 0.7 : undefined;
-      canvas.toBlob(
-        (blob) =>
-          resolve(blob === null ? null : { blob, width: canvas.width, height: canvas.height }),
-        type,
-        quality,
-      );
+    const type = scale < 1 ? 'image/jpeg' : 'image/png';
+    const quality = scale < 1 ? 0.7 : undefined;
+    const blob = await new Promise<Blob | null>((resolve) => {
+      canvas.toBlob((b) => resolve(b), type, quality);
     });
+    page.cleanup(); // Clean up the page resources after rendering
+    canvas.width = 0; // Clear the canvas to free memory
+    canvas.height = 0;
+    return blob ? { blob, width: viewport.width, height: viewport.height } : null;
   };
 
   const convert = useCallback(async () => {
