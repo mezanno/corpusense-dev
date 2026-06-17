@@ -10,6 +10,8 @@ import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 import { useTranslation } from 'react-i18next';
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
+const base = import.meta.env.BASE_URL;
+
 type ImageData = {
   blob: Blob;
   width: number;
@@ -101,7 +103,10 @@ export function usePdfConverter() {
       const file = await fileHandle.getFile();
       const arrayBuffer = await file.arrayBuffer();
 
-      const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const pdfDoc = await pdfjsLib.getDocument({
+        data: arrayBuffer,
+        wasmUrl: `${base}/pdfjs/`,
+      }).promise;
       const numPages = pdfDoc.numPages;
       addLog(t('log_pdf_loaded', { numPages: numPages }));
 
