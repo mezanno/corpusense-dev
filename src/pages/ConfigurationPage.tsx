@@ -2,6 +2,7 @@
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import { Checkbox } from '@/components/ui/checkbox';
 import { clearDatabase } from '@/data/repositories/indexeddb/db';
+import { GITHUB_TOKEN_STORAGE_KEY } from '@/hooks/data/convertedFiles/useRepository';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useExperimental from '@/hooks/useExperimental';
 import { pushInfo } from '@/state/reducers/events';
@@ -40,6 +41,23 @@ const ConfigurationPage = () => {
       ),
     [pluginsInfo],
   );
+
+  const { register: registerGitHub, handleSubmit: handleGitHubSubmit } = useForm<{
+    github_token: string;
+  }>({
+    defaultValues: {
+      github_token: localStorage.getItem(GITHUB_TOKEN_STORAGE_KEY) ?? '',
+    },
+  });
+
+  function onGitHubSubmit(values: { github_token: string }) {
+    if (values.github_token.trim().length > 0) {
+      localStorage.setItem(GITHUB_TOKEN_STORAGE_KEY, values.github_token.trim());
+    } else {
+      localStorage.removeItem(GITHUB_TOKEN_STORAGE_KEY);
+    }
+    appDispatch(pushInfo(t('toast_configuration_saved')));
+  }
 
   const { register, reset, handleSubmit } = useForm<Record<string, string>>({
     defaultValues: Object.fromEntries(
@@ -90,6 +108,25 @@ const ConfigurationPage = () => {
   return (
     <section className='panel h-full flex-col'>
       <h1 className='text-xl'>{t('page_title_configuration')}</h1>
+      <h2 className='mt-2'>GitHub</h2>
+      <div className='mt-2 w-1/2'>
+        <form onSubmit={handleGitHubSubmit(onGitHubSubmit)}>
+          <div className='mb-4'>
+            <label htmlFor='github_token' className='mb-1 block font-medium'>
+              {t('form_label_github_token')}
+            </label>
+            <input
+              type='password'
+              id='github_token'
+              {...registerGitHub('github_token')}
+              className='w-full rounded border border-gray-300 px-3 py-2'
+            />
+          </div>
+          <button className='soft-button' type='submit' title={t('btn_save')}>
+            {t('btn_save')}
+          </button>
+        </form>
+      </div>
       <h2 className='mt-2'>API</h2>
       <div className='mt-2 w-1/2'>
         <form onSubmit={handleSubmit(onSubmit)}>

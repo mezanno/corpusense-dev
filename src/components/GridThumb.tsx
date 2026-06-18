@@ -16,6 +16,7 @@ import { useWorkerContext } from './reducers/WorkerContext';
 const GridThumb = ({
   canvasWithSourceId,
   collectionId,
+  collectionContentIndex,
   thumbWidth,
   thumbHeight,
   setCanvasToDisplay,
@@ -23,6 +24,7 @@ const GridThumb = ({
 }: {
   canvasWithSourceId: CanvasWithSourceId;
   collectionId: string;
+  collectionContentIndex: number;
   thumbWidth: number;
   thumbHeight: number;
   canvasToDisplay: CanvasWithSourceId | null;
@@ -78,6 +80,7 @@ const GridThumb = ({
             <SpellCheck2 size={16} color='red' />
           )}
         </div>
+        <span>{collectionContentIndex + 1}</span>
         {!isWorkerRunning && (
           <button
             className='cursor-pointer opacity-0 group-hover:opacity-100 hover:scale-110'

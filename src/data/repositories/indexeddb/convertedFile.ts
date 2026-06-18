@@ -24,6 +24,13 @@ export class IndexedDBConvertedFileRepository implements ConvertedFileRepository
     await db.convertedFiles.add(file);
   }
 
+  async update(
+    id: string,
+    changes: Partial<Omit<ConvertedFile, 'thumbnailBlob' | 'outputDirectoryHandle'>>,
+  ): Promise<void> {
+    await db.convertedFiles.update(id, changes);
+  }
+
   async delete(id: string): Promise<void> {
     await db.convertedFiles.delete(id);
   }

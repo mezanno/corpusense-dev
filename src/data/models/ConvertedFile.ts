@@ -7,4 +7,5 @@ export interface ConvertedFile {
   timestamp: number;
   manifestName: string;
   folderName: string;
+  githubManifestUrl?: string;
 }

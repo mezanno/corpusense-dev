@@ -3,7 +3,9 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AlertDialogProvider } from './components/reducers/AlertDialogContext';
 import { CollectionProvider } from './components/reducers/CollectionContext';
 import { ConnectedUserProvider } from './components/reducers/ConnectedUserContext';
+import { ManifestPageProvider } from './components/reducers/ManifestPageContext';
 import { WorkerProvider } from './components/reducers/WorkerContext';
+import { TooltipProvider } from './components/ui/tooltip';
 import { CorpusenseRoutes } from './hooks/useAppNavigation';
 import { ExperimentalProvider } from './hooks/useExperimental';
 import { initI18n } from './i18n';
@@ -53,48 +55,57 @@ function App() {
           <ConnectedUserProvider>
             <CollectionProvider>
               <WorkerProvider>
-                <AlertDialogProvider>
-                  <Routes>
-                    <Route element={<Layout />}>
-                      <Route index element={<Home />} />
-                      <Route path={CorpusenseRoutes.MANIFEST} element={<ManifestExplorerPage />} />
-                      <Route path={CorpusenseRoutes.PROJECT} element={<ProjectPage />} />
-                      <Route path={CorpusenseRoutes.EXPERT} element={<ExpertPage />} />
-                      <Route
-                        path={CorpusenseRoutes.COLLECTIONS}
-                        element={<CollectionsManagerPage />}
-                      />
-                      <Route
-                        path={`${CorpusenseRoutes.COLLECTIONS}/:collectionId`}
-                        element={<CollectionInspectorPage />}
-                      />
-                      <Route path={CorpusenseRoutes.MODELS} element={<ModelsManagerPage />} />
-                      <Route
-                        path={CorpusenseRoutes.MODIFIERCHAIN}
-                        element={<ModifierChainManagerPage />}
-                      />
-                      <Route
-                        path={CorpusenseRoutes.CONFIGURATION}
-                        element={<ConfigurationPage />}
-                      />
-                      <Route path={CorpusenseRoutes.LOCAL_SOURCES} element={<StoragePage />} />
-                      <Route path={CorpusenseRoutes.IIIF_SOURCES} element={<IIIFSourcesPage />} />
-                      <Route path={CorpusenseRoutes.WORKERS} element={<WorkersManagerPage />} />
-                      <Route
-                        path={`${CorpusenseRoutes.WORKERS}/:workerId`}
-                        element={<WorkersManagerPage />}
-                      />
-                      <Route
-                        path={`${CorpusenseRoutes.DOCUMENTATION}`}
-                        element={<DocumentationPage />}
-                      />
-                      <Route
-                        path={`${CorpusenseRoutes.DOCUMENTATION}/:page`}
-                        element={<DocumentationPage />}
-                      />
-                    </Route>
-                  </Routes>
-                </AlertDialogProvider>
+                <TooltipProvider>
+                  <AlertDialogProvider>
+                    <Routes>
+                      <Route element={<Layout />}>
+                        <Route index element={<Home />} />
+                        <Route
+                          path={CorpusenseRoutes.MANIFEST}
+                          element={
+                            <ManifestPageProvider>
+                              <ManifestExplorerPage />
+                            </ManifestPageProvider>
+                          }
+                        />
+                        <Route path={CorpusenseRoutes.PROJECT} element={<ProjectPage />} />
+                        <Route path={CorpusenseRoutes.EXPERT} element={<ExpertPage />} />
+                        <Route
+                          path={CorpusenseRoutes.COLLECTIONS}
+                          element={<CollectionsManagerPage />}
+                        />
+                        <Route
+                          path={`${CorpusenseRoutes.COLLECTIONS}/:collectionId`}
+                          element={<CollectionInspectorPage />}
+                        />
+                        <Route path={CorpusenseRoutes.MODELS} element={<ModelsManagerPage />} />
+                        <Route
+                          path={CorpusenseRoutes.MODIFIERCHAIN}
+                          element={<ModifierChainManagerPage />}
+                        />
+                        <Route
+                          path={CorpusenseRoutes.CONFIGURATION}
+                          element={<ConfigurationPage />}
+                        />
+                        <Route path={CorpusenseRoutes.LOCAL_SOURCES} element={<StoragePage />} />
+                        <Route path={CorpusenseRoutes.IIIF_SOURCES} element={<IIIFSourcesPage />} />
+                        <Route path={CorpusenseRoutes.WORKERS} element={<WorkersManagerPage />} />
+                        <Route
+                          path={`${CorpusenseRoutes.WORKERS}/:workerId`}
+                          element={<WorkersManagerPage />}
+                        />
+                        <Route
+                          path={`${CorpusenseRoutes.DOCUMENTATION}`}
+                          element={<DocumentationPage />}
+                        />
+                        <Route
+                          path={`${CorpusenseRoutes.DOCUMENTATION}/:page`}
+                          element={<DocumentationPage />}
+                        />
+                      </Route>
+                    </Routes>
+                  </AlertDialogProvider>
+                </TooltipProvider>
               </WorkerProvider>
             </CollectionProvider>
           </ConnectedUserProvider>

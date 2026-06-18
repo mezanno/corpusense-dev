@@ -5,7 +5,7 @@ import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
 import { NamedEntity } from '@/data/models/NamedEntity';
 import { Project } from '@/data/models/Project';
 import { Result } from '@/data/models/Result';
-import { CanvasScope, Scope } from '@/data/models/Scope';
+import { CanvasScope, CollectionScope, Scope } from '@/data/models/Scope';
 import { Source } from '@/data/models/Sources';
 import { Tag } from '@/data/models/Tag';
 import { Worker } from '@/data/models/Worker';
@@ -27,7 +27,7 @@ export interface ModelLiveRepository {
 
 export interface AnnotationLiveRepository {
   getByScope(scope: Scope): () => Promise<Annotation[]>;
-  hasOcrAnnotations(scope: CanvasScope): () => Promise<boolean>;
+  hasOcrAnnotations(scope: CanvasScope | CollectionScope): () => Promise<boolean>;
   getByScopeAndType(scope: CanvasScope, type: ElementType): () => Promise<Annotation[]>;
 }
 
@@ -50,6 +50,7 @@ export interface NamedEntityLiveRepository {
 export interface WorkerLiveRepository {
   getById(id: string): () => Promise<Worker>;
   getAll(): () => Promise<Worker[]>;
+  hasResult(scope: CanvasScope | CollectionScope, workerName: string): () => Promise<boolean>;
 }
 
 export interface ResultLiveRepository {

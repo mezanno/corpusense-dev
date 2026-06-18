@@ -6,12 +6,13 @@ import {
   getCollectionRepository,
   getModelRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
+import { IndexedDBResultRepository } from '@/data/repositories/indexeddb/results';
 import { toGallicaUrl } from '@/data/utils/canvas';
 import {
   generateNumberedTextForCollection,
   generateNumberedTextFromCanvas,
 } from '@/data/utils/export';
-import { generateSchema } from '@/data/utils/model';
+import { generateSchema, hasPreviousValueField } from '@/data/utils/model';
 import { getValueForPluginParam } from '@/data/utils/plugins';
 import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
@@ -93,7 +94,25 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_no_mistral_key') };
   }
 
-  const prompt = model.prompt.replace('{{schema}}', generateSchema(model));
+  const modelHasPreviousValueField = hasPreviousValueField(model);
+  let lastValue = undefined;
+  if (modelHasPreviousValueField && task.previousTask !== undefined) {
+    //fetch the last result for this worker to get the previous value for fields that have getPreviousValue set to true
+    const resultRepository = new IndexedDBResultRepository();
+    const result = await resultRepository.getResultByWorkerIdAndTaskId(
+      task.previousTask.workerId,
+      task.previousTask.taskId,
+    );
+    const previousResult = JSON.parse(result.value as string) as unknown;
+    if (Array.isArray(previousResult)) {
+      lastValue = previousResult[previousResult.length - 1] as unknown; //on prend la dernière entrée si le résultat est un tableau
+    } else {
+      lastValue = previousResult;
+    }
+  }
+  console.log('previousResult: ', lastValue);
+
+  const prompt = model.prompt.replace('{{schema}}', generateSchema(model, lastValue));
   const mistralModel = localStorage.getItem('mistralModel') ?? 'mistral-medium-latest';
   console.log('prompt: ', prompt);
 
@@ -141,21 +160,19 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
   }
 }
 
-/*
- * Export function to export results from the Mistral plugin saga.
- * It takes an array of Result objects, extracts the data, and saves it as JSON and CSV files.
- */
-export async function exportResult(results: Result[], formats: string[]) {
+export async function extractData(results: Result[]): Promise<unknown[]> {
   if (results.length === 0) {
     console.warn(`No results to export from ${pluginDisplayName} plugin`);
-    return;
+    return [];
   }
+
+  const collectionRepository = getCollectionRepository();
+
   const allTheData: unknown[] = [];
   for (let i = 0; i < results.length; i++) {
     const result = results[i];
     const canvasId = isCanvasScope(result.scope) ? toGallicaUrl(result.scope.canvasId) : undefined;
 
-    const collectionRepository = getCollectionRepository();
     const tags: Tag[] = await collectionRepository.getTagsByCollectionId(result.scope.collectionId);
     const tagsAsColumns = tags.reduce(
       (acc, t, index) => {
@@ -186,6 +203,27 @@ export async function exportResult(results: Result[], formats: string[]) {
     }
   }
 
+  return allTheData;
+}
+
+/*
+ * Export function to export results from the Mistral plugin saga.
+ * It takes an array of Result objects, extracts the data, and saves it as JSON and CSV files.
+ */
+export async function exportResult(results: Result[], formats: string[]) {
+  if (results.length === 0) {
+    console.warn(`No results to export from ${pluginDisplayName} plugin`);
+    return;
+  }
+
+  const collectionRepository = getCollectionRepository();
+  const collectionId = results[0].scope.collectionId;
+  const collection = await collectionRepository.getById(collectionId);
+
+  const filename = `mistral_export_${collection.name ?? collectionId}_${new Date().toLocaleDateString()}`;
+
+  const allTheData = await extractData(results);
+
   if (formats.includes('xlsx')) {
     const flattenedData: Record<string, unknown>[] = [];
     allTheData.forEach((item) => {
@@ -211,19 +249,19 @@ export async function exportResult(results: Result[], formats: string[]) {
       new Blob([excelBuffer], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
       }),
-      'exported_data.xlsx',
+      filename + '.xlsx',
     );
   }
 
   if (formats.includes('json')) {
     FileSaver.saveAs(
       new Blob([JSON.stringify(allTheData)], { type: 'text/plain;charset=utf-8' }),
-      'exported_data.json',
+      filename + '.json',
     );
   }
 
   if (formats.includes('csv')) {
     const csv = json2csv((allTheData as object[]).filter(Boolean));
-    FileSaver.saveAs(new Blob([csv], { type: 'text/plain;charset=utf-8' }), 'exported_data.csv');
+    FileSaver.saveAs(new Blob([csv], { type: 'text/plain;charset=utf-8' }), filename + '.csv');
   }
 }

@@ -1,6 +1,7 @@
 import { workerPlugins } from '@/App';
 import ContactForm from '@/components/forms/ContactForm';
 import ConvertPdfForm from '@/components/forms/ConvertPdfForm';
+import DuplicateCollectionForm from '@/components/forms/DuplicateCollectionForm';
 import DuplicateLayoutForm from '@/components/forms/DuplicateLayoutForm';
 import ExportCollectionForm from '@/components/forms/ExportCollectionForm';
 import ExportFormatSelectionForm from '@/components/forms/ExportFormatSelectionForm';
@@ -16,8 +17,10 @@ import RemoveAnnotationsForm from '@/components/forms/RemoveAnnotationsForm';
 import SaveModifierChainForm from '@/components/forms/SaveModifierChainForm';
 import StartWorkerForm from '@/components/forms/StartWorkerForm';
 import UpdateSourceNameForm from '@/components/forms/UpdateSourceNameForm';
+import UploadSourceForm, { UploadSourceFormParams } from '@/components/forms/UploadSourceForm';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import ModelPreview from '@/components/textviewer/ModelPreview';
+import { CollectionDetails } from '@/data/models/Collection';
 import { DataModel } from '@/data/models/DataModel';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { Project } from '@/data/models/Project';
@@ -105,6 +108,20 @@ const useDialog = () => {
           setCanSubmit={setCanSubmit}
           {...extraProps}
           closeDialog={closeDialog}
+        />
+      ),
+    });
+  };
+
+  const openDupicateCollectionDialog = (collection: CollectionDetails) => {
+    openFormDialog({
+      title: t('title_duplicate_collection', { name: collection.name }),
+      confirmLabel: t('btn_duplicate'),
+      renderForm: (formRef) => (
+        <DuplicateCollectionForm
+          collection={collection}
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
         />
       ),
     });
@@ -300,6 +317,22 @@ const useDialog = () => {
     });
   };
 
+  const openUploadSourceDialog = (params: UploadSourceFormParams) => {
+    openFormDialog({
+      title: t('btn_upload_to_cloud'),
+      confirmLabel: t('btn_upload'),
+      closeOnAction: false,
+      renderForm: (formRef) => (
+        <UploadSourceForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          {...params}
+          closeDialog={closeDialog}
+        />
+      ),
+    });
+  };
+
   const openCreateProjectDialog = (onResult: (project: Project) => void) => {
     openFormDialog({
       title: t('btn_create_project'),
@@ -342,6 +375,8 @@ const useDialog = () => {
     openSaveModifierChainDialog,
     openLoadModifierChainDialog,
     openStartWorkerDialog,
+    openDupicateCollectionDialog,
+    openUploadSourceDialog,
     openCreateProjectDialog,
     openChangeSourceNameDialog,
   };

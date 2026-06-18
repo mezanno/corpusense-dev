@@ -219,6 +219,13 @@ export const changeType = (annotation: Annotation, newType: ElementType): Annota
   };
 };
 
+export const changeValue = (annotation: Annotation, newValue: string): Annotation => {
+  return {
+    ...annotation,
+    bodies: createBodies(getAnnotationType(annotation), newValue, annotation.id),
+  };
+};
+
 export const createBodies = (type: ElementType, value: string, annotationId: string) => {
   return [
     {

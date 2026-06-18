@@ -1,7 +1,8 @@
 import { ConvertedFile } from '@/data/models/ConvertedFile';
 import useSources from '@/hooks/data/sources/useSources';
+import useDialog from '@/hooks/ui/useDialog';
 import useAppNavigation from '@/hooks/useAppNavigation';
-import { Clock, Layers, Trash2 } from 'lucide-react';
+import { ClipboardCopy, Clock, Cloud, Layers, Trash2, UploadCloud } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAlertDialogContext } from '../reducers/useAlertDialogContext';
@@ -15,9 +16,15 @@ export function FileCard({ file }: FileCardProps) {
   const { t } = useTranslation();
   const { goToManifestExplorer } = useAppNavigation();
   const { openDialog } = useAlertDialogContext();
+  const { openUploadSourceDialog } = useDialog();
   const { removeSourceFromLibrary } = useSources();
 
   const thumbUrl = useMemo(() => URL.createObjectURL(file.thumbnailBlob), [file.thumbnailBlob]);
+
+  const handleUploadToCloud: React.MouseEventHandler<HTMLDivElement> = (event) => {
+    event.stopPropagation();
+    openUploadSourceDialog({ sourceId: file.id });
+  };
 
   const handleRemoveLocalSource: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.stopPropagation();
@@ -29,6 +36,13 @@ export function FileCard({ file }: FileCardProps) {
         action: () => void removeSourceFromLibrary(file.id),
       },
     });
+  };
+
+  const handleCopyToClipBoard: React.MouseEventHandler<HTMLDivElement> = (event) => {
+    event.stopPropagation();
+    if (file.githubManifestUrl !== undefined) {
+      void navigator.clipboard.writeText(file.githubManifestUrl);
+    }
   };
 
   return (
@@ -50,14 +64,34 @@ export function FileCard({ file }: FileCardProps) {
         <div className='flex items-center space-x-2 text-sm'>
           <Clock size={14} /> <span>{new Date(file.timestamp).toLocaleDateString()}</span>
         </div>
+        {file.githubManifestUrl !== undefined && (
+          <div
+            className='flex items-center space-x-2 text-sm'
+            title={file.githubManifestUrl}
+            onClick={handleCopyToClipBoard}
+          >
+            <Cloud size={14} /> <span className='truncate'>This is online!</span>
+            <ClipboardCopy size={14} />
+          </div>
+        )}
       </CardContent>
-      <CardFooter
-        onClick={handleRemoveLocalSource}
-        title={t('btn_delete')}
-        aria-label={t('btn_delete')}
-        className='cursor-pointer justify-end text-red-400 hover:text-red-600'
-      >
-        <Trash2 size={14} />
+      <CardFooter className='justify cursor-pointer justify-between'>
+        <div
+          onClick={handleUploadToCloud}
+          title={t('btn_upload_to_cloud')}
+          aria-label={t('btn_upload_to_cloud')}
+          className='text-blue-400 hover:text-blue-600'
+        >
+          <UploadCloud size={16} />
+        </div>
+        <div
+          onClick={handleRemoveLocalSource}
+          title={t('btn_delete')}
+          aria-label={t('btn_delete')}
+          className='text-red-400 hover:text-red-600'
+        >
+          <Trash2 size={16} />
+        </div>
       </CardFooter>
     </Card>
   );

@@ -16,8 +16,11 @@ import { useCollections } from '@/hooks/data/collections/useCollections';
 import useThumbnail from '@/hooks/data/sources/useThumbnail';
 import useDialog from '@/hooks/ui/useDialog';
 import { useCanvasSelection } from '@/hooks/useCanvasSelection';
+import { truncateMiddle } from '@/utils/utils';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
+import { ScrollArea } from './ui/scroll-area';
 
 interface CanvasCardProps {
   index: number;
@@ -50,7 +53,11 @@ const CanvasCard = ({
   } = useCanvasSelection();
 
   const { openNewCollectionDialog } = useDialog();
+  const [search, setSearch] = useState<string>('');
 
+  const filteredCollections = useMemo(() => {
+    return collections.filter((col) => col.name.toLowerCase().includes(search.toLowerCase()));
+  }, [collections, search]);
   const { thumbnail, error } = useThumbnail({ canvas, sourceId });
 
   const handleSetSelectionStart = () => {
@@ -133,7 +140,7 @@ const CanvasCard = ({
               )}
               <div className='flex w-full justify-between p-1 text-xs'>
                 {canvas.label !== undefined && canvas.label !== null && (
-                  <span>{getLabel(canvas)}</span>
+                  <span>{truncateMiddle(getLabel(canvas))}</span>
                 )}
                 <span className='text-dark-slate-gray-300 italic'>{canvasItemId}</span>
               </div>
@@ -153,18 +160,34 @@ const CanvasCard = ({
                     {t('menu_add_selection_to_collection')}
                   </ContextMenuSubTrigger>
                   <ContextMenuSubContent>
-                    {collections.map((col) => (
-                      <ContextMenuItem
-                        key={col.id}
-                        onClick={() => handleAddSelectionToCollection(col.id)}
-                      >
-                        {col.name}
-                      </ContextMenuItem>
-                    ))}
+                    <div className='p-2'>
+                      <input
+                        type='text'
+                        placeholder={t('form_placeholder_search_collection')}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className='w-full rounded-md border px-2 py-1 text-sm'
+                        autoFocus={true}
+                      />
+                    </div>
+                    <ScrollArea className='h-96'>
+                      {filteredCollections.map((col) => (
+                        <ContextMenuItem
+                          key={col.id}
+                          onClick={() => handleAddSelectionToCollection(col.id)}
+                        >
+                          {col.name}
+                        </ContextMenuItem>
+                      ))}
+                      {filteredCollections.length === 0 && (
+                        <div className='p-2 text-sm text-muted-foreground'>
+                          {t('info_no_results')}
+                        </div>
+                      )}
+                    </ScrollArea>
                   </ContextMenuSubContent>
                 </ContextMenuSub>
               )}
-
               <ContextMenuSeparator />
             </>
           )}

@@ -55,11 +55,11 @@ db.version(18)
     models: '&id, name',
     //TODO: il faudrait peut-être revoir le format et ne garder IIIF que pour l'export
     annotations:
-      '&id, canvasId, collectionId, [canvasId+collectionId], order, [canvasId+collectionId+type]',
+      '&id, canvasId, collectionId, [canvasId+collectionId], order, [canvasId+collectionId+type], [collectionId+type]',
     annotationsTemp:
       '&id, canvasId, collectionId, [canvasId+collectionId], order, [canvasId+collectionId+type]',
     namedEntities: '&id, *annotationIds, type.id',
-    results: '++id, workerName, workerId, [scopeKey+workerName], taskId',
+    results: '++id, workerName, workerId, [scopeKey+workerName], taskId, [workerId+taskId]',
     workers: '&id, name, status, [scopeKey+name]',
     handles: '&id',
     convertedFiles: '&id, folderName',

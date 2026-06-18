@@ -54,6 +54,7 @@ export interface CollectionRepository {
 
   create(collection: Collection): Promise<void>;
   addContentToCollection(collection: Collection): Promise<void>;
+  duplicate(collectionId: string, newName: string): Promise<void>;
 
   update(
     id: string,
@@ -129,7 +130,8 @@ export interface ResultRepository {
   getAll(): Promise<Result[]>;
   // getAllByWorkerName(workerName: string): Promise<Result[]>;
   getAllByWorkerId(workerId: string): Promise<Result[]>;
-  getByScopeAndWorkerName(scope: Scope, workerName: string): Promise<Result>;
+  getByScopeAndWorkerName(scope: Scope, workerName: string): Promise<Result | undefined>;
+  getResultByWorkerIdAndTaskId(workerId: string, taskId: number): Promise<Result>;
 
   add(result: ResultCreateDTO): Promise<Result>;
   addAll(results: Result[]): Promise<void>;
@@ -164,6 +166,11 @@ export interface ConvertedFileRepository {
   getByFolderName(folderName: string): Promise<ConvertedFile>;
 
   add(file: ConvertedFile): Promise<void>;
+
+  update(
+    id: string,
+    changes: Partial<Omit<ConvertedFile, 'thumbnailBlob' | 'outputDirectoryHandle'>>,
+  ): Promise<void>;
 
   delete(id: string): Promise<void>;
 }

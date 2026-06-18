@@ -5,27 +5,46 @@ import ManifestNavigation from '@/components/manifests/ManifestNavigation';
 import NoManifestToShow from '@/components/manifests/NoManifestToShow';
 import NothingToShow from '@/components/NothingToShow';
 import { CanvasSelectionProvider } from '@/components/reducers/CanvasSelectionContext';
-import useSource from '@/hooks/data/sources/useSource';
-import { Canvas } from '@iiif/presentation-3';
-import { useState } from 'react';
+import { useManifestPageContext } from '@/components/reducers/ManifestPageContext';
+import useKeyboard from '@/hooks/ui/useKeyboard';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import CanvasGallery from '../components/CanvasGallery';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../components/ui/resizable';
 
 const ManifestExplorerPage = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
-  const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | null>(null);
-  const [metadataVisible, _setMetadataVisible] = useState(true);
+  const [metadataVisible, setMetadataVisible] = useState(true);
+  const {
+    isLoading,
+    manifest,
+    setSearchParams,
+    canvasToDisplay,
+    setCanvasToDisplay,
+    handleNext,
+    handlePrevious,
+  } = useManifestPageContext();
 
-  const id = searchParams.get('manifestId');
+  const onKeyPressed = (key: string) => {
+    if (key === 'ArrowRight') {
+      handleNext();
+    } else if (key === 'ArrowLeft') {
+      handlePrevious();
+    }
+  };
+  useKeyboard({ onKeyPressed });
 
-  const { isLoading, manifest, sourceWithContent } = useSource(id ?? ''); //permet de charger la source et d'avoir accès à son contenu dans le cache de react-query (notamment pour les annotations)
+  useEffect(() => {
+    setSearchParams(searchParams);
+  }, [searchParams]);
 
   if (isLoading) {
     return <Loading />;
   }
 
-  if (manifest == null || sourceWithContent == null) {
+  if (manifest === undefined || sourceWithContent == null) {
     return (
       <div className='flex h-full w-full flex-col items-center justify-center space-y-2 p-2'>
         <NoManifestToShow />

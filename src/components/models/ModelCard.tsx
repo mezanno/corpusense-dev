@@ -45,19 +45,13 @@ export function ModelCard({
 
   return (
     <Card
-      className={`card-model flex flex-col justify-evenly overflow-hidden ${model.id === selectedModelId ? 'bg-white' : 'bg-white/50'} `}
+      className={`card-model flex w-full max-w-[300px] flex-col justify-evenly overflow-hidden p-2 ${model.id === selectedModelId ? 'bg-white' : 'bg-white/50'} `}
       onClick={() => setSelectedModelId(model.id)}
       style={{ cursor: 'pointer' }}
     >
-      {/* <CardHeader className='overflow-hidden'>{model.name}</CardHeader> */}
-      <CardContent className='flex flex-col justify-center'>
-        <h3 className='font-bold wrap-break-word' title={model.name}>
+      <CardContent className='flex w-full justify-between gap-1'>
+        <h3 className='truncate text-left text-sm font-bold' title={model.name}>
           {model.name}
-          {/* <ReactJsonView
-            src={JSON.parse(generateSchema(model)) as object}
-            collapsed={1}
-            enableClipboard={false}
-          /> */}
         </h3>
       </CardContent>
       <CardFooter className='flex justify-end space-x-2'>

@@ -2,6 +2,7 @@ import i18n from '@/i18n';
 import { ImageAnnotation, ShapeType } from '@annotorious/annotorious';
 import { AnnotationPage, Canvas } from '@iiif/presentation-3';
 import { Rect } from 'openseadragon';
+import { v4 as uuid } from 'uuid';
 import {
   Annotation,
   createAnnotation,
@@ -265,4 +266,53 @@ export const mergeTwoAnnotations = (a1: Annotation, a2: Annotation) => {
       },
     },
   };
+};
+
+export const scale = (annotations: Annotation[], annotationScale: number): Annotation[] => {
+  return annotations.map((annotation) => scaleAnnotation(annotation, annotationScale));
+};
+
+export const scaleAnnotation = (annotation: Annotation, annotationScale: number) => {
+  const minX = annotation.target.selector.geometry.bounds.minX * annotationScale;
+  const minY = annotation.target.selector.geometry.bounds.minY * annotationScale;
+  const maxX = annotation.target.selector.geometry.bounds.maxX * annotationScale;
+  const maxY = annotation.target.selector.geometry.bounds.maxY * annotationScale;
+
+  return {
+    ...annotation,
+    target: {
+      ...annotation.target,
+      selector: {
+        type: ShapeType.RECTANGLE,
+        geometry: {
+          bounds: {
+            minX,
+            minY,
+            maxX,
+            maxY,
+          },
+          x: minX,
+          y: minY,
+          h: maxY - minY,
+          w: maxX - minX,
+        },
+      },
+    },
+  };
+};
+
+/*
+ This function takes an array of annotations and merges them into one annotation that contains all the text of the annotations and has a bounding box that contains all the annotations. 
+ The bounding box is calculated by making boolean operations on the rectangles of the annotations. The text is merged by concatenating the text of the annotations with a space in between.
+ The function assumes that the annotations are of type TEXT_LINE and that they are on the same canvas and collection.
+*/
+export const mergeMultipleAnnotations = (annotations: Annotation[]): Annotation => {
+  if (annotations.length === 0) {
+    throw new Error('No annotations to merge');
+  }
+  //TODO make a polygon that contains all the rectangles instead of a rectangle that contains all the rectangles
+  const mergedAnnotation = annotations.reduce((acc, annotation) =>
+    mergeTwoAnnotations(acc, annotation),
+  );
+  return { ...mergedAnnotation, id: uuid() };
 };

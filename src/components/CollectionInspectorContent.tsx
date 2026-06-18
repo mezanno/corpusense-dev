@@ -11,15 +11,15 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
-import {
-  CanvasWithSourceId,
-  useCollectionContent,
-} from '@/hooks/data/collections/useCollectionContent';
+import useKeyboard from '@/hooks/ui/useKeyboard';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import 'gridstack/dist/gridstack.min.css';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
+import LlmStatus from './collectionPage/LlmStatus';
+import OcrStatus from './collectionPage/OcrStatus';
+import { useCollectionInspectorContext } from './reducers/CollectionInspectorContext';
 import ResultsAvailable from './ResultsAvailable';
 
 const CollectionInspectorContent = ({
@@ -30,15 +30,31 @@ const CollectionInspectorContent = ({
   defaultCanvasId: string | null;
 }) => {
   const { t } = useTranslation();
-  const { collection, getCanvasById, canvases } = useCollectionContent(collectionId);
+  const {
+    collection,
+    getCanvasById,
+    setCanvasToDisplay,
+    canvasToDisplay,
+    handleNext,
+    handlePrevious,
+  } = useCollectionInspectorContext();
   const { openCollection } = useCollectionContext();
   const { setScope } = useAnnotationContext();
   const canvas = defaultCanvasId !== null ? getCanvasById(defaultCanvasId) : null;
-  const [canvasToDisplay, setCanvasToDisplay] = useState<CanvasWithSourceId | null>(canvas);
   // const [activeTab, setActiveTab] = useState('document');
 
   const [colCount, setColCount] = useState(5);
   const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const onKeyPressed = (key: string) => {
+    if (key === 'ArrowRight') {
+      handleNext();
+    } else if (key === 'ArrowLeft') {
+      handlePrevious();
+    }
+  };
+
+  useKeyboard({ onKeyPressed });
 
   useEffect(() => {
     return () => {
@@ -56,7 +72,7 @@ const CollectionInspectorContent = ({
 
   useEffect(() => {
     if (canvasToDisplay !== null) {
-      setScope({ canvasId: canvasToDisplay.canvas.id, collectionId });
+      setScope({ canvasId: canvasToDisplay.id, collectionId });
     }
   }, [canvasToDisplay]);
 
@@ -105,11 +121,16 @@ const CollectionInspectorContent = ({
               >
                 <AccordionItem value='metadata'>
                   <AccordionTrigger className='mx-2'>
-                    <h2 className='flex gap-2 text-lg'>
-                      {t('title_metadata_collection')}
-                      <span className='font-bold italic'>{collection.name}</span>
-                      <span className='font-thin'>({collection.id})</span>
-                    </h2>
+                    <div>
+                      <h2 className='flex items-center gap-2 text-lg'>
+                        {t('title_metadata_collection')}
+                        <span className='font-bold italic'>{collection.name}</span>
+                        <span>
+                          - {t('info_number_of_items', { number: collection.contentSize })}
+                        </span>
+                      </h2>
+                      <span className='text-sm font-thin'>({collection.id})</span>
+                    </div>
                   </AccordionTrigger>
                   <AccordionContent>
                     <CollectionMetadataForm collection={collection} />
@@ -119,7 +140,11 @@ const CollectionInspectorContent = ({
               {collection.content.length > 0 && (
                 <div className='flex w-full items-center justify-between'>
                   <CollectionToolbar collection={collection} />
-                  <ResultsAvailable scope={currentCollectionScope} />
+                  <div className='flex items-center gap-2'>
+                    <OcrStatus collectionId={collectionId} />
+                    <LlmStatus collectionId={collectionId} />
+                    <ResultsAvailable scope={currentCollectionScope} />
+                  </div>
                 </div>
               )}
               <div className='panel h-full w-full overflow-hidden'>
@@ -173,6 +198,7 @@ const CollectionInspectorContent = ({
                                       <GridThumb
                                         canvasWithSourceId={gtCanvas}
                                         collectionId={collection.id}
+                                        collectionContentIndex={index}
                                         thumbWidth={virtualColumn.size}
                                         thumbHeight={virtualRow.size}
                                         setCanvasToDisplay={setCanvasToDisplay}

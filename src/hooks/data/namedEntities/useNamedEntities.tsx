@@ -50,6 +50,10 @@ const useNamedEntities = (annotationIds: string[]) => {
       scope,
       'mistral', //TODO! paramétrer le worker
     );
+    if (result === undefined) {
+      appDisptach(pushError('error_result_undefined'));
+      return;
+    }
     const { value } = result;
 
     let model = undefined;

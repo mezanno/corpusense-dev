@@ -2,19 +2,24 @@ import { useAlertDialogContext } from '@/components/reducers/useAlertDialogConte
 import { CollectionDetails } from '@/data/models/Collection';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useTags } from '@/hooks/data/tags/useTags';
+import useDialog from '@/hooks/ui/useDialog';
 import useAppNavigation from '@/hooks/useAppNavigation';
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, Eye, Trash2 } from 'lucide-react';
+import { ArrowUpDown, Copy, Eye, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { IconButtonWithTooltip } from '../IconButtonWithTooltip';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
 import CollectionDataTable from './CollectionDataTable';
+import LlmStatus from './LlmStatus';
+import OcrStatus from './OcrStatus';
 
 const CollectionTable = () => {
   const { t } = useTranslation();
   const navigation = useAppNavigation();
   const { openDialog } = useAlertDialogContext();
+  const { openDupicateCollectionDialog } = useDialog();
   const { removeCollection } = useCollections();
   const { collections } = useCollections();
   const { getLabelById } = useTags();
@@ -32,6 +37,10 @@ const CollectionTable = () => {
 
   const handleOpen = async (id: string) => {
     await navigation.goToCollectionInspector(id);
+  };
+
+  const handleDuplicate = (collection: CollectionDetails) => {
+    openDupicateCollectionDialog(collection);
   };
 
   const columns: ColumnDef<CollectionDetails, unknown>[] = [
@@ -100,9 +109,11 @@ const CollectionTable = () => {
             {t('info_empty_collection')}
           </Badge>
         ) : (
-          <Badge className='text-md font-bold'>
-            {t('info_number_of_items', { number: contentSize })}
-          </Badge>
+          <div className='flex'>
+            <Badge className='text-md'>{t('info_number_of_items', { number: contentSize })}</Badge>
+            <OcrStatus collectionId={row.getValue('id')} />
+            <LlmStatus collectionId={row.getValue('id')} />
+          </div>
         );
       },
     },
@@ -128,26 +139,24 @@ const CollectionTable = () => {
         const collectionId: string = row.getValue('id');
         return (
           <div className='flex h-full w-full space-x-1'>
-            <button
-              className='soft-button'
-              onClick={(event) => {
-                event.stopPropagation();
-                void handleOpen(collectionId);
-              }}
+            <IconButtonWithTooltip
+              tooltip={t('btn_open')}
+              onClick={() => void handleOpen(collectionId)}
             >
               <Eye />
-            </button>
-            <button
-              className='soft-button'
-              onClick={(event) => {
-                event.stopPropagation();
-                handleDelete(collectionId);
-              }}
-              title={t('btn_delete')}
-              aria-label={t('btn_delete')}
+            </IconButtonWithTooltip>
+            <IconButtonWithTooltip
+              tooltip={t('btn_duplicate')}
+              onClick={() => void handleDuplicate(row.original)}
+            >
+              <Copy />
+            </IconButtonWithTooltip>
+            <IconButtonWithTooltip
+              tooltip={t('btn_delete')}
+              onClick={() => void handleDelete(collectionId)}
             >
               <Trash2 />
-            </button>
+            </IconButtonWithTooltip>
           </div>
         );
       },

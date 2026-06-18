@@ -36,13 +36,17 @@ export class IndexedDBResultRepository implements ResultRepository {
     return await db.results.where('workerId').equals(workerId).sortBy('taskId');
   }
 
-  async getByScopeAndWorkerName(scope: Scope, workerName: string): Promise<Result> {
-    const result = await db.results
-      .where({ scopeKey: computeScopeKey(scope), workerName: workerName })
-      .first();
+  async getResultByWorkerIdAndTaskId(workerId: string, taskId: number): Promise<Result> {
+    const result = await db.results.where({ workerId: workerId, taskId: taskId }).first();
     if (result === undefined) {
-      throw new Error(`No result found`);
+      throw new Error(`No result found for workerId ${workerId} and taskId ${taskId}`);
     }
     return result;
+  }
+
+  async getByScopeAndWorkerName(scope: Scope, workerName: string): Promise<Result | undefined> {
+    return await db.results
+      .where({ scopeKey: computeScopeKey(scope), workerName: workerName })
+      .first();
   }
 }

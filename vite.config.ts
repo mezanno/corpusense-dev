@@ -4,6 +4,7 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { loadEnv, PluginOption } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vitest/config'; //au lieu de { defineConfig } from 'vitest/config' pour pouvoir configurer test
 
 console.log('process.env.NODE_ENV', process.env.REACT_APP_BASE);
@@ -14,6 +15,7 @@ const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
+  const basePath = (env.VITE_BASE_PATH || '/').replace(/\/?$/, '/');
   console.log('mode: ', mode);
   console.log('NODE_ENV: ', process.env.NODE_ENV);
 
@@ -33,8 +35,40 @@ export default defineConfig(({ mode }) => {
 
   return {
     assetsInclude: ['**/*.md'],
-    plugins: [react(), tailwindcss(), visualizer() as PluginOption],
-    base: env.VITE_BASE_PATH || '/',
+    plugins: [
+      react(),
+      tailwindcss(),
+      visualizer() as PluginOption,
+      VitePWA({
+        registerType: 'autoUpdate',
+        base: basePath,
+        devOptions: {
+          enabled: true,
+        },
+        manifest: {
+          name: 'CorpuSense',
+          short_name: 'CorpuSense',
+          description: 'CorpuSense Application',
+          theme_color: '#ffffff',
+          icons: [
+            {
+              src: `${basePath.replace(/\/$/, '')}/images/logo.png`,
+              sizes: '192x192',
+              type: 'image/png',
+            },
+            {
+              src: `${basePath.replace(/\/$/, '')}/images/logo.png`,
+              sizes: '512x512',
+              type: 'image/png',
+            },
+          ],
+        },
+        workbox: {
+          maximumFileSizeToCacheInBytes: 6000000,
+        },
+      }),
+    ],
+    base: basePath,
     define: {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       'import.meta.env.VITE_APP_VERSION': JSON.stringify(pkg.version),
