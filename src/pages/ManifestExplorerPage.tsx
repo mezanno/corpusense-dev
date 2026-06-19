@@ -7,20 +7,17 @@ import NothingToShow from '@/components/NothingToShow';
 import { CanvasSelectionProvider } from '@/components/reducers/CanvasSelectionContext';
 import { useManifestPageContext } from '@/components/reducers/ManifestPageContext';
 import useKeyboard from '@/hooks/ui/useKeyboard';
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
+import { useState } from 'react';
 import CanvasGallery from '../components/CanvasGallery';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../components/ui/resizable';
 
 const ManifestExplorerPage = () => {
-  const { t } = useTranslation();
-  const [searchParams] = useSearchParams();
-  const [metadataVisible, setMetadataVisible] = useState(true);
+  const [metadataVisible, _setMetadataVisible] = useState(true);
   const {
     isLoading,
     manifest,
-    setSearchParams,
+    sourceWithContent,
+    // setSearchParams,
     canvasToDisplay,
     setCanvasToDisplay,
     handleNext,
@@ -35,10 +32,6 @@ const ManifestExplorerPage = () => {
     }
   };
   useKeyboard({ onKeyPressed });
-
-  useEffect(() => {
-    setSearchParams(searchParams);
-  }, [searchParams]);
 
   if (isLoading) {
     return <Loading />;
@@ -105,11 +98,7 @@ const ManifestExplorerPage = () => {
             ) : (
               <>
                 <CanvasViewer canvas={canvasToDisplay} sourceId={sourceWithContent.id} />
-                <ManifestNavigation
-                  setCanvasToDisplay={setCanvasToDisplay}
-                  currentCanvasId={canvasToDisplay.id}
-                  manifest={manifest}
-                />
+                <ManifestNavigation />
               </>
             )}
           </section>

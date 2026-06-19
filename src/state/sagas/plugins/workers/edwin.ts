@@ -33,8 +33,8 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
   }
   try {
     const collectionRepository = getCollectionRepository();
-    const canvas = await collectionRepository.getCanvasByScope(task.scope);
-    const image = getImage(canvas);
+    const canvasWithSourceId = await collectionRepository.getCanvasByScope(task.scope);
+    const image = getImage(canvasWithSourceId.canvas);
 
     const url = getValueForPluginParam(pluginName, 'apiUrl');
     if (url === null) {
@@ -55,9 +55,9 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     //convert the result into an array of Annotation
     const annotations = convertEdwinResult(
       data as EdwinBox[],
-      canvas.id,
+      canvasWithSourceId.canvas.id,
       task.scope.collectionId,
-      canvas.width ?? 0,
+      canvasWithSourceId.canvas.width ?? 0,
     );
     //and send it to the redux store
     const annotationRepository = getAnnotationRepository();

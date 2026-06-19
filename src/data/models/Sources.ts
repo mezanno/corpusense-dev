@@ -32,6 +32,7 @@ export type SourceContent =
         manifestName: string;
         folderName: string;
       };
+      githubManifestUrl?: string;
     };
 
 export type SourceWithContent = Source & {

@@ -1,6 +1,7 @@
 import { CollectionElement } from '@/data/models/CollectionElement';
 import { AnnotationScope, CanvasScope } from '@/data/models/Scope';
 import { Tag } from '@/data/models/Tag';
+import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import { Canvas } from '@iiif/presentation-3';
 import { groupBy, mapValues } from 'lodash';
 import { v4 as uuid } from 'uuid';
@@ -112,7 +113,7 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     ).then((canvases) => canvases.flat());
   }
 
-  async getCanvasByScope(scope: CanvasScope | AnnotationScope): Promise<Canvas> {
+  async getCanvasByScope(scope: CanvasScope | AnnotationScope): Promise<CanvasWithSourceId> {
     const collection = await this.getById(scope.collectionId);
     if (collection === undefined) {
       throw new Error(`Collection with id ${scope.collectionId} not found`);
@@ -125,7 +126,10 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
       );
     }
 
-    return await getSourceRepository().getCanvasById(collectionElement.sourceId, scope.canvasId);
+    return {
+      canvas: await getSourceRepository().getCanvasById(collectionElement.sourceId, scope.canvasId),
+      sourceId: collectionElement.sourceId,
+    };
   }
 
   async exists(id: string): Promise<boolean> {

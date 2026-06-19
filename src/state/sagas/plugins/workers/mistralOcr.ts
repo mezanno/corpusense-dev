@@ -13,6 +13,7 @@ import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,
+  getSourceRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { getFile, getImage, toGallicaUrl } from '@/data/utils/canvas';
 import { getValueForPluginParam } from '@/data/utils/plugins';
@@ -84,8 +85,8 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
   const annotationRepository = getAnnotationRepository();
   try {
     const collectionRepository = getCollectionRepository();
-    const canvas = await collectionRepository.getCanvasByScope(task.scope);
-    const image = getImage(canvas);
+    const canvasWithSourceId = await collectionRepository.getCanvasByScope(task.scope);
+    const image = getImage(canvasWithSourceId.canvas);
     if (image.id === undefined) {
       return {
         status: WorkerStatus.ERROR,
@@ -105,7 +106,7 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       ];
     } else {
       const annotations = await annotationRepository.getByScope({
-        canvasId: canvas.id,
+        canvasId: canvasWithSourceId.canvas.id,
         collectionId: task.scope.collectionId,
       });
       const annotationRegions = annotations.filter(
@@ -143,10 +144,15 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_no_mistral_key') };
     }
 
+    const sourceRepository = getSourceRepository();
+    const sourceContent = await sourceRepository.getContentById(canvasWithSourceId.sourceId);
+
+    //TODO: peut mieux faire
     let imageToProcess: string | File = image.id;
-    if (imageToProcess !== null && imageToProcess.startsWith('http') === false) {
+    // if (imageToProcess !== null && imageToProcess.startsWith('http') === false) {
+    if (sourceContent.type === 'local') {
       try {
-        imageToProcess = await getFile(image.id);
+        imageToProcess = await getFile(image.id, sourceContent.localFile.outputDirectoryHandle);
       } catch (err) {
         console.error('Failed to get file for thumbnail:', err);
       }

@@ -32,6 +32,7 @@ const CollectionInspectorContent = ({
   const { t } = useTranslation();
   const {
     collection,
+    canvases,
     getCanvasById,
     setCanvasToDisplay,
     canvasToDisplay,
@@ -41,6 +42,7 @@ const CollectionInspectorContent = ({
   const { openCollection } = useCollectionContext();
   const { setScope } = useAnnotationContext();
   const canvas = defaultCanvasId !== null ? getCanvasById(defaultCanvasId) : null;
+
   // const [activeTab, setActiveTab] = useState('document');
 
   const [colCount, setColCount] = useState(5);
@@ -68,11 +70,11 @@ const CollectionInspectorContent = ({
 
   useEffect(() => {
     setCanvasToDisplay(canvas);
-  }, [collectionId, canvas]);
+  }, [collectionId, canvas?.canvas.id]);
 
   useEffect(() => {
     if (canvasToDisplay !== null) {
-      setScope({ canvasId: canvasToDisplay.id, collectionId });
+      setScope({ canvasId: canvasToDisplay.canvas.id, collectionId });
     }
   }, [canvasToDisplay]);
 
@@ -181,7 +183,7 @@ const CollectionInspectorContent = ({
                                   if (index >= canvases.length) return null;
                                   const gtCanvas = canvases[index];
                                   if (gtCanvas === null || gtCanvas === undefined) return null;
-                                  console.log('gtCanvas ', gtCanvas);
+                                  // console.log('gtCanvas ', gtCanvas);
 
                                   return (
                                     <div

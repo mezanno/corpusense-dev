@@ -42,8 +42,8 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
   const annotationRepository = getAnnotationRepository();
   try {
     const collectionRepository = getCollectionRepository();
-    const canvas = await collectionRepository.getCanvasByScope(task.scope);
-    const image = getImage(canvas);
+    const canvasWithSourceId = await collectionRepository.getCanvasByScope(task.scope);
+    const image = getImage(canvasWithSourceId.canvas);
     if (image.id === undefined) {
       return {
         status: WorkerStatus.ERROR,
@@ -63,7 +63,7 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       ]);
     } else {
       const annotations = await annotationRepository.getByScope({
-        canvasId: canvas.id,
+        canvasId: canvasWithSourceId.canvas.id,
         collectionId: task.scope.collectionId,
       });
       const annotationRegions = annotations.filter(

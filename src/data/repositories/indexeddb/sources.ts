@@ -1,4 +1,4 @@
-import { AddSourceDTO, SourceContent } from '@/data/models/Sources';
+import { AddSourceDTO, Source, SourceContent } from '@/data/models/Sources';
 import { extractCanvasById } from '@/data/utils/manifest';
 import { Canvas } from '@iiif/presentation-3';
 import { v4 as uuid } from 'uuid';
@@ -37,7 +37,7 @@ export class IndexedDBSourceRepository implements SourceRepository {
             id: sourceId,
             type: 'remote',
             manifest: dto.manifest,
-          } as SourceContent);
+          });
         }
       });
 
@@ -90,6 +90,28 @@ export class IndexedDBSourceRepository implements SourceRepository {
 
   async updateName(sourceId: string, name: string): Promise<void> {
     await db.sources.update(sourceId, { name });
+  }
+
+  async update(
+    id: string,
+    changes: Partial<Omit<Source, 'thumbnailBlob' | 'outputDirectoryHandle'>> & {
+      githubManifestUrl?: string;
+    },
+  ): Promise<void> {
+    const { githubManifestUrl, ...sourceChanges } = changes;
+    if (Object.keys(sourceChanges).length > 0) {
+      await db.sources.update(id, sourceChanges);
+    }
+    if (githubManifestUrl !== undefined) {
+      await db.sourceContents
+        .where(':id')
+        .equals(id)
+        .modify((obj) => {
+          if (obj.type === 'local') {
+            obj.githubManifestUrl = githubManifestUrl;
+          }
+        });
+    }
   }
 
   async deleteById(sourceId: string): Promise<void> {

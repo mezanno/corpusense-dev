@@ -1,5 +1,5 @@
-import { ConvertedFile } from '@/data/models/ConvertedFile';
-import { getConvertedFileRepository } from '@/data/repositories/indexeddb/dbFactory';
+import { SourceWithContent } from '@/data/models/Sources';
+import { getSourceRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { getErrorMessage } from '@/utils/utils';
 import { Octokit } from '@octokit/rest';
 import { useCallback, useState } from 'react';
@@ -92,13 +92,19 @@ const useRepository = () => {
     }
   };
 
-  const uploadToRepository = async (file: ConvertedFile, repositoryName: string): Promise<void> => {
+  const uploadToRepository = async (
+    source: SourceWithContent,
+    repositoryName: string,
+  ): Promise<void> => {
+    if (source.content.type !== 'local') {
+      throw new Error('Source content is not local');
+    }
     const token = getToken();
     if (token === null || token.trim().length === 0) {
       throw new Error('GitHub token not configured');
     }
 
-    const handle = file.outputDirectoryHandle;
+    const handle = source.content.localFile.outputDirectoryHandle;
     const perm = await handle.queryPermission({ mode: 'read' });
     if (perm !== 'granted') {
       throw new Error('No permission to read the output directory');
@@ -124,7 +130,7 @@ const useRepository = () => {
       // Count files first (excluding manifest) for progress tracking
       let totalFiles = 0;
       for await (const [name, entry] of handle.entries()) {
-        if (entry.kind === 'file' && name !== file.manifestName) totalFiles++;
+        if (entry.kind === 'file' && name !== source.content.localFile.manifestName) totalFiles++;
       }
       const uploadedRef = { count: 0 };
 
@@ -133,14 +139,14 @@ const useRepository = () => {
         handle,
         newRepo.owner.login,
         newRepo.name,
-        file.manifestName,
+        source.content.localFile.manifestName,
         totalFiles,
         uploadedRef,
         folderName,
       );
 
       addLog(t('log_upload_manifest'));
-      const manifestFileHandle = await handle.getFileHandle(file.manifestName);
+      const manifestFileHandle = await handle.getFileHandle(source.content.localFile.manifestName);
       const manifestFile = await manifestFileHandle.getFile();
       const manifestContent = await manifestFile.text();
       const updatedManifest = updateManifestImageUrls(
@@ -153,16 +159,16 @@ const useRepository = () => {
       await octokit.rest.repos.createOrUpdateFileContents({
         owner: newRepo.owner.login,
         repo: newRepo.name,
-        path: `${folderName}/${file.manifestName}`,
-        message: `Add ${folderName}/${file.manifestName}`,
+        path: `${folderName}/${source.content.localFile.manifestName}`,
+        message: `Add ${folderName}/${source.content.localFile.manifestName}`,
         content: textToBase64(updatedManifest),
       });
 
       setProgress(100);
 
-      const githubManifestUrl = `${GITHUB_RAW_BASE_URL}/${newRepo.owner.login}/${newRepo.name}/main/${folderName}/${file.manifestName}`;
-      const convertedFileRepository = getConvertedFileRepository();
-      await convertedFileRepository.update(file.id, { githubManifestUrl });
+      const githubManifestUrl = `${GITHUB_RAW_BASE_URL}/${newRepo.owner.login}/${newRepo.name}/main/${folderName}/${source.content.localFile.manifestName}`;
+      const sourceRepository = getSourceRepository();
+      await sourceRepository.update(source.id, { githubManifestUrl });
 
       addLog(t('log_upload_completed'));
       setStatus('done');

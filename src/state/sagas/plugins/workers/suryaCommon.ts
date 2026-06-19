@@ -59,8 +59,8 @@ export async function suryaRun(
   const annotationRepository = getAnnotationRepository();
   try {
     const collectionRepository = getCollectionRepository();
-    const canvas = await collectionRepository.getCanvasByScope(task.scope);
-    const image = getImage(canvas);
+    const canvasWithSourceId = await collectionRepository.getCanvasByScope(task.scope);
+    const image = getImage(canvasWithSourceId.canvas);
     let regions: Region[] = [];
     if (isAnnotationScope(task.scope)) {
       const annotation = await annotationRepository.getById(task.scope.annotationId);
@@ -112,7 +112,7 @@ export async function suryaRun(
         console.log('suryaResult: ', suryaResult);
         annotations = convertSuryaOcrPredictionsToAnnotations(
           suryaResult,
-          canvas.id,
+          canvasWithSourceId.canvas.id,
           task.scope.collectionId,
         );
       } else if (endpoint === 'layout') {
@@ -120,7 +120,7 @@ export async function suryaRun(
         console.log('suryaResult: ', suryaResult);
         annotations = convertSuryaLayoutPredictionsToAnnotations(
           suryaResult,
-          canvas.id,
+          canvasWithSourceId.canvas.id,
           task.scope.collectionId,
         );
       } else if (endpoint === 'table') {
@@ -128,7 +128,7 @@ export async function suryaRun(
         console.log('suryaResult: ', suryaResult);
         annotations = convertSuryaTablePredictionsToAnnotations(
           suryaResult,
-          canvas.id,
+          canvasWithSourceId.canvas.id,
           task.scope.collectionId,
         );
       }

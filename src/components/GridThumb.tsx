@@ -30,7 +30,6 @@ const GridThumb = ({
   canvasToDisplay: CanvasWithSourceId | null;
   setCanvasToDisplay: (canvas: CanvasWithSourceId | null) => void;
 }) => {
-  console.log('canvasWithSourceId ', canvasWithSourceId);
   const { t } = useTranslation();
   const scope = useMemo(
     () => ({ collectionId, canvasId: canvasWithSourceId.canvas.id }),

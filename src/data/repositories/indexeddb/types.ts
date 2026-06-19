@@ -14,6 +14,7 @@ import { AddSourceDTO, Source, SourceContent } from '@/data/models/Sources';
 import { StoredManifestDetails } from '@/data/models/StoredManifest';
 import { Tag } from '@/data/models/Tag';
 import { Worker } from '@/data/models/Worker';
+import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import { Canvas, Manifest } from '@iiif/presentation-3';
 
 export interface AnnotationRepository {
@@ -46,7 +47,7 @@ export interface CollectionRepository {
   getById(id: string): Promise<Collection>;
   getTagsByCollectionId(collectionId: string): Promise<Tag[]>;
   getCanvasesByCollectionId(collectionId: string): Promise<Canvas[]>;
-  getCanvasByScope(scope: CanvasScope | AnnotationScope): Promise<Canvas>;
+  getCanvasByScope(scope: CanvasScope | AnnotationScope): Promise<CanvasWithSourceId>;
   getSourceIdsByCollectionId(collectionId: string): Promise<string[]>;
   getOfflineCollections(): Promise<CollectionDetails[]>;
   getOfflineCanvases(): Promise<Canvas[]>;
@@ -93,6 +94,12 @@ export interface SourceRepository {
   getCanvasById(sourceId: string, canvasId: string): Promise<Canvas>;
 
   updateName(sourceId: string, name: string): Promise<void>;
+  update(
+    id: string,
+    changes: Partial<Omit<Source, 'thumbnailBlob' | 'outputDirectoryHandle'>> & {
+      githubManifestUrl?: string;
+    },
+  ): Promise<void>;
 
   deleteById(sourceId: string): Promise<void>;
 }
