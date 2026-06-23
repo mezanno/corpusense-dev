@@ -236,6 +236,13 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     );
   }
 
+  async deleteMultiple(collectionsToRemoveIds: string[]): Promise<void> {
+    for (const collectionId of collectionsToRemoveIds) {
+      const collectionToRemove = await this.getById(collectionId);
+      await this.delete(collectionToRemove);
+    }
+  }
+
   async deleteElement(collectionId: string, canvasId: string): Promise<Collection> {
     const collection = await this.getById(collectionId);
     if (collection === undefined) {
