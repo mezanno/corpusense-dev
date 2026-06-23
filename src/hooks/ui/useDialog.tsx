@@ -77,6 +77,7 @@ const useDialog = () => {
       renderForm: (formRef) => (
         <ImportCollectionForm formRef={formRef} setCanSubmit={setCanSubmit} />
       ),
+      closeOnAction: false, //ne pas fermer le dialog automatiquement après l'import, pour permettre de voir les logs
     });
   };
 

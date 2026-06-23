@@ -1,8 +1,4 @@
-import { Annotation } from '@/data/models/Annotation';
-import { Collection } from '@/data/models/Collection';
-import { DataModel } from '@/data/models/DataModel';
 import { Result } from '@/data/models/Result';
-import { Worker } from '@/data/models/Worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,
@@ -17,11 +13,9 @@ import { generateManifestFromCollection } from '@/data/utils/export';
 import { useAppDispatch } from '@/hooks/hooks';
 import i18n from '@/i18n';
 import { pushError, pushInfo } from '@/state/reducers/events';
-import { fecthManifestRequest } from '@/state/reducers/manifests';
 import { getErrorMessage } from '@/utils/utils';
 import FileSaver from 'file-saver';
 import { default as JSZip } from 'jszip';
-import { uniq } from 'lodash';
 import { useMemo } from 'react';
 
 export interface ExportCollectionOptions {
@@ -35,98 +29,6 @@ export interface ExportCollectionOptions {
 export const useCollectionIO = () => {
   const appDispatch = useAppDispatch();
   const collectionRepository = useMemo(() => getCollectionRepository(), []);
-
-  const importCollections = async (data: ArrayBuffer) => {
-    const zip = new JSZip();
-    const zipContent = await zip.loadAsync(data);
-    for (const filename in zipContent.files) {
-      const file = zipContent.files[filename];
-      if (!file.dir) {
-        const fileContent = await file.async('string');
-        try {
-          const json = JSON.parse(fileContent) as object;
-          await importCollection(filename, json);
-        } catch (e) {
-          appDispatch(pushError(getErrorMessage(e)));
-        }
-      }
-    }
-  };
-
-  const importCollection = async (filename: string, json: object) => {
-    if (!('collection' in json)) {
-      appDispatch(pushError(i18n.t('error_import_not_a_collection', { file: filename })));
-      return;
-    }
-
-    const { collection, annotations, model, workers, results } = json as {
-      collection: Collection;
-      annotations?: Annotation[];
-      model?: DataModel;
-      workers?: Worker[];
-      results?: Result[];
-    };
-
-    //réimporte les manifestes liés à la collection (si besoin)
-    const manifests = uniq(collection.content.map((item) => item.manifestId));
-    manifests.forEach((manifestId) => {
-      if (manifestId.startsWith('http://') || manifestId.startsWith('https://')) {
-        appDispatch(fecthManifestRequest(manifestId));
-      }
-    });
-
-    try {
-      await collectionRepository.create(collection);
-    } catch (e) {
-      if (typeof e === 'object' && e !== null && 'name' in e && e.name === 'ConstraintError') {
-        appDispatch(
-          pushError(i18n.t('error_import_collection_already_exists', { id: collection.id })),
-        );
-      } else {
-        appDispatch(
-          pushError(
-            i18n.t('error_import_collection', { file: filename, error: getErrorMessage(e) }),
-          ),
-        );
-      }
-      return;
-    }
-
-    if (annotations !== undefined && annotations.length > 0) {
-      const annotationRepository = getAnnotationRepository();
-      await annotationRepository.addAll(annotations);
-    }
-
-    if (model !== undefined) {
-      try {
-        const modelRepository = getModelRepository();
-        await modelRepository.add(model);
-      } catch (error) {
-        console.error('Error importing model:', getErrorMessage(error));
-      }
-    }
-
-    if (workers !== undefined && workers.length > 0) {
-      try {
-        const workerRepository = getWorkerRepository();
-        await workerRepository.addAll(workers);
-      } catch (error) {
-        console.error('Error importing workers:', getErrorMessage(error));
-      }
-    }
-
-    if (results !== undefined && results.length > 0) {
-      try {
-        const resultRepository = getResultRepository();
-        await resultRepository.addAll(results);
-      } catch (error) {
-        console.error('Error importing results:', getErrorMessage(error));
-      }
-    }
-    //TODO: add the tags
-    // yield put(updateCollectionSuccess({ ...newCollection, tags: tags.map((tag) => tag.id) }));
-    appDispatch(pushInfo(i18n.t('toast_collection_imported', { file: filename })));
-  };
 
   /**
    * Export one or more collections to a zip file
@@ -255,5 +157,5 @@ export const useCollectionIO = () => {
     }
   };
 
-  return { importCollection, importCollections, exportCollections, toggleCollectionOffline };
+  return { exportCollections, toggleCollectionOffline };
 };
