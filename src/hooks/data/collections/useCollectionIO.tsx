@@ -9,6 +9,7 @@ import {
   getManifestRepository,
   getModelRepository,
   getResultRepository,
+  getTagRepository,
   getWorkerRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
@@ -146,6 +147,12 @@ export const useCollectionIO = () => {
 
       const exportedCollection = { collection };
 
+      if (collection.tags.length > 0) {
+        const tagRepository = getTagRepository();
+        const tags = await tagRepository.getByIds(collection.tags);
+        Object.assign(exportedCollection, { tags });
+      }
+
       if (options.annotations === true) {
         const annotationRepository = getAnnotationRepository();
         const annotations = await annotationRepository.getByScope({ collectionId: id });
@@ -191,7 +198,6 @@ export const useCollectionIO = () => {
           zip.file(name + '_manifest.json', JSON.stringify(manifest, null, 2));
         } catch (error) {
           console.error('Error generating manifest:', getErrorMessage(error));
-          continue;
         }
       }
 
