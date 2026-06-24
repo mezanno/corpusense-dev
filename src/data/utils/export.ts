@@ -80,7 +80,7 @@ const generateCanvas = async (
         allAnnotationPages = allAnnotationPages.concat(canvasAnnotationPage);
       }
     } catch (error) {
-      console.error(`Skipping annotation page for canvas ${canvasId}: `, error);
+      console.error(`${collectionId} : Skipping annotation page for canvas ${canvasId}: `, error);
     }
 
     const canvasIif: Canvas = {
