@@ -6,7 +6,7 @@ import {
   getAnnotationText,
   getAnnotationType,
 } from '../models/Annotation';
-import { convertW3CAnnotationsToIIIF, IIIF_CONTEXT } from '../models/converters/iiif';
+import { IIIF_CONTEXT } from '../models/converters/iiif';
 import {
   getAnnotationRepository,
   getCollectionRepository,
@@ -21,9 +21,9 @@ export interface ManifestExport {
   manifest: Manifest;
 }
 
-const generateManifestFromCollection = async (id: string): Promise<ManifestExport> => {
+const generateManifestFromCollection = async (collectionId: string): Promise<ManifestExport> => {
   try {
-    const collection = await getCollectionRepository().getById(id);
+    const collection = await getCollectionRepository().getById(collectionId);
 
     if (collection.content.length === 0) {
       throw new Error(i18n.t('error_export_collection_empty', { name: collection.name }));
@@ -33,7 +33,7 @@ const generateManifestFromCollection = async (id: string): Promise<ManifestExpor
     const items: Canvas[] = [];
     for (let i = 0; i < collection.content.length; i++) {
       const canvasId = collection.content[i].canvasId;
-      const canvas = await generateCanvas(canvasId, manifestId, id);
+      const canvas = await generateCanvas(canvasId, manifestId, collectionId);
       items.push(canvas);
     }
 
@@ -74,9 +74,13 @@ const generateCanvas = async (
     //   allAnnotationPages = allAnnotationPages.concat(canvas.annotations);
     // }
 
-    const canvasAnnotationPage = await generateAnnotationPage(canvasId, collectionId);
-    if (canvasAnnotationPage !== undefined) {
-      allAnnotationPages = allAnnotationPages.concat(canvasAnnotationPage);
+    try {
+      const canvasAnnotationPage = await generateAnnotationPage(canvasId, collectionId);
+      if (canvasAnnotationPage !== undefined) {
+        allAnnotationPages = allAnnotationPages.concat(canvasAnnotationPage);
+      }
+    } catch (error) {
+      console.error(`Skipping annotation page for canvas ${canvasId}: `, error);
     }
 
     const canvasIif: Canvas = {
@@ -109,7 +113,7 @@ const generateAnnotationPage = async (canvasId: string, collectionId: string) =>
     [ElementType.TEXT_LINE],
   );
   if (result === undefined || lineAnnotations.length === 0) {
-    return convertW3CAnnotationsToIIIF(lineAnnotations);
+    return undefined;
   }
 
   return await convertResultToIIIFAnnotation(result);
