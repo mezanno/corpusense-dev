@@ -215,6 +215,7 @@ const useDialog = () => {
           setCanSubmit={setCanSubmit}
         />
       ),
+      closeOnAction: false, //ne pas fermer le dialog automatiquement après l'export, pour permettre de voir les logs
     });
   };
 

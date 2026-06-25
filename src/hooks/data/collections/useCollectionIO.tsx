@@ -11,6 +11,7 @@ import {
 import { getImage } from '@/data/utils/canvas';
 import { generateManifestFromCollection } from '@/data/utils/export';
 import { useAppDispatch } from '@/hooks/hooks';
+import { ProgressLoggerSetters } from '@/hooks/ui/useLogger';
 import i18n from '@/i18n';
 import { pushError, pushInfo } from '@/state/reducers/events';
 import { getErrorMessage } from '@/utils/utils';
@@ -26,26 +27,31 @@ export interface ExportCollectionOptions {
   manifest?: boolean;
 }
 
-export const useCollectionIO = () => {
+export const useCollectionIO = (setters: ProgressLoggerSetters) => {
   const appDispatch = useAppDispatch();
   const collectionRepository = useMemo(() => getCollectionRepository(), []);
+  const { setStatus, setProgress, addLog } = setters;
 
   /**
    * Export one or more collections to a zip file
    * @param action The ids of the collections to export
    */
   const exportCollections = async (collectionIds: string[], options: ExportCollectionOptions) => {
+    setStatus('processing');
+    setProgress(0);
+
     const zip = new JSZip();
     for (let i = 0; i < collectionIds.length; i++) {
       const id = collectionIds[i];
 
       const exists = await collectionRepository.exists(id);
       if (!exists) {
-        console.warn(`Collection with id ${id} does not exist, skipping export`);
+        addLog(`Collection with id ${id} does not exist, skipping export`, 'error');
         continue;
       }
 
       const collection = await collectionRepository.getById(id);
+      addLog(`Exporting collection ${collection.name} (${i + 1}/${collectionIds.length})`);
 
       const exportedCollection = { collection };
 
@@ -67,7 +73,7 @@ export const useCollectionIO = () => {
           const model = await modelRepository.getById(collection.modelId);
           Object.assign(exportedCollection, { model });
         } catch (error) {
-          console.error('Error fetching model:', getErrorMessage(error));
+          addLog(`Error adding model: ${getErrorMessage(error)}`, 'error');
         }
       }
 
@@ -89,7 +95,7 @@ export const useCollectionIO = () => {
             Object.assign(exportedCollection, { results: allTheResults });
           }
         } catch (error) {
-          console.error('Error fetching model:', getErrorMessage(error));
+          addLog(`Error adding workers: ${getErrorMessage(error)}`, 'error');
         }
       }
 
@@ -99,19 +105,18 @@ export const useCollectionIO = () => {
           console.log(name, ' --> ', manifest);
           zip.file(name + '_manifest.json', JSON.stringify(manifest, null, 2));
         } catch (error) {
-          console.error('Error generating manifest:', getErrorMessage(error));
+          addLog(`Error generating manifest: ${getErrorMessage(error)}`, 'error');
         }
       }
 
       zip.file(collection.name + '.json', JSON.stringify(exportedCollection, null, 2));
+      addLog(`Collection ${collection.name} added to export.`, 'success');
+      setProgress(Math.round(((i + 1) / collectionIds.length) * 100));
     }
+    setStatus('done');
     const zipContent = await zip.generateAsync({ type: 'blob' });
     FileSaver.saveAs(zipContent, 'exported_collections.zip');
-
-    //TODO : il faudrait ajouter un message de succès (avec potentiellement certaines erreurs) ou un message d'erreur
-    //exportSuccess
-    //exportSuccessWithErrors
-    //exportError
+    addLog('Export completed successfully.', 'success');
   };
 
   const toggleCollectionOffline = async (collectionId: string) => {
