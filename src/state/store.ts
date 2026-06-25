@@ -1,8 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
-import logger from 'redux-logger';
 import createSagaMiddleware from 'redux-saga';
 import { rootReducer } from '.';
-import { dateConverterMiddleware } from './middlewares/dateConverterMiddleware';
 import getRootSaga from './sagas';
 
 const sagaMiddleware = createSagaMiddleware();
@@ -11,9 +9,7 @@ const store = configureStore({
   reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ thunk: false })
-      .concat(sagaMiddleware)
-      .concat(dateConverterMiddleware)
-      .concat(logger),
+      .concat(sagaMiddleware),
   devTools: true,
 });
 
