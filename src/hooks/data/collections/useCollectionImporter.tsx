@@ -27,45 +27,6 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
 
   const collectionRepository = useMemo(() => getCollectionRepository(), []);
 
-  const importCollections = useCallback(
-    async (data: ArrayBuffer) => {
-      setStatus('processing');
-      addLog('Starting import of collections from zip file...');
-      const zip = new JSZip();
-      const zipContent = await zip.loadAsync(data);
-      const totalFiles = Object.keys(zipContent.files).length;
-      for (let i = 0; i < totalFiles; i++) {
-        const filename = Object.keys(zipContent.files)[i];
-        const file = zipContent.files[filename];
-        if (!file.dir) {
-          const fileContent = await file.async('string');
-          try {
-            const json = JSON.parse(fileContent) as object;
-            await importCollection(filename, json);
-          } catch (e) {
-            addLog(`Error importing collection from file ${filename}: ${getErrorMessage(e)}`);
-          }
-        }
-        setProgress(Math.round(((i + 1) / totalFiles) * 100));
-      }
-      setStatus('done');
-    },
-    [addLog],
-  );
-
-  const importOneCollection = useCallback(
-    async (filename: string, json: object) => {
-      setStatus('processing');
-      try {
-        await importCollection(filename, json);
-      } catch (e) {
-        addLog(`Error importing collection from file ${filename}: ${getErrorMessage(e)}`, 'error');
-      }
-      setStatus('done');
-    },
-    [addLog],
-  );
-
   const importCollection = useCallback(
     async (filename: string, json: object) => {
       addLog(`Importing collection from file: ${filename}`);
@@ -164,6 +125,45 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
       addLog(`Collection ${collection.id} imported successfully from file: ${filename}`, 'success');
     },
     [appDispatch, collectionRepository, addLog],
+  );
+
+  const importCollections = useCallback(
+    async (data: ArrayBuffer) => {
+      setStatus('processing');
+      addLog('Starting import of collections from zip file...');
+      const zip = new JSZip();
+      const zipContent = await zip.loadAsync(data);
+      const totalFiles = Object.keys(zipContent.files).length;
+      for (let i = 0; i < totalFiles; i++) {
+        const filename = Object.keys(zipContent.files)[i];
+        const file = zipContent.files[filename];
+        if (!file.dir) {
+          const fileContent = await file.async('string');
+          try {
+            const json = JSON.parse(fileContent) as object;
+            await importCollection(filename, json);
+          } catch (e) {
+            addLog(`Error importing collection from file ${filename}: ${getErrorMessage(e)}`);
+          }
+        }
+        setProgress(Math.round(((i + 1) / totalFiles) * 100));
+      }
+      setStatus('done');
+    },
+    [addLog, importCollection, setProgress, setStatus],
+  );
+
+  const importOneCollection = useCallback(
+    async (filename: string, json: object) => {
+      setStatus('processing');
+      try {
+        await importCollection(filename, json);
+      } catch (e) {
+        addLog(`Error importing collection from file ${filename}: ${getErrorMessage(e)}`, 'error');
+      }
+      setStatus('done');
+    },
+    [addLog, importCollection, setStatus],
   );
 
   return { importOneCollection, importCollections };
