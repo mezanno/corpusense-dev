@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import VersionDisplay from '@/components/VersionDisplay';
 import WorkerLabel from '@/components/workers/WorkerLabel';
 import { WorkerStatus } from '@/data/models/Worker';
 import { useCollections } from '@/hooks/data/collections/useCollections';
@@ -355,8 +356,8 @@ const LayoutSideBar = () => {
               <span>{t('page_title_documentation')}</span>
             </Link>
           </SidebarMenuButton>
-          <div className='flex justify-between'>
-            Corpusense v{import.meta.env.VITE_APP_VERSION}
+          <div className='flex items-center justify-between gap-2 px-2 py-1'>
+            <VersionDisplay />
             <Link to={CorpusenseRoutes.CONFIGURATION} title={t('page_title_configuration')}>
               <Bolt />
             </Link>

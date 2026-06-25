@@ -1,4 +1,5 @@
 import { CollectionDetails } from '@/data/models/Collection';
+import { useCollections } from '@/hooks/data/collections/useCollections';
 import useDialog from '@/hooks/ui/useDialog';
 import { CheckedState } from '@radix-ui/react-checkbox';
 import {
@@ -13,9 +14,10 @@ import {
   SortingState,
   useReactTable,
 } from '@tanstack/react-table';
-import { DownloadIcon } from 'lucide-react';
+import { DownloadIcon, TrashIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAlertDialogContext } from '../reducers/useAlertDialogContext';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
 import { Field } from '../ui/field';
@@ -59,6 +61,8 @@ const CollectionDataTable = ({ data, columns }: CollectionDataTableProps) => {
     },
   });
   const { openExportCollectionDialog } = useDialog();
+  const { openDialog } = useAlertDialogContext();
+  const { removeMultipleCollections } = useCollections();
 
   const savedRememberFilter = localStorage.getItem('collectionTableRememberFilter') === 'true';
   const [rememberChecked, setRememberChecked] = useState(savedRememberFilter);
@@ -73,6 +77,20 @@ const CollectionDataTable = ({ data, columns }: CollectionDataTableProps) => {
   const handleExport = () => {
     const selectedCollectionIds = table.getSelectedRowModel().rows.map((row) => row.original.id);
     openExportCollectionDialog(selectedCollectionIds);
+  };
+
+  const handleDelete = () => {
+    if (table.getFilteredSelectedRowModel().rows.length > 0) {
+      const ids = table.getFilteredSelectedRowModel().rows.map((row) => row.original.id);
+      openDialog({
+        title: t('title_are_you_sure'),
+        description: t('description_delete_collection'),
+        onConfirm: {
+          message: t('btn_yes'),
+          action: () => void removeMultipleCollections(ids),
+        },
+      });
+    }
   };
 
   const handleOnRememberFilterChange = (checked: CheckedState) => {
@@ -116,13 +134,23 @@ const CollectionDataTable = ({ data, columns }: CollectionDataTableProps) => {
           </Field>
         </div>
         {table.getFilteredSelectedRowModel().rows.length > 0 && (
-          <Button
-            onClick={handleExport}
-            aria-label={t('btn_export_collection')}
-            title={t('btn_export_collection')}
-          >
-            <DownloadIcon />
-          </Button>
+          <div className='flex gap-2'>
+            <Button
+              onClick={handleExport}
+              aria-label={t('btn_export_collection')}
+              title={t('btn_export_collection')}
+            >
+              <DownloadIcon />
+            </Button>
+            <Button
+              variant='destructive'
+              onClick={handleDelete}
+              aria-label={t('btn_delete_collection')}
+              title={t('btn_delete_collection')}
+            >
+              <TrashIcon />
+            </Button>
+          </div>
         )}
       </div>
       <div className='min-h-0 flex-1 overflow-hidden'>

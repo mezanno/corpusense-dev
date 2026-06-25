@@ -65,6 +65,7 @@ export interface CollectionRepository {
   updateOffline(id: string, offline: boolean): Promise<void>;
 
   delete(collectionToRemove: Collection): Promise<{ workersIds: string[]; collectionId: string }>;
+  deleteMultiple(collectionsToRemoveIds: string[]): Promise<void>;
   deleteById(collectionId: string): Promise<{ workersIds: string[]; collectionId: string }>;
   deleteElement(collectionId: string, canvasId: string): Promise<Collection>;
 }

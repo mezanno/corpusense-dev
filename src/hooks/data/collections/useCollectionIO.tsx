@@ -1,19 +1,14 @@
-import { Annotation } from '@/data/models/Annotation';
-import { Collection } from '@/data/models/Collection';
-import { DataModel } from '@/data/models/DataModel';
 import { Result } from '@/data/models/Result';
-import { Worker } from '@/data/models/Worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,
   getModelRepository,
   getResultRepository,
+  getTagRepository,
   getWorkerRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { generateManifestFromCollection } from '@/data/utils/export';
-import { useAppDispatch } from '@/hooks/hooks';
-import i18n from '@/i18n';
-import { pushError, pushInfo } from '@/state/reducers/events';
+import { ProgressLoggerSetters } from '@/hooks/ui/useLogger';
 import { getErrorMessage } from '@/utils/utils';
 import FileSaver from 'file-saver';
 import { default as JSZip } from 'jszip';
@@ -27,121 +22,38 @@ export interface ExportCollectionOptions {
   manifest?: boolean;
 }
 
-export const useCollectionIO = () => {
-  const appDispatch = useAppDispatch();
+export const useCollectionIO = (setters: ProgressLoggerSetters) => {
   const collectionRepository = useMemo(() => getCollectionRepository(), []);
-
-  const importCollections = async (data: ArrayBuffer) => {
-    const zip = new JSZip();
-    const zipContent = await zip.loadAsync(data);
-    for (const filename in zipContent.files) {
-      const file = zipContent.files[filename];
-      if (!file.dir) {
-        const fileContent = await file.async('string');
-        try {
-          const json = JSON.parse(fileContent) as object;
-          await importCollection(filename, json);
-        } catch (e) {
-          appDispatch(pushError(getErrorMessage(e)));
-        }
-      }
-    }
-  };
-
-  const importCollection = async (filename: string, json: object) => {
-    if (!('collection' in json)) {
-      appDispatch(pushError(i18n.t('error_import_not_a_collection', { file: filename })));
-      return;
-    }
-
-    const { collection, annotations, model, workers, results } = json as {
-      collection: Collection;
-      annotations?: Annotation[];
-      model?: DataModel;
-      workers?: Worker[];
-      results?: Result[];
-    };
-
-    //réimporte les manifestes liés à la collection (si besoin)
-    // const manifests = uniq(collection.content.map((item) => item.sourceId));
-    // manifests.forEach((sourceId) => {
-    //   if (sourceId.startsWith('http://') || sourceId.startsWith('https://')) {
-    //     // appDispatch(fecthManifestRequest(manifestId));
-    //     //TODO! il faut réimporter les manifestes liés à la collection (s'ils ne sont pas déjà dans la base) --> utiliser les sources
-    //   }
-    // });
-
-    try {
-      await collectionRepository.create(collection);
-    } catch (e) {
-      if (typeof e === 'object' && e !== null && 'name' in e && e.name === 'ConstraintError') {
-        appDispatch(
-          pushError(i18n.t('error_import_collection_already_exists', { id: collection.id })),
-        );
-      } else {
-        appDispatch(
-          pushError(
-            i18n.t('error_import_collection', { file: filename, error: getErrorMessage(e) }),
-          ),
-        );
-      }
-      return;
-    }
-
-    if (annotations !== undefined && annotations.length > 0) {
-      const annotationRepository = getAnnotationRepository();
-      await annotationRepository.addAll(annotations);
-    }
-
-    if (model !== undefined) {
-      try {
-        const modelRepository = getModelRepository();
-        await modelRepository.add(model);
-      } catch (error) {
-        console.error('Error importing model:', getErrorMessage(error));
-      }
-    }
-
-    if (workers !== undefined && workers.length > 0) {
-      try {
-        const workerRepository = getWorkerRepository();
-        await workerRepository.addAll(workers);
-      } catch (error) {
-        console.error('Error importing workers:', getErrorMessage(error));
-      }
-    }
-
-    if (results !== undefined && results.length > 0) {
-      try {
-        const resultRepository = getResultRepository();
-        await resultRepository.addAll(results);
-      } catch (error) {
-        console.error('Error importing results:', getErrorMessage(error));
-      }
-    }
-    //TODO: add the tags
-    // yield put(updateCollectionSuccess({ ...newCollection, tags: tags.map((tag) => tag.id) }));
-    appDispatch(pushInfo(i18n.t('toast_collection_imported', { file: filename })));
-  };
+  const { setStatus, setProgress, addLog } = setters;
 
   /**
    * Export one or more collections to a zip file
    * @param action The ids of the collections to export
    */
   const exportCollections = async (collectionIds: string[], options: ExportCollectionOptions) => {
+    setStatus('processing');
+    setProgress(0);
+
     const zip = new JSZip();
     for (let i = 0; i < collectionIds.length; i++) {
       const id = collectionIds[i];
 
       const exists = await collectionRepository.exists(id);
       if (!exists) {
-        console.warn(`Collection with id ${id} does not exist, skipping export`);
+        addLog(`Collection with id ${id} does not exist, skipping export`, 'error');
         continue;
       }
 
       const collection = await collectionRepository.getById(id);
+      addLog(`Exporting collection ${collection.name} (${i + 1}/${collectionIds.length})`);
 
       const exportedCollection = { collection };
+
+      if (collection.tags.length > 0) {
+        const tagRepository = getTagRepository();
+        const tags = await tagRepository.getByIds(collection.tags);
+        Object.assign(exportedCollection, { tags });
+      }
 
       if (options.annotations === true) {
         const annotationRepository = getAnnotationRepository();
@@ -155,7 +67,7 @@ export const useCollectionIO = () => {
           const model = await modelRepository.getById(collection.modelId);
           Object.assign(exportedCollection, { model });
         } catch (error) {
-          console.error('Error fetching model:', getErrorMessage(error));
+          addLog(`Error adding model: ${getErrorMessage(error)}`, 'error');
         }
       }
 
@@ -177,7 +89,7 @@ export const useCollectionIO = () => {
             Object.assign(exportedCollection, { results: allTheResults });
           }
         } catch (error) {
-          console.error('Error fetching model:', getErrorMessage(error));
+          addLog(`Error adding workers: ${getErrorMessage(error)}`, 'error');
         }
       }
 
@@ -187,20 +99,18 @@ export const useCollectionIO = () => {
           console.log(name, ' --> ', manifest);
           zip.file(name + '_manifest.json', JSON.stringify(manifest, null, 2));
         } catch (error) {
-          console.error('Error generating manifest:', getErrorMessage(error));
-          continue;
+          addLog(`Error generating manifest: ${getErrorMessage(error)}`, 'error');
         }
       }
 
       zip.file(collection.name + '.json', JSON.stringify(exportedCollection, null, 2));
+      addLog(`Collection ${collection.name} added to export.`, 'success');
+      setProgress(Math.round(((i + 1) / collectionIds.length) * 100));
     }
+    setStatus('done');
     const zipContent = await zip.generateAsync({ type: 'blob' });
     FileSaver.saveAs(zipContent, 'exported_collections.zip');
-
-    //TODO : il faudrait ajouter un message de succès (avec potentiellement certaines erreurs) ou un message d'erreur
-    //exportSuccess
-    //exportSuccessWithErrors
-    //exportError
+    addLog('Export completed successfully.', 'success');
   };
 
   // const toggleCollectionOffline = async (collectionId: string) => {
@@ -246,5 +156,5 @@ export const useCollectionIO = () => {
   //   }
   // };
 
-  return { importCollection, importCollections, exportCollections };
+  return { exportCollections };
 };

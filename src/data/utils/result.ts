@@ -33,6 +33,7 @@ export const convertResultToIIIFAnnotation = async (result: Result): Promise<Ann
 
   const dataParsed = JSON.parse(result.value as string) as unknown;
   const dataParsedArray = (Array.isArray(dataParsed) ? dataParsed : [dataParsed]) as unknown[];
+
   const entityAnnotations: Annotation[] = [];
   dataParsedArray.forEach((item) => {
     if (

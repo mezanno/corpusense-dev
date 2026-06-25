@@ -1,12 +1,15 @@
 import { Input } from '@/components/ui/input';
-import { useCollectionIO } from '@/hooks/data/collections/useCollectionIO';
+import { useCollectionImporter } from '@/hooks/data/collections/useCollectionImporter';
 import { FormProps } from '@/hooks/ui/useDialog';
+import useProgressLogger from '@/hooks/ui/useLogger';
 import i18n from '@/i18n';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
+import LoggerPanel from '../logger/LoggerPanel';
+import ProgressPanel from '../logger/ProgressPanel';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from '../ui/form';
 
 const schema = z.object({
@@ -20,7 +23,12 @@ const schema = z.object({
 
 const ImportCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
   const { t } = useTranslation();
-  const { importCollection, importCollections } = useCollectionIO();
+  const { logs, progress, setProgress, status, setStatus, addLog } = useProgressLogger();
+  const { importOneCollection, importCollections } = useCollectionImporter({
+    setStatus,
+    setProgress,
+    addLog,
+  });
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -48,7 +56,7 @@ const ImportCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
       if (typeof content === 'string') {
         try {
           const json = JSON.parse(content) as object;
-          await importCollection(values.file.name, json);
+          await importOneCollection(values.file.name, json);
         } catch (error) {
           console.error('Error parsing JSON:', error);
         }
@@ -66,35 +74,39 @@ const ImportCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
   }
 
   return (
-    <Form {...form}>
-      <form
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        onSubmit={form.handleSubmit(onSubmit)}
-        ref={formRef}
-        className='space-y-4'
-      >
-        <FormDescription>{t('form_description_select_collection')}</FormDescription>
-        <FormField
-          control={form.control}
-          name='file'
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <Input
-                  type='file'
-                  accept='.json,.zip,application/json,application/zip'
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    field.onChange(file);
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </form>
-    </Form>
+    <div className='flex flex-col space-y-2 p-2'>
+      <Form {...form}>
+        <form
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          onSubmit={form.handleSubmit(onSubmit)}
+          ref={formRef}
+          className='space-y-4'
+        >
+          <FormDescription>{t('form_description_select_collection')}</FormDescription>
+          <FormField
+            control={form.control}
+            name='file'
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    type='file'
+                    accept='.json,.zip,application/json,application/zip'
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      field.onChange(file);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </form>
+      </Form>
+      {(status === 'processing' || progress > 0) && <ProgressPanel progress={progress} />}
+      {(status === 'processing' || logs.length > 0) && <LoggerPanel logs={logs} />}
+    </div>
   );
 };
 

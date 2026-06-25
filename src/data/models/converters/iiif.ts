@@ -36,7 +36,6 @@ export function convertW3CAnnotationsToIIIF(annotations: Annotation[]): Annotati
 
   const annotationPageId = `${canvasId}/${URL_ANNOTATIONPAGE}`;
   const annotationsIff: AnnotationIIF[] = [];
-  console.log(`convertW3CAnnotationsToIIIF -> ${annotations.length} annotations in ${canvasId}`);
 
   for (let i = 0; i < annotations.length; i++) {
     const w3cAnnotation = annotations[i];

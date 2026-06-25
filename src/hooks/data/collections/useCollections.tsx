@@ -201,6 +201,18 @@ export const useCollections = () => {
     }
   };
 
+  const removeMultipleCollections = async (ids: string[]) => {
+    try {
+      for (const id of ids) {
+        const collectionToRemove = await collectionRepository.getById(id);
+        await collectionRepository.delete(collectionToRemove);
+        appDispatch(pushInfo(i18n.t('toast_collection_deleted')));
+      }
+    } catch (e) {
+      appDispatch(pushError(getErrorMessage(e)));
+    }
+  };
+
   return {
     collections,
     getCollectionById,
@@ -212,5 +224,6 @@ export const useCollections = () => {
     updateCollection,
     removeElementFromCollection,
     removeCollection,
+    removeMultipleCollections,
   };
 };
