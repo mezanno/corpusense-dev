@@ -15,15 +15,16 @@ import {
 import { useAppDispatch } from '@/hooks/hooks';
 import { ProgressLoggerSetters } from '@/hooks/ui/useLogger';
 import i18n from '@/i18n';
-import { fecthManifestRequest } from '@/state/reducers/manifests';
 import { getErrorMessage } from '@/utils/utils';
 import { default as JSZip } from 'jszip';
 import { uniq } from 'lodash';
 import { useCallback, useMemo } from 'react';
+import useSources from '../sources/useSources';
 
 export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
   const appDispatch = useAppDispatch();
   const { setStatus, setProgress, addLog } = setters;
+  const { fetchManifest } = useSources();
 
   const collectionRepository = useMemo(() => getCollectionRepository(), []);
 
@@ -45,13 +46,13 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
       };
 
       //réimporte les manifestes liés à la collection (si besoin)
-      const manifests = uniq(collection.content.map((item) => item.manifestId));
-      manifests.forEach((manifestId) => {
-        addLog(`Fetching manifest ${manifestId}`);
-        if (manifestId.startsWith('http://') || manifestId.startsWith('https://')) {
-          appDispatch(fecthManifestRequest(manifestId));
-        }
-      });
+      const manifestIds = uniq(collection.content.map((item) => item.manifestId)).filter(
+        (id) => id !== undefined,
+      );
+      for (let i = 0; i < manifestIds.length; i++) {
+        addLog(`Fetching manifest ${manifestIds[i]}`);
+        await fetchManifest(manifestIds[i]);
+      }
 
       try {
         await collectionRepository.create(collection);
