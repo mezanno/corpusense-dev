@@ -1,6 +1,6 @@
 import z from 'zod';
 import { AnnotationDTO } from './Annotation';
-import { CollectionElementSchema } from './CollectionElement';
+import { CollectionElementSchema, LegacyCollectionElementSchema } from './CollectionElement';
 import { DataModelSchema } from './DataModel';
 import { ResultSchema } from './Result';
 import { TagSchema } from './Tag';
@@ -41,3 +41,27 @@ export const ExportedCollectionSchema = z.object({
 });
 
 export type ExportedCollection = z.infer<typeof ExportedCollectionSchema>;
+
+/*
+  LEGACY COLLECTION SCHEMA
+  This schema is used to validate the legacy collection that were used in the past.
+  It is kept for backward compatibility and should be removed in the future when all collections have been migrated to the new schema.
+*/
+export const LegacyCollectionContentSchema = ObjectWithStringIdSchema.extend({
+  content: z.array(LegacyCollectionElementSchema),
+});
+
+export const LegacyCollectionSchema = CollectionDetailsSchema.extend(
+  LegacyCollectionContentSchema.shape,
+);
+
+export const LegacyExportedCollectionSchema = z.object({
+  collection: LegacyCollectionSchema,
+  tags: z.array(TagSchema).optional(),
+  annotations: z.array(z.custom<AnnotationDTO>()).optional(),
+  model: DataModelSchema.optional(),
+  workers: z.array(WorkerSchema).optional(),
+  results: z.array(ResultSchema).optional(),
+});
+
+export type LegacyExportedCollection = z.infer<typeof LegacyExportedCollectionSchema>;
