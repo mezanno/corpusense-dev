@@ -1,11 +1,17 @@
-export interface NamedEntitySelector {
-  annotationId: string;
-  indexes: number[]; // indexes of the words in the text of the annotation
-}
-export interface NamedEntity {
-  id: string;
-  dataFieldId: string;
-  value: string;
-  selector: NamedEntitySelector[];
-  annotationIds: string[]; //used by dexie for better performance
-}
+import z from 'zod';
+
+export const NamedEntitySelectorSchema = z.object({
+  annotationId: z.string(),
+  indexes: z.array(z.number()), // indexes of the words in the text of the annotation
+});
+
+export const NamedEntitySchema = z.object({
+  id: z.string(),
+  dataFieldId: z.string(),
+  value: z.string(),
+  selector: z.array(NamedEntitySelectorSchema),
+  annotationIds: z.array(z.string()),
+});
+
+export type NamedEntitySelector = z.infer<typeof NamedEntitySelectorSchema>;
+export type NamedEntity = z.infer<typeof NamedEntitySchema>;

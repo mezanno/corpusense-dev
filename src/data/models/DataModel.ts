@@ -1,21 +1,31 @@
-export interface DataField {
-  id: string;
-  name: string;
-  type: string;
-  description?: string;
-  generated?: boolean;
-  isArray?: boolean;
-  getPreviousValue?: boolean;
-  color: string;
-}
+import z from 'zod';
 
-export interface DataModel {
-  id: string;
-  name: string;
-  description?: string;
-  prompt: string;
-  fields: DataField[];
-}
+export const DataFieldSchema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    type: z.string(),
+    description: z.string().optional(),
+    generated: z.boolean().optional(),
+    isArray: z.boolean().optional(),
+    getPreviousValue: z.boolean().optional(),
+    color: z.string(),
+  })
+  .strict();
+
+export type DataField = z.infer<typeof DataFieldSchema>;
+
+export const DataModelSchema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    description: z.string().optional(),
+    prompt: z.string(),
+    fields: z.array(DataFieldSchema),
+  })
+  .strict();
+
+export type DataModel = z.infer<typeof DataModelSchema>;
 
 export interface DataModelCreateDTO {
   name: string;

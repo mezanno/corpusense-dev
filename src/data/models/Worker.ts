@@ -1,4 +1,5 @@
-import { Scope } from './Scope';
+import z from 'zod';
+import { ScopeSchema } from './Scope';
 
 export enum WorkerStatus {
   ALL = 'all', // Special status to represent all workers
@@ -13,43 +14,56 @@ export enum WorkerStatus {
   COMPLETED_WITH_ERRORS = 'completed_with_errors', // Worker has been completed but with errors
 }
 
-export interface Task {
-  id: number;
-  scope: Scope;
-  status: WorkerStatus;
-  statusMessage?: string; //optional message to display in the UI
-  previousTask?: {
-    workerId: string;
-    taskId: number;
-  };
-}
+export const WorkerStatusSchema = z.enum(WorkerStatus);
 
-export interface Worker {
-  id: string;
-  name: string;
-  scope: Scope;
+export const TaskSchema = z
+  .object({
+    id: z.number(),
+    scope: ScopeSchema,
+    status: WorkerStatusSchema,
+    statusMessage: z.string().optional(),
+    previousTask: z
+      .object({
+        workerId: z.string(),
+        taskId: z.number(),
+      })
+      .optional(),
+  })
+  .strict();
 
-  scopeKey: string; //needed for indexeddb
-  status: WorkerStatus;
-  statusMessage?: string; //optional message to display in the UI
-  createdAt: string; // ISO date string
-  estimatedDuration: number; // ms
-  params: unknown;
-  queue: Task[];
-}
+export type Task = z.infer<typeof TaskSchema>;
 
-export interface WorkerResponse {
-  status: WorkerStatus;
-  statusMessage?: string; //optional message to display in the UI
-  content?: unknown;
-}
+export const WorkerCreateDTOSChema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    scope: ScopeSchema,
+    params: z.unknown(),
+  })
+  .strict();
 
-export interface WorkerCreateDTO {
-  id: string;
-  name: string;
-  scope: Scope;
-  params: unknown;
-}
+export type WorkerCreateDTO = z.infer<typeof WorkerCreateDTOSChema>;
+
+export const WorkerSchema = WorkerCreateDTOSChema.extend({
+  scopeKey: z.string(),
+  status: WorkerStatusSchema,
+  statusMessage: z.string().optional(),
+  createdAt: z.string(),
+  estimatedDuration: z.number(),
+  queue: z.array(TaskSchema),
+}).strict();
+
+export type Worker = z.infer<typeof WorkerSchema>;
+
+export const WorkerResponseSchema = z
+  .object({
+    status: WorkerStatusSchema,
+    statusMessage: z.string().optional(),
+    content: z.unknown().optional(),
+  })
+  .strict();
+
+export type WorkerResponse = z.infer<typeof WorkerResponseSchema>;
 
 /*
  * Type guard to check if an object is a Worker.
