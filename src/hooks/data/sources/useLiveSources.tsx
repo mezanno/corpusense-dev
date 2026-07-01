@@ -23,6 +23,13 @@ const useLiveSources = () => {
     [] as Source[],
   );
 
+  const sourcesCount = useMemo(() => {
+    return {
+      remote: remoteSources.length,
+      local: localSources.length,
+    };
+  }, [remoteSources, localSources]);
+
   const removeUnusedSources = async () => {
     const allRemoteSourceIds = remoteSources.map((s) => s.id);
 
@@ -53,6 +60,7 @@ const useLiveSources = () => {
   return {
     remoteSources,
     localSources,
+    sourcesCount,
     removeUnusedSources,
   };
 };

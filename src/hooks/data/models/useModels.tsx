@@ -13,6 +13,10 @@ export const useModels = () => {
 
   const models = useLiveQuery(modelLiveRepository.getAll(), [], []);
 
+  const modelCount = useMemo(() => {
+    return models.length;
+  }, [models]);
+
   const getModelById = useCallback((id: string) => models.find((c) => c.id === id), [models]);
 
   const getDatafieldById = useCallback(
@@ -61,6 +65,7 @@ export const useModels = () => {
 
   return {
     models,
+    modelCount,
     getModelById,
     getDatafieldById,
     createModel,
