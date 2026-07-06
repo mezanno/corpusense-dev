@@ -19,7 +19,12 @@ const useTileSource = ({ canvas, sourceId }: { canvas: Canvas; sourceId: string 
       const parsedManifest = Cozy.parse(sourceWithContent.content.manifest);
 
       if (sourceWithContent.content.type === 'local' && parsedManifest.type === 'manifest') {
-        const imageUrl = parsedManifest.resource.canvases[0].getImageURL();
+        const cozyCanvas = parsedManifest.resource.canvases.find((c) => c.id === canvas.id);
+        if (cozyCanvas === undefined) {
+          setError(`Canvas with id ${canvas.id} not found in manifest`);
+          return;
+        }
+        const imageUrl = cozyCanvas.getImageURL();
         const objectUrl = await getLocalObjectUrl(
           imageUrl,
           sourceWithContent.content.localFile.outputDirectoryHandle,
@@ -40,7 +45,7 @@ const useTileSource = ({ canvas, sourceId }: { canvas: Canvas; sourceId: string 
     };
 
     void fetchThumbnail();
-  }, [canvas, sourceId]);
+  }, [canvas.id, sourceId]);
 
   return { source, error };
 };

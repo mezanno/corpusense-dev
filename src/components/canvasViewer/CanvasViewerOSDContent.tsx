@@ -6,7 +6,6 @@ import {
 } from '@/data/utils/annotations';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import useTileSource from '@/hooks/data/sources/useTileSource';
-import { getErrorMessage } from '@/utils/utils';
 import {
   AnnotationState,
   AnnotoriousOpenSeadragonAnnotator,
@@ -27,7 +26,7 @@ import {
   MoveVertical,
 } from 'lucide-react';
 import OpenSeadragon from 'openseadragon';
-import { useEffect, useEffectEvent, useState } from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CanvasViewerMode } from './CanvasViewer';
 
@@ -55,40 +54,27 @@ const CanvasViewerOSDContent = ({
   const hover = useHover();
   const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
   const { removeAnnotationsByIds } = useAnnotationActions();
-  const [options, setOptions] = useState<OpenSeadragon.Options | null>(null);
+  // const [options, setOptions] = useState<OpenSeadragon.Options | null>(null);
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>();
   const { error, source } = useTileSource({ canvas, sourceId });
 
-  const onSource = useEffectEvent(() => {
-    if (source !== null) {
-      console.log('onSource ', source);
-
-      setOptions({
-        prefixUrl: `${import.meta.env.VITE_BASE_PATH}/images/`,
-        defaultZoomLevel: 0.5,
-        minZoomLevel: 0.1,
-        tileSources: source,
-        loadTilesWithAjax: true,
-        // crossOriginPolicy: 'false',
-        showSequenceControl: true,
-        showHomeControl: true,
-        showFullPageControl: true,
-        gestureSettingsMouse: {
-          clickToZoom: false,
-        },
-      });
-    }
-  });
-
-  useEffect(() => {
-    if (source != null) {
-      onSource();
-    }
-
-    if (error != null) {
-      console.error(getErrorMessage(error));
-    }
-  }, [source, error]);
+  const options =
+    source !== null
+      ? {
+          prefixUrl: `${import.meta.env.VITE_BASE_PATH}/images/`,
+          defaultZoomLevel: 0.5,
+          minZoomLevel: 0.1,
+          tileSources: source,
+          loadTilesWithAjax: true,
+          // crossOriginPolicy: 'false',
+          showSequenceControl: true,
+          showHomeControl: true,
+          showFullPageControl: true,
+          gestureSettingsMouse: {
+            clickToZoom: false,
+          },
+        }
+      : null;
 
   useEffect(() => {
     if (hovered != null) {
