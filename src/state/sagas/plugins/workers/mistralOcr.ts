@@ -21,10 +21,10 @@ import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
 import { canvasToBase64, cropImage } from '@/utils/images';
 import { getErrorMessage } from '@/utils/utils';
-import { Mistral } from '@mistralai/mistralai';
 import FileSaver from 'file-saver';
 import { json2csv } from 'json-2-csv';
 import * as XLSX from 'xlsx';
+import z from 'zod';
 import { WorkerCategory } from './WorkerCategory';
 
 export const pluginName = 'mistralocr';
@@ -38,30 +38,24 @@ export const pluginConfigurationParams = {
   },
 };
 
-// const BBoxItemSchema = z
-//   .object({
-//     text: z.string().describe('The text content of the element.'),
-//     top_left_x: z.number(),
-//     top_left_y: z.number(),
-//     bottom_right_x: z.number(),
-//     bottom_right_y: z.number(),
-//   })
-//   .describe('A bounding box representing an element of text.');
+const BlockElementSchema = z.object({
+  content: z.string(),
+  type: z.string(),
+  top_left_x: z.number(),
+  top_left_y: z.number(),
+  bottom_right_x: z.number(),
+  bottom_right_y: z.number(),
+});
 
-// const SizeSchema = z.object({
-//   width: z.number().describe('The width of the image in pixels.'),
-//   height: z.number().describe('The height of the image in pixels.'),
-// });
+export const MistralResponseSchema = z.object({
+  pages: z.array(
+    z.object({
+      markdown: z.string(),
+      blocks: z.array(BlockElementSchema),
+    }),
+  ),
+});
 
-// export const DocumentSchemaZOD = z.object({
-//   bbox: z
-//     .array(BBoxItemSchema)
-//     .describe(
-//       'List of bounding boxes detected in the image. Each bounding box contains an element of text and its coordinates in pixels based on the dimensions of the document sent. 0,0 is the top-left corner of the document.',
-//     ),
-//   image: SizeSchema.describe('The dimensions of the processed image.'),
-//   origin: SizeSchema.describe('The dimensions of the received image.'),
-// });
 type Region = {
   xtl: number;
   ytl: number;
@@ -158,19 +152,19 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       }
     }
 
-    const client = new Mistral({
-      apiKey,
-      retryConfig: {
-        strategy: 'backoff',
-        backoff: {
-          initialInterval: 500, // intervalle initial en millisecondes
-          maxInterval: 10000, // intervalle maximal en millisecondes entre tentatives
-          exponent: 1.5, // facteur exponentiel
-          maxElapsedTime: 60000, // durée max (en millisecondes) totale pour toutes les tentatives
-        },
-        retryConnectionErrors: true, // réessayer en cas d'erreurs de connexion
-      },
-    });
+    // const client = new Mistral({
+    //   apiKey,
+    //   retryConfig: {
+    //     strategy: 'backoff',
+    //     backoff: {
+    //       initialInterval: 500, // intervalle initial en millisecondes
+    //       maxInterval: 10000, // intervalle maximal en millisecondes entre tentatives
+    //       exponent: 1.5, // facteur exponentiel
+    //       maxElapsedTime: 60000, // durée max (en millisecondes) totale pour toutes les tentatives
+    //     },
+    //     retryConnectionErrors: true, // réessayer en cas d'erreurs de connexion
+    //   },
+    // });
 
     const annotations: AnnotationDTO[] = [];
     for (const region of regions) {
@@ -182,30 +176,59 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       };
       const croppedCanvas = await cropImage(imageToProcess, cropSize);
       const imageUrlBase64 = await canvasToBase64(croppedCanvas, 'image/jpeg', 0.7);
-      const response = await client.ocr.process({
-        model: 'mistral-ocr-latest',
-        document: {
-          type: 'image_url',
-          imageUrl: imageUrlBase64,
+      // const response = await client.ocr.process({
+      //   model: 'mistral-ocr-latest',
+      //   document: {
+      //     type: 'image_url',
+      //     imageUrl: imageUrlBase64,
+      //   },
+      //   //@ts-expect-error mistral types are not up to date with the latest API
+      //   includeBlocks: true,
+      //   // documentAnnotationFormat: responseFormatFromZodObject(DocumentSchemaZOD),
+      // });
+      const response = await fetch('https://api.mistral.ai/v1/ocr', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
         },
-        // documentAnnotationFormat: responseFormatFromZodObject(DocumentSchemaZOD),
+        body: JSON.stringify({
+          model: 'mistral-ocr-latest',
+          document: {
+            type: 'image_url',
+            image_url: imageUrlBase64,
+          },
+          include_blocks: true,
+        }),
       });
 
-      console.log('Response from Mistral:', response);
-      if (response.pages !== null && response.pages[0] !== undefined) {
-        const markdown = response.pages[0].markdown;
-        const lines = markdown.split('|');
-        for (const line of lines) {
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const result = z.safeParse(MistralResponseSchema, await response.json());
+      if (!result.success) {
+        console.log(z.treeifyError(result.error));
+
+        throw new Error(
+          `Mistral response validation failed: ${JSON.stringify(z.treeifyError(result.error))}`,
+        );
+      }
+      const responseData = result.data;
+      console.log('Response from Mistral:', responseData);
+      if (responseData.pages.length > 0) {
+        const blocks = responseData.pages[0].blocks;
+        for (const block of blocks) {
           annotations.push(
             createAnnotation({
               canvasId: task.scope.canvasId,
               collectionId: task.scope.collectionId,
-              minX: region.xtl,
-              minY: region.ytl,
-              maxX: region.xbr,
-              maxY: region.ybr,
+              minX: block.top_left_x,
+              minY: block.top_left_y,
+              maxX: block.bottom_right_x,
+              maxY: block.bottom_right_y,
               type: ElementType.TEXT_LINE,
-              value: line.trim(),
+              value: block.content,
             }),
           );
         }
