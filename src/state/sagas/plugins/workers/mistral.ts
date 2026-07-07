@@ -150,7 +150,8 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     console.log('Response from Mistral:', response);
     return {
       status: WorkerStatus.COMPLETED,
-      content: response.choices[0].message.content as string,
+      // content: response.choices[0].message.content as string,
+      content: response.choices[0]?.message?.content as string,
     };
   } catch (error) {
     return {
