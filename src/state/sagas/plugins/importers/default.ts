@@ -1,8 +1,10 @@
+import { ManifestSchema } from '@/data/models/Sources';
+import { Manifest } from '@iiif/presentation-3';
 import i18n from 'i18next';
 
 export const pluginName = 'default';
 
-const defaultImporter = async (url: string): Promise<object> => {
+const defaultImporter = async (url: string): Promise<Manifest> => {
   console.log('defaultImporter: ', url);
 
   try {
@@ -22,10 +24,11 @@ const defaultImporter = async (url: string): Promise<object> => {
         );
       }
     }
-    //TODO! gérer cas où ce n'est pas un objet (unknown)
-    const data: object = (await response.json()) as object;
-
-    return data;
+    const validation = ManifestSchema.safeParse(await response.json());
+    if (!validation.success) {
+      throw new Error(i18n.t('error_invalid_manifest', { url }));
+    }
+    return validation.data;
   } catch (error) {
     throw new Error(i18n.t('error_unknown'));
   }

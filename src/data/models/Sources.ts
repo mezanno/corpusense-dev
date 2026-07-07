@@ -26,7 +26,7 @@ export const SourceSchema = z
 
 export type Source = z.infer<typeof SourceSchema>;
 
-const ManifestSchema = z.custom<Manifest>();
+export const ManifestSchema = z.custom<Manifest>();
 
 const LocalFileSchema = z
   .object({

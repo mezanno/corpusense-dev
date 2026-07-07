@@ -35,7 +35,7 @@ export const useModelIO = () => {
     }
   };
 
-  const importModel = async (data: object, overwrite: boolean) => {
+  const importModel = async (data: unknown, overwrite: boolean) => {
     try {
       const validation = DataModelSchema.safeParse(data);
       if (!validation.success) {

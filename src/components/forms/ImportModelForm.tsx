@@ -51,8 +51,7 @@ const ImportModelForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
     reader.onload = async (e) => {
       const content = e.target?.result;
       if (typeof content === 'string') {
-        const jsonContent = JSON.parse(content) as object;
-        await importModel(jsonContent, values.overwrite ?? false);
+        await importModel(JSON.parse(content), values.overwrite ?? false);
       }
     };
     setIsSubmitted(true);

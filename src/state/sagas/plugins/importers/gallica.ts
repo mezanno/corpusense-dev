@@ -1,8 +1,10 @@
+import { ManifestSchema } from '@/data/models/Sources';
+import { Manifest } from '@iiif/presentation-3';
 import i18n from 'i18next';
 
 export const pluginName = 'bnf.fr';
 
-const gallicaImporter = async (url: string): Promise<object> => {
+const gallicaImporter = async (url: string): Promise<Manifest> => {
   console.log('gallicaImporter: ', url);
   try {
     const urlV3 = url.replace('gallica.bnf.fr/iiif', 'openapi.bnf.fr/iiif/presentation/v3');
@@ -27,7 +29,7 @@ const gallicaImporter = async (url: string): Promise<object> => {
   //   }
 };
 
-const fetchUrl = async (url: string): Promise<object> => {
+const fetchUrl = async (url: string): Promise<Manifest> => {
   const response = await fetch(url, {
     // mode: 'no-cors', //ne sert à rien (renvoie 200 mais corps de la réponse vide)
     headers: {
@@ -35,8 +37,11 @@ const fetchUrl = async (url: string): Promise<object> => {
     },
   });
   if (response.ok) {
-    //TODO! gérer cas où ce n'est pas un objet (unknown)
-    return (await response.json()) as object;
+    const validation = ManifestSchema.safeParse(await response.json());
+    if (!validation.success) {
+      throw new Error(i18n.t('error_invalid_manifest', { url }));
+    }
+    return validation.data;
   }
   console.log(`Error fetching manifest: ${response.status} - ${response.statusText}`);
   if (response.status === 404) {
