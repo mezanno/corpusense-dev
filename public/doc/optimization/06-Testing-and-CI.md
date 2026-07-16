@@ -1,66 +1,137 @@
-# Tests et CI/CD : Politique et Recommandations
+# Tests et CI/CD : Politique et recommandations
 
 ## Vue d'ensemble
-Actuellement, l'utilisation des tests unitaires est très limitée et de nombreux tests existants sont désactivés. Pour garantir la stabilité de Corpusense, nous adoptons une stratégie structurée axée sur la confiance et la maintenabilité.
+
+Cette politique formalise la strategie de tests de CorpuSense, avec deux objectifs :
+
+- securiser les parcours utilisateurs critiques,
+- garder une base de tests rapide, maintenable et fiable.
+
+Elle se base sur les bonnes pratiques React (React Testing Library + Vitest) et sur l'etat actuel du projet.
 
 ---
 
-## 1. Pyramide des Tests
+## 1. Etat actuel (juillet 2026)
 
-Nous adoptons une structure en trois niveaux pour maximiser l'efficacité :
+Constat mesure sur la base existante :
 
-### A. Tests Unitaires (Vitest) - *Base de la confiance*
-- **Cible** : Fonctions pures (`utils/`), transformations de données (`data/models/converters`), et logique métier isolée.
-- **Règle** : Tout nouvel utilitaire ou service de conversion **doit** avoir ses tests unitaires associés.
-- **Outil** : Vitest (configuré et rapide).
+- suite Vitest executee : **24 fichiers de test**, **77 tests** ;
+- resultat actuel : **18 fichiers OK / 6 en echec**, **64 tests OK / 13 en echec** ;
+- outils presents : Vitest, React Testing Library, jest-dom, vitest-webgl-canvas-mock ;
+- outils absents a ce jour : configuration Playwright, configuration MSW ;
+- CI actuelle : workflow de deploiement GitHub Pages uniquement, sans job de tests/lint sur Pull Request.
 
-### B. Tests de Composants et Hooks (Vitest + React Testing Library)
-- **Cible** : Composants UI complexes (ex: `CanvasCard`, `AnnotationOrderPanel`) et hooks personnalisés (ex: `useCollections`).
-- **Objectif** : Tester les interactions utilisateur et le rendu conditionnel sans dépendre d'une infrastructure complète.
-- **Mocks** : Utiliser `MSW` (Mock Service Worker) pour intercepter les appels API externes.
+Exemples de points de fragilite observes :
 
-### C. Tests End-to-End (E2E) (Playwright) - *Validation des Parcours*
-- **Cible** : Parcours utilisateur critiques (ex: Import de manifeste -> Création de collection -> Annotation).
-- **Action** : Ajouter **Playwright** au projet pour tester les interactions réelles dans un navigateur (essentiel pour les graphiques Canvas/Konva).
+- tests de pages qui ne montent pas tous les providers requis (erreurs de contexte) ;
+- tests couplant trop fort le contenu de traduction a l'assertion ;
+- ecarts entre attentes de tests et comportement metier actuel sur certaines fonctions utilitaires.
 
 ---
 
-## 2. Standards et Conventions de Développement
+## 2. Strategie cible (pyramide de tests)
 
-- **Nommage** : Les fichiers doivent être nommés `*.test.ts` ou `*.test.tsx` et situés dans un sous-dossier `__tests__`.
-- **Méthode AAA** :
-    - **Arrange** : Préparer les données et mocks.
-    - **Act** : Exécuter l'action.
-    - **Assert** : Vérifier le résultat.
-- **Tests Visuels** : Pour prévenir les régressions graphiques, intégrer des tests de capture (via Playwright) sur les composants de visualisation majeurs.
+Nous adoptons une pyramide en trois niveaux.
 
----
+### A. Tests unitaires (majoritaires)
 
-## 3. Priorités d'Implémentation et État d'Avancement (Roadmap)
+- Cible : fonctions pures, conversions, utilitaires metier.
+- Objectif : couverture large des regles metier sans dependance UI.
+- Regle : toute nouvelle fonction pure non triviale doit avoir son test associe.
 
-**Statut (Février 2026)** : 
-- **Tests mis en place** : De nombreux tests unitaires ont été implémentés (plus de 77 tests) couvrant activement les convertisseurs et utilitaires.
-- **Problème Bloquant Actuel** : L'environnement de test Vitest ne parvient pas à initialiser `i18n.ts` pour les tests de composants (ex: `ManifestExplorerPage.test.tsx`), produisant l'erreur `TypeError: __vite_ssr_import_0__.default.use is not a function`. **Cela doit être résolu en priorité absolue.**
+### B. Tests de composants et hooks (niveau intermediaire)
 
-**Prochaines Étapes :**
-1.  **Dépannage i18n (URGENT)** : Corriger la configuration Vitest/React pour que l'import de `i18next` fonctionne dans les tests de composants.
-2.  **Réactivation finale** : Corriger les derniers tests de composants restants qui sont commentés (ex: `CanvasCard.test.tsx`).
-3.  **Hooks DAL** : Créer des tests pour les hooks utilisant `useLiveQuery` (ex: `useCollections`).
-4.  **CI/CD** : Automatiser l'exécution des tests sur chaque Pull Request.
+- Cible : composants avec logique d'interaction (formulaires, navigation, etats conditionnels), hooks personnalises.
+- Objectif : verifier le comportement vu par l'utilisateur.
+- Regle : tester les interactions avec `user-event` et les queries accessibles (`getByRole`, `findByRole`, etc.).
 
----
+### C. Tests E2E (nombre limite, forte valeur)
 
-## 4. Intégration Continue (CI)
-
-Les tests doivent être automatisés via GitHub Actions (ou équivalent) :
-- **Validation** : Les commandes `npm run lint`, `npm run type-check` et `npm run test` doivent passer pour autoriser une fusion.
-- **Build de Production** : Interdire le build si la suite de tests échoue.
-- **Couverture** : Utiliser `vitest --coverage` pour identifier les zones non testées, sans viser un pourcentage arbitraire mais en priorisant les fichiers avec une logique complexe.
+- Cible : parcours critiques de bout en bout (chargement manifest, creation collection, annotation, export).
+- Outil cible : Playwright.
+- Regle : peu de scenarii, mais stables et executes en CI avant publication.
 
 ---
 
-## 5. Outils Recommandés
+## 3. Standards React Testing Library (obligatoires)
 
-- **MSW (Mock Service Worker)** : Pour simuler proprement les API externes (APIs IIIF, Mistral).
-- **Playwright** : Pour les tests de bout en bout et les tests de régression visuelle.
-- **Coverage Vitest** : Pour le suivi de la qualité du code.
+### 3.1 Ce qu'on teste
+
+- Le comportement utilisateur, pas les details d'implementation.
+- Les roles/accessibilite en priorite (`role`, `name`, `label`).
+- Les transitions d'etat asynchrones avec `findBy*` ou `waitFor`.
+
+### 3.2 Ce qu'on evite
+
+- Assertions basees sur la structure interne React/Redux.
+- Sur-usage de `data-testid` quand un role accessible existe.
+- Tests fragiles dependants de textes i18n bruts non stabilises.
+
+### 3.3 Mocks et isolation
+
+- Centraliser les mocks globaux dans `vitest.setup.ts`.
+- Eviter les mocks excessifs : preferer un rendu proche du reel avec providers utilitaires.
+- Introduire MSW pour les appels reseau afin d'unifier les tests de composants/hook asynchrones.
+
+### 3.4 Convention de fichiers
+
+- Nommage : `*.test.ts` ou `*.test.tsx`.
+- Emplacement : dossier `__tests__` proche du module teste.
+- Structure conseillee : Arrange / Act / Assert.
+
+---
+
+## 4. Politique CI (a appliquer)
+
+Pour toute Pull Request vers `develop` :
+
+1. `npm run lint`
+2. `npm run test -- --run`
+3. `npm run build`
+
+Regles :
+
+- merge refuse si une etape echoue ;
+- deploiement `gh-pages` declenche uniquement si la qualite est validee ;
+- execution `npm run test:coverage` planifiee (ex: nightly ou PR strategiques) pour suivi.
+
+---
+
+## 5. Roadmap de mise a niveau
+
+### Priorite 1 - Stabiliser l'existant
+
+- Corriger les 13 tests en echec avant d'augmenter la surface de tests.
+- Ajouter des helpers de rendu (`renderWithProviders`) complets pour pages dependantes de contextes.
+- Revoir les tests de pages sensibles a i18n pour reduire les faux positifs/faux negatifs.
+
+### Priorite 2 - Professionnaliser la CI
+
+- Ajouter un workflow GitHub Actions de validation PR (lint + test + build).
+- Garder le workflow de deploiement separe, conditionne au succes de la validation.
+
+### Priorite 3 - Completer la couverture fonctionnelle
+
+- Ajouter des tests hooks sur les flux IndexedDB/Dexie les plus critiques.
+- Introduire progressivement Playwright sur 2 a 4 parcours metiers essentiels.
+
+---
+
+## 6. Outils recommandes
+
+- **Vitest** : execution rapide locale/CI ;
+- **React Testing Library + user-event** : tests centres utilisateur ;
+- **MSW** : simulation propre des APIs externes ;
+- **Playwright** : E2E et regression visuelle ciblee ;
+- **Coverage Vitest (V8)** : suivi de couverture pour orienter les priorites.
+
+---
+
+## 7. Definition of Done (tests)
+
+Un changement est considere termine si :
+
+- les tests existants restent verts,
+- les nouvelles regles metier sont testees,
+- les composants modifies sont verifies par interactions utilisateur,
+- la CI valide lint + tests + build.
