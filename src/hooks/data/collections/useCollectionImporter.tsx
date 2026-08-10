@@ -1,9 +1,10 @@
-import { Annotation } from '@/data/models/Annotation';
-import { Collection } from '@/data/models/Collection';
-import { DataModel } from '@/data/models/DataModel';
-import { Result } from '@/data/models/Result';
-import { Tag } from '@/data/models/Tag';
-import { Worker } from '@/data/models/Worker';
+import {
+  CollectionSchema,
+  ExportedCollection,
+  ExportedCollectionSchema,
+  LegacyExportedCollection,
+  LegacyExportedCollectionSchema,
+} from '@/data/models/Collection';
 import {
   getAnnotationRepository,
   getCollectionRepository,
@@ -14,58 +15,150 @@ import {
 } from '@/data/repositories/indexeddb/dbFactory';
 import { useAppDispatch } from '@/hooks/hooks';
 import { ProgressLoggerSetters } from '@/hooks/ui/useLogger';
-import i18n from '@/i18n';
 import { getErrorMessage } from '@/utils/utils';
+import { Cozy } from 'cozy-iiif';
 import { default as JSZip } from 'jszip';
 import { uniq } from 'lodash';
 import { useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import useSources from '../sources/useSources';
 
 export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
+  const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const { setStatus, setProgress, addLog } = setters;
-  const { fetchManifest } = useSources();
+  const { fetchManifest, addManifestToLibrary } = useSources();
 
   const collectionRepository = useMemo(() => getCollectionRepository(), []);
 
-  const importCollection = useCallback(
-    async (filename: string, json: object) => {
-      addLog(`Importing collection from file: ${filename}`);
-      if (!('collection' in json)) {
-        addLog(`Error: ${i18n.t('error_import_not_a_collection', { file: filename })}`, 'error');
-        return;
+  const convertLegacyCollection = useCallback(
+    async (legacyCollection: LegacyExportedCollection): Promise<ExportedCollection> => {
+      const { collection, annotations, model, workers, results, tags } = legacyCollection;
+      /*
+      To convert a legacy collection to the new format, we need to map the legacy collection elements to the new collection elements.
+      A legacy collection element has no sourceId, so we need to create a sourceId for each element based on the manifestId
+      */
+      //step 1 : fetch all the manifests for the legacy collection elements and create a new sourceId for each manifestId
+      const manifestIds = uniq(collection.content.map((item) => item.manifestId)).filter(
+        (id) => id !== undefined,
+      );
+      const manifestMap = new Map<string, string>();
+      //load all the manifests in parallel
+      const manifests = await Promise.all(
+        manifestIds.map(async (id) => {
+          const loadedManifest = await fetchManifest(id);
+          if (!loadedManifest) {
+            throw new Error(`Manifest ${id} not found`);
+          }
+          return { id, loadedManifest };
+        }),
+      );
+      //then add the manifests to the library and create a new sourceId for each manifestId
+      for (const { id, loadedManifest } of manifests) {
+        addLog(t('log_fetched_manifest', { id }));
+
+        const parsed = Cozy.parse(loadedManifest);
+        if (parsed?.type !== 'manifest') {
+          addLog(t('error_manifest_not_valid_iiif', { id }), 'error');
+          throw new Error(`Manifest ${id} is not a valid IIIF manifest`);
+        }
+
+        const name =
+          parsed.resource.getSummary() ??
+          t('manifest_untitled', { date: new Date().toLocaleString() });
+
+        const newSourceId = await addManifestToLibrary(loadedManifest, name);
+
+        manifestMap.set(id, newSourceId);
       }
 
-      const { collection, annotations, model, workers, results, tags } = json as {
-        collection: Collection;
-        annotations?: Annotation[];
-        model?: DataModel;
-        workers?: Worker[];
-        results?: Result[];
-        tags?: Tag[];
+      //step 2 : update the collection content with the new sourceIds
+      const updatedCollection = {
+        ...collection,
+        content: collection.content.map((item) => ({
+          ...item,
+          sourceId:
+            item.manifestId !== undefined
+              ? (manifestMap.get(item.manifestId) ?? undefined)
+              : undefined,
+        })),
       };
+
+      //step 3 : validate the updated collection with the new schema
+      const parseResult = CollectionSchema.safeParse(updatedCollection);
+      if (!parseResult.success) {
+        addLog(t('error_manifest_conversion'), 'error');
+        throw new Error(`Manifest conversion error`);
+      } else {
+        return {
+          collection: parseResult.data,
+          annotations,
+          model,
+          workers,
+          results,
+          tags,
+        };
+      }
+    },
+    [],
+  );
+
+  const parseImportedCollection = useCallback(
+    async (json: unknown): Promise<ExportedCollection> => {
+      const parsed = ExportedCollectionSchema.safeParse(json);
+      if (parsed.success) {
+        return parsed.data;
+      }
+
+      const legacy = LegacyExportedCollectionSchema.safeParse(json);
+      if (legacy.success) {
+        addLog(t('log_legacy_collection_detected'), 'warning');
+        return convertLegacyCollection(legacy.data);
+      }
+
+      throw parsed.error;
+    },
+    [],
+  );
+
+  const importCollection = useCallback(
+    async (filename: string, json: object) => {
+      addLog(t('log_importing_collection_from_file', { filename }));
+
+      let importedCollection: ExportedCollection;
+
+      try {
+        importedCollection = await parseImportedCollection(json);
+      } catch (error) {
+        addLog(
+          t('error_import_collection', {
+            file: filename,
+            error: error instanceof Error ? error.message : String(error),
+          }),
+          'error',
+        );
+        return;
+      }
+      const { collection, annotations, model, workers, results, tags } = importedCollection;
 
       //réimporte les manifestes liés à la collection (si besoin)
       const manifestIds = uniq(collection.content.map((item) => item.manifestId)).filter(
         (id) => id !== undefined,
       );
       for (let i = 0; i < manifestIds.length; i++) {
-        addLog(`Fetching manifest ${manifestIds[i]}`);
+        addLog(t('log_fetching_manifest', { id: manifestIds[i] }));
         await fetchManifest(manifestIds[i]);
       }
 
       try {
         await collectionRepository.create(collection);
-        addLog(`Collection created with id: ${collection.id}`, 'success');
+        addLog(t('log_collection_created', { id: collection.id }), 'success');
       } catch (e) {
         if (typeof e === 'object' && e !== null && 'name' in e && e.name === 'ConstraintError') {
-          addLog(
-            `Error: ${i18n.t('error_import_collection_already_exists', { id: collection.id })}`,
-            'error',
-          );
+          addLog(t('error_import_collection_already_exists', { id: collection.id }), 'error');
         } else {
           addLog(
-            i18n.t('error_import_collection', { file: filename, error: getErrorMessage(e) }),
+            t('error_import_collection', { file: filename, error: getErrorMessage(e) }),
             'error',
           );
         }
@@ -73,57 +166,60 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
       }
 
       if (annotations !== undefined && annotations.length > 0) {
-        addLog(`Importing ${annotations.length} annotations for collection ${collection.id}...`);
+        addLog(t('log_importing_annotations', { count: annotations.length, id: collection.id }));
         const annotationRepository = getAnnotationRepository();
         const annotationsAdded = await annotationRepository.addAll(annotations);
-        addLog(`Imported ${annotationsAdded.length} annotations`, 'success');
+        addLog(t('log_imported_annotations', { count: annotationsAdded.length }), 'success');
       }
 
       if (model !== undefined) {
         try {
-          addLog(`Importing model ${model.id} for collection ${collection.id}...`);
+          addLog(t('log_importing_model', { modelId: model.id, id: collection.id }));
           const modelRepository = getModelRepository();
           await modelRepository.add(model);
-          addLog(`Model ${model.id} imported`, 'success');
+          addLog(t('log_model_imported', { modelId: model.id }), 'success');
         } catch (error) {
-          addLog(`Error importing model ${model.id}: ${getErrorMessage(error)}`, 'error');
+          addLog(
+            t('error_importing_model', { modelId: model.id, error: getErrorMessage(error) }),
+            'error',
+          );
         }
       }
 
       if (workers !== undefined && workers.length > 0) {
         try {
-          addLog(`Importing ${workers.length} workers for collection ${collection.id}...`);
+          addLog(t('log_importing_workers', { count: workers.length, id: collection.id }));
           const workerRepository = getWorkerRepository();
           await workerRepository.addAll(workers);
-          addLog(`Imported ${workers.length} workers`, 'success');
+          addLog(t('log_imported_workers', { count: workers.length }), 'success');
         } catch (error) {
-          addLog(`Error importing workers: ${getErrorMessage(error)}`, 'error');
+          addLog(t('error_importing_workers', { error: getErrorMessage(error) }), 'error');
         }
       }
 
       if (results !== undefined && results.length > 0) {
         try {
-          addLog(`Importing ${results.length} results for collection ${collection.id}...`);
+          addLog(t('log_importing_results', { count: results.length, id: collection.id }));
           const resultRepository = getResultRepository();
           await resultRepository.addAll(results);
-          addLog(`Imported ${results.length} results`, 'success');
+          addLog(t('log_imported_results', { count: results.length }), 'success');
         } catch (error) {
-          addLog(`Error importing results: ${getErrorMessage(error)}`, 'error');
+          addLog(t('error_importing_results', { error: getErrorMessage(error) }), 'error');
         }
       }
 
       if (tags !== undefined && tags.length > 0) {
         try {
-          addLog(`Importing ${tags.length} tags for collection ${collection.id}...`);
+          addLog(t('log_importing_tags', { count: tags.length, id: collection.id }));
           const tagRepository = getTagRepository();
           await tagRepository.addAll(tags);
-          addLog(`Imported ${tags.length} tags`, 'success');
+          addLog(t('log_imported_tags', { count: tags.length }), 'success');
         } catch (error) {
-          addLog(`Error importing tags: ${getErrorMessage(error)}`, 'error');
+          addLog(t('error_importing_tags', { error: getErrorMessage(error) }), 'error');
         }
       }
 
-      addLog(`Collection ${collection.id} imported successfully from file: ${filename}`, 'success');
+      addLog(t('log_collection_imported_success', { id: collection.id, filename }), 'success');
     },
     [appDispatch, collectionRepository, addLog],
   );
@@ -131,7 +227,7 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
   const importCollections = useCallback(
     async (data: ArrayBuffer) => {
       setStatus('processing');
-      addLog('Starting import of collections from zip file...');
+      addLog(t('log_starting_import_zip'));
       const zip = new JSZip();
       const zipContent = await zip.loadAsync(data);
       const totalFiles = Object.keys(zipContent.files).length;
@@ -144,7 +240,7 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
             const json = JSON.parse(fileContent) as object;
             await importCollection(filename, json);
           } catch (e) {
-            addLog(`Error importing collection from file ${filename}: ${getErrorMessage(e)}`);
+            addLog(t('error_import_collection', { file: filename, error: getErrorMessage(e) }));
           }
         }
         setProgress(Math.round(((i + 1) / totalFiles) * 100));
@@ -160,7 +256,10 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
       try {
         await importCollection(filename, json);
       } catch (e) {
-        addLog(`Error importing collection from file ${filename}: ${getErrorMessage(e)}`, 'error');
+        addLog(
+          t('error_import_collection', { file: filename, error: getErrorMessage(e) }),
+          'error',
+        );
       }
       setStatus('done');
     },

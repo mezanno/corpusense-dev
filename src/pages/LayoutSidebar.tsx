@@ -280,7 +280,7 @@ const LayoutSideBar = () => {
               >
                 <span className='flex items-center justify-center'>
                   <Leaf />
-                  <Link to={CorpusenseRoutes.PROJECT}>{t('view_simple_mode')}</Link>
+                  <Link to={CorpusenseRoutes.PROJECT}>{t('view_beginner_mode')}</Link>
                 </span>
               </SidebarMenuButton>
               <SidebarMenuButton

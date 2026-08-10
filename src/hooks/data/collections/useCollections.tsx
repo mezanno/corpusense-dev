@@ -33,6 +33,10 @@ export const useCollections = () => {
     [] as CollectionDetails[],
   );
 
+  const collectionCount = useMemo(() => {
+    return collections.length;
+  }, [collections]);
+
   const getCollectionById = useCallback(
     (id: string) => collections.find((c) => c.id === id),
     [collections],
@@ -215,6 +219,7 @@ export const useCollections = () => {
 
   return {
     collections,
+    collectionCount,
     getCollectionById,
     nameAlreadyExists,
     createCollection,

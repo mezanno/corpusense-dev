@@ -183,7 +183,7 @@
     "workbox-window": "^7.4.0"
   },
   "peerDependencies": {
-    "zod": "^4.1.13"
+    "zod": "^4.4.3"
   },
   "overrides": {
     "react": "^19.2.1",

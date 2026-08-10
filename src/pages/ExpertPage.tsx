@@ -1,18 +1,55 @@
+import ExpertReportCard from '@/components/ExpertReportCard';
+import { useCollections } from '@/hooks/data/collections/useCollections';
+import { useModels } from '@/hooks/data/models/useModels';
+import useModifierChainLive from '@/hooks/data/modifiers/useModifierChainLive';
+import useLiveSources from '@/hooks/data/sources/useLiveSources';
+import { CorpusenseRoutes } from '@/hooks/useAppNavigation';
+import { Container, Globe, HardDrive, List } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const ExpertPage = () => {
   const { t } = useTranslation();
+  const { sourcesCount } = useLiveSources();
+  const { collectionCount } = useCollections();
+  const { modelCount } = useModels();
+  const { modifierCount } = useModifierChainLive();
 
   return (
-    <div className='flex h-full w-full flex-col'>
-      <h1 className='mb-4 text-2xl font-bold'>Tiens tiens tiens</h1>
-      <div className='grid h-full w-full grid-cols-4 gap-4'>
-        <div className='m-1 rounded-md border p-2'>{t('nav_sources')}</div>
-        <div className='m-1 rounded-md border p-2'>{t('page_title_collection_manager')}</div>
-        <div className='m-1 rounded-md border p-2'>{t('page_title_models_manager')}</div>
-        <div className='m-1 rounded-md border p-2'>{t('page_title_modifierchain_manager')}</div>
-        <div className='m-1 rounded-md border p-2'>{t('page_title_workers_manager')}</div>
-      </div>
+    <div className='flex w-full flex-col gap-2'>
+      <ExpertReportCard
+        value={sourcesCount.local}
+        label={t('info_report_local_sources')}
+        route={`/${CorpusenseRoutes.LOCAL_SOURCES}`}
+        icon={<HardDrive className='text-primary' size={28} />}
+      />
+
+      <ExpertReportCard
+        value={sourcesCount.remote}
+        label={t('info_report_online_sources')}
+        route={`/${CorpusenseRoutes.IIIF_SOURCES}`}
+        icon={<Globe className='text-primary' size={28} />}
+      />
+
+      <ExpertReportCard
+        value={collectionCount}
+        label={t('info_report_collections')}
+        route={`/${CorpusenseRoutes.COLLECTIONS}`}
+        icon={<List className='text-primary' size={28} />}
+      />
+
+      <ExpertReportCard
+        value={modelCount}
+        label={t('info_report_models')}
+        route={`/${CorpusenseRoutes.MODELS}`}
+        icon={<Container className='text-primary' size={28} />}
+      />
+
+      <ExpertReportCard
+        value={modifierCount}
+        label={t('info_report_modifiers')}
+        route={`/${CorpusenseRoutes.MODIFIERCHAIN}`}
+        icon={<Container className='text-primary' size={28} />}
+      />
     </div>
   );
 };

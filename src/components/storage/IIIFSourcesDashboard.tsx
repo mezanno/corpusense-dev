@@ -38,7 +38,7 @@ const IIIFSourcesDashboard = () => {
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={void handleRemoveUnusedSources()}>
+              <DropdownMenuItem onClick={() => void handleRemoveUnusedSources()}>
                 {t('btn_remove_unused_sources')}
               </DropdownMenuItem>
             </DropdownMenuGroup>

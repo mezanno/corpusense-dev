@@ -1,21 +1,22 @@
-import { Scope } from './Scope';
+import z from 'zod';
+import { ScopeSchema } from './Scope';
 
-export interface Result {
-  id: number;
-  scope: Scope;
-  scopeKey: string; //needed for indexeddb
-  workerName: string;
-  workerId: string;
-  taskId: number;
-  value: unknown;
-  params: unknown;
-}
+export const ResultCreateDTOSchema = z
+  .object({
+    scope: ScopeSchema,
+    workerName: z.string(),
+    workerId: z.string(),
+    taskId: z.number(),
+    value: z.unknown(),
+    params: z.unknown(),
+  })
+  .strict();
 
-export interface ResultCreateDTO {
-  scope: Scope;
-  workerName: string;
-  workerId: string;
-  taskId: number;
-  value: unknown;
-  params: unknown;
-}
+export type ResultCreateDTO = z.infer<typeof ResultCreateDTOSchema>;
+
+export const ResultSchema = ResultCreateDTOSchema.extend({
+  id: z.number(),
+  scopeKey: z.string(),
+}).strict();
+
+export type Result = z.infer<typeof ResultSchema>;

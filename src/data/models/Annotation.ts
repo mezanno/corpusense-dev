@@ -1,5 +1,6 @@
 import { ImageAnnotation, ShapeType } from '@annotorious/annotorious';
 import { v4 as uuid } from 'uuid';
+import { z } from 'zod';
 
 export enum W3CMotivationEnum {
   Assessing = 'assessing',
@@ -17,6 +18,8 @@ export enum W3CMotivationEnum {
   Tagging = 'tagging',
 }
 
+export const W3CMotivationSchema = z.enum(W3CMotivationEnum);
+
 export enum ElementType {
   UNKNOWN = 'UNKNOWN',
   TEXT_LINE = 'TEXT_LINE',
@@ -24,15 +27,19 @@ export enum ElementType {
   TEMP = 'TEMP',
 }
 
-export interface Annotation extends ImageAnnotation {
-  canvasId: string;
-  collectionId: string;
-  order: number;
-  type: ElementType;
-  partOf?: string;
-  previous?: string;
-  next?: string;
-}
+export const ElementTypeSchema = z.enum(ElementType);
+
+export const AnnotationSchema = z.object({
+  canvasId: z.string(),
+  collectionId: z.string(),
+  order: z.number(),
+  type: ElementTypeSchema,
+  partOf: z.string().optional(),
+  previous: z.string().optional(),
+  next: z.string().optional(),
+});
+
+export type Annotation = ImageAnnotation & z.infer<typeof AnnotationSchema>;
 
 export interface AnnotationDTO extends ImageAnnotation {
   canvasId: string;
