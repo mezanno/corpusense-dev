@@ -4,7 +4,7 @@ const VersionDisplay = () => {
       ? new Intl.DateTimeFormat('fr-FR', {
           dateStyle: 'medium',
           timeStyle: 'short',
-        }).format(new Date(import.meta.env.VITE_BUILD_DATE))
+        }).format(new Date(import.meta.env.VITE_BUILD_DATE as string))
       : 'Unknown';
 
   return (
