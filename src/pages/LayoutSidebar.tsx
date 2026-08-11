@@ -25,15 +25,12 @@ import {
   CornerDownRight,
   Database,
   Globe,
-  Leaf,
   List,
   MoreHorizontal,
   PocketKnife,
   ScrollText,
-  TreeDeciduous,
   User2,
 } from 'lucide-react';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -224,7 +221,6 @@ const LayoutSideBar = () => {
   const { collections } = useCollections();
   const { openLoginDialog } = useDialog();
   const { experimentalFeaturesActivated } = useExperimental();
-  const [isProjectView, setIsProjectView] = useState(true);
   const { pathname } = useLocation();
 
   const handleLogout = () => {
@@ -270,82 +266,49 @@ const LayoutSideBar = () => {
             </SidebarMenu>
           </SidebarGroup>
         )}
+        <SourcesSideBarGroup />
         <SidebarGroup>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={isProjectView}
-                onClick={() => setIsProjectView(true)}
-              >
-                <span className='flex items-center justify-center'>
-                  <Leaf />
-                  <Link to={CorpusenseRoutes.PROJECT}>{t('view_beginner_mode')}</Link>
-                </span>
+              <SidebarMenuButton asChild isActive={pathname.includes(CorpusenseRoutes.COLLECTIONS)}>
+                <Link to={CorpusenseRoutes.COLLECTIONS}>
+                  <List />
+                  <span>{t('page_title_collection_manager')}</span>
+                  <Badge>{collections.length}</Badge>
+                </Link>
               </SidebarMenuButton>
+            </SidebarMenuItem>
+            <CollectionsSideBarGroup />
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={pathname.includes(CorpusenseRoutes.MODELS)}>
+                <Link to={CorpusenseRoutes.MODELS}>
+                  <Container />
+                  <span>{t('page_title_models_manager')}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
-                isActive={!isProjectView}
-                onClick={() => setIsProjectView(false)}
+                isActive={pathname.includes(CorpusenseRoutes.MODIFIERCHAIN)}
               >
-                <span className='flex items-center justify-center'>
-                  <TreeDeciduous />
-                  <Link to={CorpusenseRoutes.EXPERT}>{t('view_expert_mode')}</Link>
-                </span>
+                <Link to={CorpusenseRoutes.MODIFIERCHAIN}>
+                  <Container />
+                  <span>{t('page_title_modifierchain_manager')}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={pathname.includes(CorpusenseRoutes.WORKERS)}>
+                <Link to={CorpusenseRoutes.WORKERS}>
+                  <PocketKnife />
+                  <span>{t('page_title_workers_manager')}</span>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
-        {!isProjectView && (
-          <>
-            <SourcesSideBarGroup />
-            <SidebarGroup>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname.includes(CorpusenseRoutes.COLLECTIONS)}
-                  >
-                    <Link to={CorpusenseRoutes.COLLECTIONS}>
-                      <List />
-                      <span>{t('page_title_collection_manager')}</span>
-                      <Badge>{collections.length}</Badge>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <CollectionsSideBarGroup />
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={pathname.includes(CorpusenseRoutes.MODELS)}>
-                    <Link to={CorpusenseRoutes.MODELS}>
-                      <Container />
-                      <span>{t('page_title_models_manager')}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname.includes(CorpusenseRoutes.MODIFIERCHAIN)}
-                  >
-                    <Link to={CorpusenseRoutes.MODIFIERCHAIN}>
-                      <Container />
-                      <span>{t('page_title_modifierchain_manager')}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={pathname.includes(CorpusenseRoutes.WORKERS)}>
-                    <Link to={CorpusenseRoutes.WORKERS}>
-                      <PocketKnife />
-                      <span>{t('page_title_workers_manager')}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroup>
-            <WorkersSideBarGroup />
-          </>
-        )}
+        <WorkersSideBarGroup />
       </SidebarContent>
 
       <SidebarFooter>
