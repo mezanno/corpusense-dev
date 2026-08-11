@@ -44,6 +44,7 @@ export default tseslint.config(
       // "@typescript-eslint/no-untyped-public-signature": "error" // Empêche les signatures publiques sans type
       // 'no-unused-vars': 'warn',
       '@typescript-eslint/unbound-method': 'off', //évite les faux positifs sur les méthodes de classes
+      '@tanstack/query/exhaustive-deps': 'error', // Règle pour les dépendances de React Query
     },
   },
   {

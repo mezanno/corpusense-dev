@@ -6,7 +6,7 @@ import {
   getAnnotationRepository,
   getCollectionRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
-import { getFile, getImage } from '@/data/utils/canvas';
+import { getImage } from '@/data/utils/canvas';
 import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
@@ -42,8 +42,8 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
   try {
     const annotationRepository = getAnnotationRepository();
     const collectionRepository = getCollectionRepository();
-    const canvas = await collectionRepository.getCanvasByScope(task.scope);
-    const image = getImage(canvas);
+    const canvasWithSourceId = await collectionRepository.getCanvasByScope(task.scope);
+    const image = getImage(canvasWithSourceId.canvas);
     if (image.id === undefined) {
       return {
         status: WorkerStatus.ERROR,
@@ -67,7 +67,7 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       ];
     } else {
       const annotations = await annotationRepository.getByScope({
-        canvasId: canvas.id,
+        canvasId: canvasWithSourceId.canvas.id,
         collectionId: task.scope.collectionId,
       });
       const annotationRegions = annotations.filter(
@@ -91,10 +91,10 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       }
     }
 
-    let imageToProcess: string | File = image.id;
+    const imageToProcess: string | File = image.id;
     //check if the image is a local file
     if (!imageToProcess.toLocaleLowerCase().startsWith('http')) {
-      imageToProcess = await getFile(imageToProcess);
+      // imageToProcess = await getFile(imageToProcess);
     }
     console.log('imageToProcess: ', imageToProcess);
 

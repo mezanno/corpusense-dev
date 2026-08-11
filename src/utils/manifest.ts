@@ -1,6 +1,10 @@
+import { importerPlugins } from '@/App';
+import { ConvertedFile } from '@/data/models/ConvertedFile';
+import { getSourceRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { convertPresentation2 } from '@iiif/parser/presentation-2';
 import { Manifest } from '@iiif/presentation-3';
 import i18n from 'i18next';
+import { getErrorMessage } from './utils';
 
 export function isManifestUrl(str: string): boolean {
   const regex = /^https?:\/\/[^/\s]+(?:\/\S*)?$/i;
@@ -97,4 +101,81 @@ export const generateManifest = ({
       ],
     })),
   };
+};
+
+/**
+ * Side effect to fetch a manifest from a URL. First, it checks if the manifest is already
+ * stored in IndexedDB. If it is, it uses the stored manifest. If not, it fetches the manifest
+ * from the URL.
+ * @param action The action containing the URL of the manifest to fetch.
+ */
+export async function fetchManifestFromURL(url: string): Promise<Manifest> {
+  console.log('handleFetchManifestFromURL ', url);
+  const keys = Object.keys(importerPlugins);
+
+  //check if the manifest is already stored in IndexedDB
+  const sourceRepository = getSourceRepository();
+  const content = await sourceRepository.getContentByManifestUrl(url);
+  if (content) {
+    return content.manifest;
+  }
+  console.log('Manifest not found in IndexedDB');
+  // If the manifest is not found in IndexedDB, we try to fetch it from the URL
+  const importerKey = keys.find((key) => url.includes(key));
+  const importer =
+    importerKey !== undefined ? importerPlugins[importerKey] : importerPlugins['default'];
+  if (importer !== undefined && importer !== null) {
+    try {
+      const manifest = await fetchManifestWithPlugin({
+        fetchFunction: () => importer.import(url),
+      });
+      return manifest;
+    } catch (err) {
+      console.error('Error fetching manifest with plugin: ', err);
+      const msg = i18n.t('error_loading_manifest', { error: getErrorMessage(err) });
+      throw new Error(msg);
+    }
+  }
+  throw new Error(getErrorMessage('oups'));
+}
+
+/**
+ * Side effect to fetch a manifest. It can either fetch the manifest from a URL or use
+ * a stored manifest. It also fetches the metadata associated with the manifest.
+ * @param fetchFunction: A function to fetch the manifest. If not provided, it uses the stored manifest.
+ * @param storedManifest: The manifest to use if fetchFunction is not provided.
+ */
+async function fetchManifestWithPlugin({
+  fetchFunction,
+  storedManifest,
+}: {
+  fetchFunction?: () => Promise<object> | object;
+  storedManifest?: Manifest;
+}) {
+  let manifest: Manifest;
+  if (fetchFunction) {
+    const data = await fetchFunction();
+    manifest = convertJsonToManifest(data);
+  } else if (storedManifest !== undefined) {
+    manifest = storedManifest;
+  } else {
+    throw new Error(i18n.t('error_no_manifest_method'));
+  }
+
+  return manifest;
+}
+
+export const getManifestFromConvertedFile = async (
+  file: ConvertedFile,
+): Promise<Manifest | null> => {
+  const handle = file.outputDirectoryHandle;
+  const perm = await handle.queryPermission({ mode: 'read' });
+  if (perm !== 'granted') {
+    console.error('No permission to read the manifest directory');
+    return null;
+  }
+  const manifestFileHandle = await handle.getFileHandle(file.manifestName);
+  const manifestFile = await manifestFileHandle.getFile();
+  const manifestText = await manifestFile.text();
+  return convertJsonToManifest(JSON.parse(manifestText) as object);
 };

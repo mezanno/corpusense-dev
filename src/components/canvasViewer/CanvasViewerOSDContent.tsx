@@ -4,9 +4,8 @@ import {
   getDistanceBetweenAnnotations,
   getRectFromBounds,
 } from '@/data/utils/annotations';
-import { getSource } from '@/data/utils/canvas';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
-import { getErrorMessage } from '@/utils/utils';
+import useTileSource from '@/hooks/data/sources/useTileSource';
 import {
   AnnotationState,
   AnnotoriousOpenSeadragonAnnotator,
@@ -27,7 +26,7 @@ import {
   MoveVertical,
 } from 'lucide-react';
 import OpenSeadragon from 'openseadragon';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CanvasViewerMode } from './CanvasViewer';
 
@@ -40,11 +39,13 @@ const colors = {
 
 const CanvasViewerOSDContent = ({
   canvas,
+  sourceId,
   mode,
   hovered,
   setHovered,
 }: {
   canvas: Canvas;
+  sourceId: string;
   mode: CanvasViewerMode;
   hovered: string | null;
   setHovered: (id: string | null) => void;
@@ -53,16 +54,13 @@ const CanvasViewerOSDContent = ({
   const hover = useHover();
   const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
   const { removeAnnotationsByIds } = useAnnotationActions();
-  const [options, setOptions] = useState<OpenSeadragon.Options | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // const [options, setOptions] = useState<OpenSeadragon.Options | null>(null);
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>();
+  const { error, source } = useTileSource({ canvas, sourceId });
 
-  useEffect(() => {
-    const loadSource = async () => {
-      setError(null);
-      try {
-        const source = await getSource(canvas);
-        setOptions({
+  const options =
+    source !== null
+      ? {
           prefixUrl: `${import.meta.env.VITE_BASE_PATH}/images/`,
           defaultZoomLevel: 0.5,
           minZoomLevel: 0.1,
@@ -75,15 +73,8 @@ const CanvasViewerOSDContent = ({
           gestureSettingsMouse: {
             clickToZoom: false,
           },
-        });
-      } catch (e) {
-        setError(getErrorMessage(e));
-        console.error(e);
-      }
-    };
-
-    void loadSource();
-  }, [canvas]);
+        }
+      : null;
 
   useEffect(() => {
     if (hovered != null) {

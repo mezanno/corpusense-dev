@@ -11,17 +11,21 @@ import LoadModifierChainForm from '@/components/forms/LoadModifierChainForm';
 import LoginForm from '@/components/forms/LoginForm';
 import NewCollectionForm, { NewCollectionFormParams } from '@/components/forms/NewCollectionForm';
 import NewModelForm from '@/components/forms/NewModelForm';
+import NewProjectForm from '@/components/forms/NewProjectForm';
 import OpenManifestForm from '@/components/forms/OpenManifestForm';
 import RemoveAnnotationsForm from '@/components/forms/RemoveAnnotationsForm';
 import SaveModifierChainForm from '@/components/forms/SaveModifierChainForm';
 import StartWorkerForm from '@/components/forms/StartWorkerForm';
+import UpdateSourceNameForm from '@/components/forms/UpdateSourceNameForm';
 import UploadSourceForm, { UploadSourceFormParams } from '@/components/forms/UploadSourceForm';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import ModelPreview from '@/components/textviewer/ModelPreview';
 import { CollectionDetails } from '@/data/models/Collection';
 import { DataModel } from '@/data/models/DataModel';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
+import { Project } from '@/data/models/Project';
 import { CanvasScope, Scope } from '@/data/models/Scope';
+import { Source, SourceWithContent } from '@/data/models/Sources';
 import { Worker } from '@/data/models/Worker';
 import { ModifierChainData } from '@/data/utils/modifierChain';
 import { ReactNode, RefObject } from 'react';
@@ -36,7 +40,7 @@ export type FormProps<TResult = unknown> = {
 
 type FormDialogOptions = {
   title: string;
-  confirmLabel: string;
+  confirmLabel?: string;
   renderForm: (
     formRef: RefObject<HTMLFormElement | null>, //référence au formulaire pour pouvoir déclencher le submit
     setCanSubmit: (can: boolean) => void, //indique si le bouton de confirmation doit être actif (en fonction de la validité du formulaire)
@@ -59,15 +63,22 @@ const useDialog = () => {
   }: FormDialogOptions) => {
     const formRef = { current: null } as RefObject<HTMLFormElement | null>; // Create a new ref for each dialog
 
-    openDialog({
-      title,
-      children: renderForm(formRef, setCanSubmit, closeDialog),
-      onConfirm: {
-        message: confirmLabel,
-        action: () => formRef.current?.requestSubmit(),
-        closeOnAction,
-      },
-    });
+    if (confirmLabel === undefined) {
+      openDialog({
+        title,
+        children: renderForm(formRef, setCanSubmit, closeDialog),
+      });
+    } else {
+      openDialog({
+        title,
+        children: renderForm(formRef, setCanSubmit, closeDialog),
+        onConfirm: {
+          message: confirmLabel,
+          action: () => formRef.current?.requestSubmit(),
+          closeOnAction,
+        },
+      });
+    }
   };
 
   const openImportCollectionDialog = () => {
@@ -83,10 +94,10 @@ const useDialog = () => {
 
   const openNewCollectionDialog = (params?: NewCollectionFormParams) => {
     const extraProps =
-      params?.selection !== undefined && params.manifestId !== undefined
+      params?.selection !== undefined && params.sourceId !== undefined
         ? {
             selection: params.selection,
-            manifestId: params.manifestId,
+            sourceId: params.sourceId,
           }
         : {};
     openFormDialog({
@@ -138,14 +149,39 @@ const useDialog = () => {
     });
   };
 
-  const openOpenManifestDialog = () => {
+  type OpenManifestDialogOptions = {
+    onResult?: (sourceAddedId: string) => void;
+    existingSource?: SourceWithContent;
+  };
+
+  const openOpenManifestDialog = (options: OpenManifestDialogOptions) => {
     openFormDialog({
       title: t('btn_open_manifest'),
-      confirmLabel: t('btn_open_manifest'),
       renderForm: (formRef) => (
-        <OpenManifestForm formRef={formRef} setCanSubmit={setCanSubmit} closeDialog={closeDialog} />
+        <OpenManifestForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          closeDialog={closeDialog}
+          onResult={options.onResult}
+          existingSource={options.existingSource}
+        />
       ),
       closeOnAction: false,
+    });
+  };
+
+  const openConvertPdfDialog = (onResult: (sourceAddedId: string) => void) => {
+    openFormDialog({
+      title: t('title_import_pdf'),
+      // description: t('description_select_pdf'),
+      renderForm: (formRef) => (
+        <ConvertPdfForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          closeDialog={closeDialog}
+          onResult={onResult}
+        />
+      ),
     });
   };
 
@@ -227,14 +263,6 @@ const useDialog = () => {
     });
   };
 
-  const openConvertPdfDialog = () => {
-    openDialog({
-      title: t('title_import_pdf'),
-      description: t('description_select_pdf'),
-      children: <ConvertPdfForm />,
-    });
-  };
-
   const openSaveModifierChainDialog = (
     modifiers: AnyModifier[],
     modifiersValues: Record<string, unknown>,
@@ -307,6 +335,31 @@ const useDialog = () => {
     });
   };
 
+  const openCreateProjectDialog = (onResult: (project: Project) => void) => {
+    openFormDialog({
+      title: t('btn_create_project'),
+      confirmLabel: t('bnt_create_project'),
+      renderForm: (formRef) => (
+        <NewProjectForm formRef={formRef} setCanSubmit={setCanSubmit} onResult={onResult} />
+      ),
+    });
+  };
+
+  const openChangeSourceNameDialog = (source: Source, onResult: (result: void) => void) => {
+    openFormDialog({
+      title: t('title_rename_source'),
+      confirmLabel: t('btn_rename'),
+      renderForm: (formRef) => (
+        <UpdateSourceNameForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          source={source}
+          onResult={onResult}
+        />
+      ),
+    });
+  };
+
   return {
     openOpenManifestDialog,
     openImportCollectionDialog,
@@ -320,12 +373,14 @@ const useDialog = () => {
     openDuplicateLayoutDialog,
     openRemoveAnnotationsDialog,
     openExportCollectionDialog,
-    openConvertPdfForm: openConvertPdfDialog,
+    openConvertPdfDialog,
     openSaveModifierChainDialog,
     openLoadModifierChainDialog,
     openStartWorkerDialog,
     openDupicateCollectionDialog,
     openUploadSourceDialog,
+    openCreateProjectDialog,
+    openChangeSourceNameDialog,
   };
 };
 

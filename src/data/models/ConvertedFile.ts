@@ -1,11 +1,17 @@
-export interface ConvertedFile {
-  id: string;
-  title: string;
-  pageCount: number;
-  thumbnailBlob: Blob;
-  outputDirectoryHandle: FileSystemDirectoryHandle;
-  timestamp: number;
-  manifestName: string;
-  folderName: string;
-  githubManifestUrl?: string;
-}
+import { z } from 'zod';
+
+export const ConvertedFileSchema = z
+  .object({
+    id: z.string(),
+    title: z.string(),
+    pageCount: z.number().int().nonnegative(),
+    thumbnailBlob: z.instanceof(Blob),
+    outputDirectoryHandle: z.instanceof(FileSystemDirectoryHandle),
+    timestamp: z.number(),
+    manifestName: z.string(),
+    folderName: z.string(),
+    githubManifestUrl: z.string().optional(),
+  })
+  .strict();
+
+export type ConvertedFile = z.infer<typeof ConvertedFileSchema>;

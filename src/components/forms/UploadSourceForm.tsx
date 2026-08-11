@@ -10,14 +10,13 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { ConvertedFile } from '@/data/models/ConvertedFile';
-import useConvertedFileIO from '@/hooks/data/convertedFiles/useConvertedFileIO';
 import useRepository from '@/hooks/data/convertedFiles/useRepository';
+import useSource from '@/hooks/data/sources/useSource';
 import { FormProps } from '@/hooks/ui/useDialog';
 import i18n from '@/i18n';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, CheckCircle } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -31,17 +30,8 @@ type UploadSourceFormProps = FormProps & UploadSourceFormParams;
 const UploadSourceForm = ({ formRef, setCanSubmit, sourceId }: UploadSourceFormProps) => {
   const { t } = useTranslation();
   const { uploadToRepository, nameAlreadyExists, logs, status, progress } = useRepository();
-  const { getConvertedFile } = useConvertedFileIO();
-  const [convertedFile, setConvertedFile] = useState<ConvertedFile | null>(null);
+  const { sourceWithContent } = useSource(sourceId);
   const logsEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const loadData = async () => {
-      const cf = await getConvertedFile(sourceId);
-      setConvertedFile(cf);
-    };
-    void loadData();
-  }, [sourceId, getConvertedFile]);
 
   const formSchema = z
     .object({
@@ -82,13 +72,13 @@ const UploadSourceForm = ({ formRef, setCanSubmit, sourceId }: UploadSourceFormP
   }, [logs]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (convertedFile === null) return;
-    await uploadToRepository(convertedFile, values.name);
+    if (sourceWithContent === undefined) return;
+    await uploadToRepository(sourceWithContent, values.name);
   }
 
   return (
     <Form {...form}>
-      <FormDescription>Vous allez mettre en ligne {convertedFile?.title}</FormDescription>
+      <FormDescription>Vous allez mettre en ligne {sourceWithContent?.name}</FormDescription>
       <form onSubmit={form.handleSubmit(onSubmit)} className='w-full space-y-4' ref={formRef}>
         <FormField
           control={form.control}

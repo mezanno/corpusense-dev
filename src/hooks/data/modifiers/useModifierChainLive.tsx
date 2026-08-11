@@ -1,4 +1,5 @@
 import { ElementType } from '@/data/models/Annotation';
+import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
 import { CollectionScope } from '@/data/models/Scope';
 import { getModifierChainLiveRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { applyModifiersToScope, getModifiersAndValues } from '@/data/utils/modifierChain';
@@ -10,8 +11,12 @@ const useModifierChainLive = () => {
   const modifierChains = useLiveQuery(
     modifierChainLiveRepository.getAll(),
     [modifierChainLiveRepository],
-    [],
+    [] as ModifierChainDTO[],
   );
+
+  const modifierCount = useMemo(() => {
+    return modifierChains.length;
+  }, [modifierChains]);
 
   const nameAlreadyExists = (name: string): boolean => {
     return modifierChains?.some((chain) => chain.name === name) ?? false;
@@ -31,7 +36,7 @@ const useModifierChainLive = () => {
     await applyModifiersToScope(modifiers, modifierValues, scope, type);
   };
 
-  return { modifierChains, nameAlreadyExists, applyModifierChainToCollection };
+  return { modifierChains, modifierCount, nameAlreadyExists, applyModifierChainToCollection };
 };
 
 export default useModifierChainLive;

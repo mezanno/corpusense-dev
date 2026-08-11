@@ -1,0 +1,128 @@
+import { AddSourceDTO, Source, SourceContent } from '@/data/models/Sources';
+import { extractCanvasById } from '@/data/utils/manifest';
+import { Canvas } from '@iiif/presentation-3';
+import { v4 as uuid } from 'uuid';
+import { db } from './db';
+import { SourceRepository } from './types';
+
+export class IndexedDBSourceRepository implements SourceRepository {
+  async add(dto: AddSourceDTO): Promise<string> {
+    const sourceId = uuid();
+    try {
+      await db.transaction('rw', db.storedBlobs, db.sources, db.sourceContents, async () => {
+        const thumbnailBlobId = uuid();
+
+        await db.storedBlobs.add({
+          id: thumbnailBlobId,
+          blob: dto.thumbnailBlob,
+        });
+        await db.sources.add({
+          id: sourceId,
+          name: dto.name,
+          type: dto.type,
+          pageCount: dto.pageCount,
+          thumbnailBlobId,
+        });
+        if (dto.type === 'local') {
+          await db.sourceContents.add({
+            id: sourceId,
+            type: 'local',
+            manifest: dto.manifest,
+            localFile: {
+              ...dto.localFile,
+            },
+          } as SourceContent);
+        } else {
+          await db.sourceContents.add({
+            id: sourceId,
+            type: 'remote',
+            manifest: dto.manifest,
+          });
+        }
+      });
+
+      return sourceId;
+    } catch (error) {
+      console.error('Error adding source: ', error);
+      throw error;
+    }
+  }
+
+  async getBlob(blobId: string): Promise<Blob> {
+    const storedBlob = await db.storedBlobs.get(blobId);
+    if (!storedBlob) {
+      throw new Error(`Blob with id ${blobId} not found`);
+    }
+    return storedBlob.blob;
+  }
+
+  async getById(sourceId: string) {
+    const source = await db.sources.get(sourceId);
+    if (!source) {
+      throw new Error(`Source with id ${sourceId} not found`);
+    }
+    return source;
+  }
+
+  async getContentById(sourceId: string): Promise<SourceContent> {
+    console.log('getContentById ', sourceId);
+
+    const content = await db.sourceContents.get(sourceId);
+    if (!content) {
+      throw new Error(`Content for source with id ${sourceId} not found`);
+    }
+    return content;
+  }
+
+  async getContentByManifestUrl(manifestUrl: string): Promise<SourceContent | undefined> {
+    return (await db.sourceContents.toArray()).find(
+      (content) => content.manifest.id === manifestUrl,
+    );
+  }
+
+  async getCanvasById(sourceId: string, canvasId: string): Promise<Canvas> {
+    const content = await db.sourceContents.get(sourceId);
+    if (!content) {
+      throw new Error(`Content for source with id ${sourceId} not found`);
+    }
+    return extractCanvasById(content.manifest, canvasId);
+  }
+
+  async updateName(sourceId: string, name: string): Promise<void> {
+    await db.sources.update(sourceId, { name });
+  }
+
+  async update(
+    id: string,
+    changes: Partial<Omit<Source, 'thumbnailBlob' | 'outputDirectoryHandle'>> & {
+      githubManifestUrl?: string;
+    },
+  ): Promise<void> {
+    const { githubManifestUrl, ...sourceChanges } = changes;
+    if (Object.keys(sourceChanges).length > 0) {
+      await db.sources.update(id, sourceChanges);
+    }
+    if (githubManifestUrl !== undefined) {
+      await db.sourceContents
+        .where(':id')
+        .equals(id)
+        .modify((obj) => {
+          if (obj.type === 'local') {
+            obj.githubManifestUrl = githubManifestUrl;
+          }
+        });
+    }
+  }
+
+  async deleteById(sourceId: string): Promise<void> {
+    await db.transaction('rw', db.storedBlobs, db.sources, db.sourceContents, async () => {
+      const source = await db.sources.get(sourceId);
+      if (!source) {
+        throw new Error(`Source with id ${sourceId} not found`);
+      }
+      await db.storedBlobs.delete(source.thumbnailBlobId);
+      await db.sources.delete(sourceId);
+      await db.sourceContents.delete(sourceId);
+    });
+  }
+}

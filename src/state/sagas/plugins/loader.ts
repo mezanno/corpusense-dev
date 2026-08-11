@@ -1,6 +1,7 @@
 import { Result } from '@/data/models/Result';
 import { Task, Worker, WorkerResponse } from '@/data/models/Worker';
 import { getIsExperimentalFeaturesActivated } from '@/hooks/useExperimental';
+import { Manifest } from '@iiif/presentation-3';
 import z from 'zod';
 
 export type WorkerConfigurationParams = {
@@ -45,7 +46,7 @@ export type WorkerProcessResultFunction = (
 ) => Promise<WorkerResponse>;
 
 export type ImporterPlugin = { import: ImportFunction };
-export type ImportFunction = (url: string) => Promise<object>;
+export type ImportFunction = (url: string) => Promise<Manifest>;
 type ImporterModule = {
   default: ImportFunction;
   pluginName: string;

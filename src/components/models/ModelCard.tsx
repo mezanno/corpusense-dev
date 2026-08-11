@@ -3,7 +3,7 @@ import { useModelIO } from '@/hooks/data/models/useModelIO';
 import { Download, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAlertDialogContext } from '../reducers/useAlertDialogContext';
-import { Card, CardContent } from '../ui/card';
+import { Card, CardContent, CardFooter } from '../ui/card';
 // import ReactJsonView from '@microlink/react-json-view';
 
 export function ModelCard({
@@ -19,7 +19,7 @@ export function ModelCard({
   const { openDialog } = useAlertDialogContext();
   const { removeModel, exportModel } = useModelIO();
 
-  const handleRemoveConvertedFile: React.MouseEventHandler<HTMLDivElement> = (event) => {
+  const handleRemoveModel: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.stopPropagation();
     openDialog({
       title: t('title_are_you_sure'),
@@ -53,25 +53,25 @@ export function ModelCard({
         <h3 className='truncate text-left text-sm font-bold' title={model.name}>
           {model.name}
         </h3>
-        <div className='flex gap-x-1'>
-          <div
-            onClick={handleRemoveConvertedFile}
-            title={t('btn_delete')}
-            aria-label={t('btn_delete')}
-            className='cursor-pointer text-red-400 hover:text-red-600'
-          >
-            <Trash2 size={20} />
-          </div>
-          <div
-            onClick={handleDownloadModel}
-            title={t('btn_download_model')}
-            aria-label={t('btn_download_model')}
-            className='cursor-pointer text-black/50 hover:text-black'
-          >
-            <Download size={20} />
-          </div>
-        </div>
       </CardContent>
+      <CardFooter className='flex justify-end space-x-2'>
+        <div
+          onClick={handleRemoveModel}
+          title={t('btn_delete')}
+          aria-label={t('btn_delete')}
+          className='cursor-pointer text-red-400 hover:text-red-600'
+        >
+          <Trash2 size={20} />
+        </div>
+        <div
+          onClick={handleDownloadModel}
+          title={t('btn_download_model')}
+          aria-label={t('btn_download_model')}
+          className='cursor-pointer text-black/50 hover:text-black'
+        >
+          <Download size={20} />
+        </div>
+      </CardFooter>
     </Card>
   );
 }

@@ -1,15 +1,23 @@
 import { ContentResource, Manifest } from '@iiif/presentation-3';
-import { WithStringId } from './utils';
+import z from 'zod';
+import { ObjectWithStringIdSchema } from './utils';
 
-export type StoredManifestDetails = WithStringId & {
-  name: string;
-  thumbnail?: ContentResource;
-};
+const ManifestSchema = z.custom<Manifest>();
+const ContentResourceSchema = z.custom<ContentResource>();
 
-export type StoredManifestContent = WithStringId & {
-  content: Manifest;
-};
+export const StoredManifestDetailsSchema = ObjectWithStringIdSchema.extend({
+  name: z.string(),
+  thumbnail: ContentResourceSchema.optional(),
+});
 
-export type StoredManifest = StoredManifestDetails & {
-  content: Manifest;
-};
+export const StoredManifestContentSchema = ObjectWithStringIdSchema.extend({
+  content: ManifestSchema,
+});
+
+export const StoredManifestSchema = StoredManifestDetailsSchema.extend({
+  content: ManifestSchema,
+});
+
+export type StoredManifestDetails = z.infer<typeof StoredManifestDetailsSchema>;
+export type StoredManifestContent = z.infer<typeof StoredManifestContentSchema>;
+export type StoredManifest = z.infer<typeof StoredManifestSchema>;

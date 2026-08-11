@@ -1,21 +1,20 @@
 import WorkerStatusIcon from '@/components/workers/WorkerStatusIcon';
-import { getImageForThumbnail, getLabel, getObjectUrl } from '@/data/utils/canvas';
+import { getLabel } from '@/data/utils/canvas';
 import useOcrAnnotations from '@/hooks/data/annotations/useOcrAnnotations';
+import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import useConvertedFileIO from '@/hooks/data/convertedFiles/useConvertedFileIO';
-import { useFSHandleStore } from '@/state/zustand/useFSHandleStore';
-import { getErrorMessage } from '@/utils/utils';
-import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
+import useThumbnail from '@/hooks/data/sources/useThumbnail';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import 'gridstack/dist/gridstack.min.css';
 import { CircleX, SpellCheck, SpellCheck2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { useWorkerContext } from './reducers/WorkerContext';
 
 const GridThumb = ({
-  canvas,
+  canvasWithSourceId,
   collectionId,
   collectionContentIndex,
   thumbWidth,
@@ -23,57 +22,32 @@ const GridThumb = ({
   setCanvasToDisplay,
   canvasToDisplay,
 }: {
-  canvas: Canvas;
+  canvasWithSourceId: CanvasWithSourceId;
   collectionId: string;
   collectionContentIndex: number;
   thumbWidth: number;
   thumbHeight: number;
-  canvasToDisplay: Canvas | null;
-  setCanvasToDisplay: (canvas: Canvas | null) => void;
+  canvasToDisplay: CanvasWithSourceId | null;
+  setCanvasToDisplay: (canvas: CanvasWithSourceId | null) => void;
 }) => {
   const { t } = useTranslation();
-  const scope = useMemo(() => ({ collectionId, canvasId: canvas.id }), [collectionId, canvas.id]);
+  const scope = useMemo(
+    () => ({ collectionId, canvasId: canvasWithSourceId.canvas.id }),
+    [collectionId, canvasWithSourceId.canvas.id],
+  );
   const isWorkerRunning = useWorkerContext().isWorkerOrTaskRunning(scope);
-  const idDisplayed = canvasToDisplay?.id === canvas?.id;
+  const idDisplayed = canvasToDisplay?.canvas.id === canvasWithSourceId.canvas.id;
   const hasOcrAnnotations = useOcrAnnotations(scope).hasOcrAnnotations;
   const { removeElementFromCollection } = useCollections();
-  const [thumbnail, setThumbnail] = useState<IIIFExternalWebResource[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const { requestPermission } = useConvertedFileIO();
-  const { directoryHandles } = useFSHandleStore();
 
-  //TODO! 2 fois le même code que dans CanvasCard, à factoriser
-  useEffect(() => {
-    const fetchThumbnail = async () => {
-      setError(null);
-      const originalThumb = (canvas.thumbnail as IIIFExternalWebResource[]) ?? [
-        getImageForThumbnail(canvas, 200),
-      ];
-
-      const thumb = [...originalThumb];
-      const item = { ...thumb[0] };
-
-      if (item !== null && item.id?.startsWith('http') === false) {
-        try {
-          item.id = await getObjectUrl(item.id);
-        } catch (err) {
-          console.error('Failed to get file for thumbnail:', err);
-          setError(getErrorMessage(err));
-        }
-      }
-
-      thumb[0] = item;
-      setThumbnail(thumb);
-    };
-
-    void fetchThumbnail();
-  }, [canvas, directoryHandles]);
+  const { thumbnail, error } = useThumbnail(canvasWithSourceId);
 
   const handleDelete = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.stopPropagation();
     void (async () => {
-      await removeElementFromCollection(collectionId, canvas.id);
-      if (canvasToDisplay?.id === canvas.id) {
+      await removeElementFromCollection(collectionId, canvasWithSourceId.canvas.id);
+      if (canvasToDisplay?.canvas.id === canvasWithSourceId.canvas.id) {
         setCanvasToDisplay(null);
       }
     })();
@@ -81,16 +55,13 @@ const GridThumb = ({
 
   const handleOnClick = async () => {
     if (error === null) {
-      setCanvasToDisplay(canvas);
+      setCanvasToDisplay(canvasWithSourceId);
     } else {
-      // if (thumbnail === null) return;
-      // const image = thumbnail[0].id;
-      // const folder = image!.split('/')[image!.startsWith('/') ? 1 : 0];
       await requestPermission();
     }
   };
 
-  const match = canvas.id.match(/f\d+/);
+  const match = canvasWithSourceId.canvas.id.match(/f\d+/);
   const canvasItemId = match ? match[0] : '';
 
   return (
@@ -137,9 +108,10 @@ const GridThumb = ({
         )
       )}
       <div className='flex w-full justify-between p-1 text-xs'>
-        {canvas.label !== undefined && canvas.label !== null && (
-          <span className='truncate'>{getLabel(canvas)}</span>
-        )}
+        {canvasWithSourceId.canvas.label !== undefined &&
+          canvasWithSourceId.canvas.label !== null && (
+            <span>{getLabel(canvasWithSourceId.canvas)}</span>
+          )}
         <span className='text-dark-slate-gray-300 italic'>{canvasItemId}</span>
       </div>
       <WorkerStatusIcon scope={scope} />

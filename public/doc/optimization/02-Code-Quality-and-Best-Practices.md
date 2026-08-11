@@ -1,7 +1,7 @@
 # Qualité du Code et Bonnes Pratiques
 
-## Analyse Actuelle (Mise à jour Avril 2026)
-Le code est généralement propre et typé. De nouvelles pratiques ont été établies, notamment avec l'adoption croissante de modèles événementiels et de hooks personnalisés pour encapsuler les actions complexes.
+## Analyse Actuelle (Mise à jour Juin 2026)
+Le code est généralement propre et typé. De nouvelles pratiques ont été établies, notamment avec l'adoption croissante de modèles événementiels, la structuration améliorée des opérations d'entrée/sortie (Data IO), et des hooks personnalisés pour encapsuler les actions complexes.
 
 ## Bonnes Pratiques pour la Logique Métier
 
@@ -16,8 +16,9 @@ Le code est généralement propre et typé. De nouvelles pratiques ont été ét
 
 ## Points d'Amélioration Divers
 
-### 1. Nettoyage du Code
+### 1. Nettoyage du Code et Traçabilité
 - Continuer la suppression des `console.log` de débogage.
+- **Contexte des erreurs** : Toujours inclure un contexte pertinent (comme le `collectionId` ou le nom du fichier) lors de la journalisation (logging) d'erreurs dans des fonctions utilitaires complexes (ex: `generateCanvas`). Cela facilite grandement le suivi en production.
 
 ### 2. Typage TypeScript
 - Utiliser rigoureusement les schémas **Zod** pour valider et assainir les données aux frontières de l'application. Éviter d'utiliser `as` pour forcer des types non sécurisés.

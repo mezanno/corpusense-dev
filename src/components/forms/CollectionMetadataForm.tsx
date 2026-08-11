@@ -76,7 +76,7 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
 
   const { t } = useTranslation();
 
-  const manifestIds = uniq(collection.content.map((el) => el.manifestId));
+  const sourceIds = uniq(collection.content.map((el) => el.sourceId));
 
   const handleTagAdded = async (newTags: FormTag[]) => {
     const diff = newTags.filter((tag) => !tags.some((elt) => elt.id === tag.id));
@@ -348,7 +348,7 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
         <div className='mt-2 flex h-full flex-col'>
           <FormLabel>{t('form_label_collection_manifest')}</FormLabel>
           <ul className='mt-1 max-h-32 flex-1 overflow-auto rounded border bg-white p-2'>
-            {manifestIds.map((id) => (
+            {sourceIds.map((id) => (
               <Link
                 className='block break-all underline'
                 key={id}

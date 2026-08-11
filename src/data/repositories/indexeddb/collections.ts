@@ -1,6 +1,7 @@
 import { CollectionElement } from '@/data/models/CollectionElement';
 import { AnnotationScope, CanvasScope } from '@/data/models/Scope';
 import { Tag } from '@/data/models/Tag';
+import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import { Canvas } from '@iiif/presentation-3';
 import { groupBy, mapValues } from 'lodash';
 import { v4 as uuid } from 'uuid';
@@ -8,7 +9,7 @@ import { Collection, CollectionDetails } from '../../models/Collection';
 import { db } from './db';
 import {
   getAnnotationRepository,
-  getManifestRepository,
+  getSourceRepository,
   getTagRepository,
   getWorkerRepository,
 } from './dbFactory';
@@ -45,29 +46,58 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
       throw new Error(`Collection with id ${collectionId} not found`);
     }
 
+    const collectionContent = await db.collectionContents.get(collectionId);
+    const content = collectionContent?.content || [];
+    if (content.length === 0) {
+      return [];
+    }
+
+    const sourceRepository = getSourceRepository();
+
     //get the list of canvases in the collection (with their manifestId)
-    const canvasesByManifest = groupBy(
-      collection.content.map((elt) => ({
-        canvasId: elt.canvasId,
-        manifestId: elt.manifestId,
-      })),
-      'manifestId',
+    const canvaseIdsWithSourceIds = await Promise.all(
+      content.map(async (elt) => {
+        const sourceId = elt.sourceId;
+        const source = await sourceRepository.getContentById(sourceId);
+
+        return {
+          canvasId: elt.canvasId,
+          sourceId: source.id,
+        };
+      }),
     );
+
+    const canvasesBySourceId = groupBy(canvaseIdsWithSourceIds, 'sourceId');
+
     //group the canvases by manifestId
-    const groupedCanvasesIds = mapValues(canvasesByManifest, (value) =>
+    const groupedCanvasesIds = mapValues(canvasesBySourceId, (value) =>
       value.map((elt) => elt.canvasId),
     );
-    const manifestRepository = getManifestRepository();
+
     const canvases: Canvas[] = [];
-    for (const manifestId in groupedCanvasesIds) {
-      const canvasIds = groupedCanvasesIds[manifestId];
+    for (const sourceId in groupedCanvasesIds) {
+      const canvasIds = groupedCanvasesIds[sourceId];
       if (canvasIds.length > 0) {
-        const result = await manifestRepository.getCanvasesByIds(manifestId, canvasIds);
-        canvases.push(...result);
+        const results = canvasIds.length
+          ? await Promise.all(canvasIds.map((id) => sourceRepository.getCanvasById(sourceId, id)))
+          : [];
+        canvases.push(...results);
       }
     }
 
     return canvases;
+  }
+
+  async getSourceIdsByCollectionId(collectionId: string): Promise<string[]> {
+    const collection = await this.getById(collectionId);
+    if (collection === undefined) {
+      throw new Error(`Collection with id ${collectionId} not found`);
+    }
+    const content = collection.content;
+    if (content.length === 0) {
+      return [];
+    }
+    return [...new Set(content.map((elt) => elt.sourceId))];
   }
 
   async getOfflineCollections(): Promise<CollectionDetails[]> {
@@ -83,7 +113,7 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     ).then((canvases) => canvases.flat());
   }
 
-  async getCanvasByScope(scope: CanvasScope | AnnotationScope): Promise<Canvas> {
+  async getCanvasByScope(scope: CanvasScope | AnnotationScope): Promise<CanvasWithSourceId> {
     const collection = await this.getById(scope.collectionId);
     if (collection === undefined) {
       throw new Error(`Collection with id ${scope.collectionId} not found`);
@@ -96,10 +126,10 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
       );
     }
 
-    return await getManifestRepository().getCanvasById(
-      collectionElement.manifestId,
-      scope.canvasId,
-    );
+    return {
+      canvas: await getSourceRepository().getCanvasById(collectionElement.sourceId, scope.canvasId),
+      sourceId: collectionElement.sourceId,
+    };
   }
 
   async exists(id: string): Promise<boolean> {
@@ -214,6 +244,10 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
   async delete(
     collectionToRemove: Collection,
   ): Promise<{ workersIds: string[]; collectionId: string }> {
+    return await this.deleteById(collectionToRemove.id);
+  }
+
+  async deleteById(collectionId: string): Promise<{ workersIds: string[]; collectionId: string }> {
     return await db.transaction(
       'rw',
       [db.collections, db.collectionContents, db.annotations, db.workers, db.results],
@@ -221,17 +255,17 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
         //remove the annotations of the collection
         const annotationRepository = getAnnotationRepository();
         await annotationRepository.deleteByScope({
-          collectionId: collectionToRemove.id,
+          collectionId,
         });
         //remove the workers associated to the collection
         const workerRepository = getWorkerRepository();
         const workersIds = await workerRepository.deleteByScope({
-          collectionId: collectionToRemove.id,
+          collectionId,
         });
         //remove the collection
-        await db.collections.delete(collectionToRemove.id);
-        await db.collectionContents.delete(collectionToRemove.id);
-        return { workersIds, collectionId: collectionToRemove.id };
+        await db.collections.delete(collectionId);
+        await db.collectionContents.delete(collectionId);
+        return { workersIds, collectionId };
       },
     );
   }

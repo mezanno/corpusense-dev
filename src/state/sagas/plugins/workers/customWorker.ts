@@ -67,8 +67,8 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
   }
   try {
     const collectionRepository = getCollectionRepository();
-    const canvas = await collectionRepository.getCanvasByScope(task.scope);
-    const image = getImage(canvas);
+    const canvasWithSourceId = await collectionRepository.getCanvasByScope(task.scope);
+    const image = getImage(canvasWithSourceId.canvas);
     if (image.id === undefined) {
       return {
         status: WorkerStatus.ERROR,

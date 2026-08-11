@@ -1,4 +1,4 @@
-import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
+import { Canvas } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import {
   ContextMenu,
@@ -11,12 +11,13 @@ import {
   ContextMenuTrigger,
 } from './ui/context-menu';
 
-import { getImageForThumbnail, getLabel, getObjectUrl } from '@/data/utils/canvas';
+import { getLabel } from '@/data/utils/canvas';
 import { useCollections } from '@/hooks/data/collections/useCollections';
+import useThumbnail from '@/hooks/data/sources/useThumbnail';
 import useDialog from '@/hooks/ui/useDialog';
 import { useCanvasSelection } from '@/hooks/useCanvasSelection';
 import { truncateMiddle } from '@/utils/utils';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { ScrollArea } from './ui/scroll-area';
@@ -24,7 +25,7 @@ import { ScrollArea } from './ui/scroll-area';
 interface CanvasCardProps {
   index: number;
   canvas: Canvas;
-  manifestId: string;
+  sourceId: string;
   thumbWidth: number;
   thumbHeight: number;
   canvasToDisplay: Canvas | null;
@@ -34,7 +35,7 @@ interface CanvasCardProps {
 const CanvasCard = ({
   index,
   canvas,
-  manifestId,
+  sourceId,
   thumbWidth,
   thumbHeight,
   setCanvasToDisplay,
@@ -51,40 +52,13 @@ const CanvasCard = ({
     setSelection,
   } = useCanvasSelection();
 
-  const [thumbnail, setThumbnail] = useState<IIIFExternalWebResource[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const { openNewCollectionDialog } = useDialog();
   const [search, setSearch] = useState<string>('');
 
   const filteredCollections = useMemo(() => {
     return collections.filter((col) => col.name.toLowerCase().includes(search.toLowerCase()));
   }, [collections, search]);
-
-  useEffect(() => {
-    const fetchThumbnail = async () => {
-      setError(null);
-      const originalThumb = (canvas.thumbnail as IIIFExternalWebResource[]) ?? [
-        getImageForThumbnail(canvas, 200),
-      ];
-
-      const thumb = [...originalThumb];
-      const item = { ...thumb[0] };
-
-      if (item !== null && item.id?.startsWith('http') === false) {
-        try {
-          item.id = await getObjectUrl(item.id);
-        } catch (err) {
-          console.error('Failed to get file for thumbnail:', err);
-          setError(t('error_fsfile_not_found', { id: item.id }));
-        }
-      }
-
-      thumb[0] = item;
-      setThumbnail(thumb);
-    };
-
-    void fetchThumbnail();
-  }, [canvas]);
+  const { thumbnail, error } = useThumbnail({ canvas, sourceId });
 
   const handleSetSelectionStart = () => {
     setSelectionStart(index);
@@ -104,8 +78,8 @@ const CanvasCard = ({
 
       await addSelectionToCollection({
         selection: getSelectedCanvases(),
-        collectionId: collectionId,
-        manifestId,
+        collectionId,
+        sourceId,
       });
     })();
   };
@@ -124,7 +98,7 @@ const CanvasCard = ({
   };
 
   const handleCreateCollection = () => {
-    openNewCollectionDialog({ selection: getSelectedCanvases(), manifestId });
+    openNewCollectionDialog({ selection: getSelectedCanvases(), sourceId });
   };
 
   const idDisplayed = canvasToDisplay?.id === canvas?.id;

@@ -32,7 +32,7 @@ import {
   User2,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Sidebar,
   SidebarContent,
@@ -91,6 +91,9 @@ const CollectionsSideBarGroup = () => {
   const navigation = useAppNavigation();
   const { openedCollections, removeFromOpenedCollections } = useCollectionContext();
 
+  const { pathname } = useLocation();
+  console.log('pathname: ', pathname);
+
   if (openedCollections.length === 0) {
     return null; // No collections opened, nothing to display
   }
@@ -118,7 +121,11 @@ const CollectionsSideBarGroup = () => {
                   (col) =>
                     col.id !== undefined && (
                       <SidebarMenuSubItem key={col.id}>
-                        <SidebarMenuSubButton className='h-auto' asChild>
+                        <SidebarMenuSubButton
+                          className='h-auto'
+                          asChild
+                          isActive={pathname.includes(col.id)}
+                        >
                           <div>
                             <CornerDownRight color='#fcfbf6' />
                             <Link
@@ -156,6 +163,7 @@ const CollectionsSideBarGroup = () => {
 
 const SourcesSideBarGroup = () => {
   const { t } = useTranslation();
+  const { pathname } = useLocation();
 
   const menus = [
     {
@@ -186,7 +194,11 @@ const SourcesSideBarGroup = () => {
               <SidebarMenuSub>
                 {menus.map((item) => (
                   <SidebarMenuSubItem key={item.title}>
-                    <SidebarMenuSubButton className='h-auto' asChild>
+                    <SidebarMenuSubButton
+                      className='h-auto'
+                      asChild
+                      isActive={pathname.includes(item.url)}
+                    >
                       <Link to={item.url}>
                         <item.icon color='#fcfbf6' />
                         <span>{item.title}</span>
@@ -209,6 +221,7 @@ const LayoutSideBar = () => {
   const { collections } = useCollections();
   const { openLoginDialog } = useDialog();
   const { experimentalFeaturesActivated } = useExperimental();
+  const { pathname } = useLocation();
 
   const handleLogout = () => {
     void (async () => {
@@ -218,12 +231,12 @@ const LayoutSideBar = () => {
 
   return (
     <Sidebar>
+      <SidebarHeader className='w-full bg-white'>
+        <Link className='flex items-center justify-center' to={'/'}>
+          <img src={`${import.meta.env.VITE_BASE_PATH}/images/logo.png`} className='w-2/3'></img>
+        </Link>
+      </SidebarHeader>
       <SidebarContent>
-        <SidebarHeader className='w-full bg-white'>
-          <Link className='flex items-center justify-center' to={'/'}>
-            <img src={`${import.meta.env.VITE_BASE_PATH}/images/logo.png`} className='w-2/3'></img>
-          </Link>
-        </SidebarHeader>
         {experimentalFeaturesActivated && (
           <SidebarGroup>
             <SidebarMenu>
@@ -257,7 +270,7 @@ const LayoutSideBar = () => {
         <SidebarGroup>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
+              <SidebarMenuButton asChild isActive={pathname.includes(CorpusenseRoutes.COLLECTIONS)}>
                 <Link to={CorpusenseRoutes.COLLECTIONS}>
                   <List />
                   <span>{t('page_title_collection_manager')}</span>
@@ -267,7 +280,7 @@ const LayoutSideBar = () => {
             </SidebarMenuItem>
             <CollectionsSideBarGroup />
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
+              <SidebarMenuButton asChild isActive={pathname.includes(CorpusenseRoutes.MODELS)}>
                 <Link to={CorpusenseRoutes.MODELS}>
                   <Container />
                   <span>{t('page_title_models_manager')}</span>
@@ -275,7 +288,10 @@ const LayoutSideBar = () => {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname.includes(CorpusenseRoutes.MODIFIERCHAIN)}
+              >
                 <Link to={CorpusenseRoutes.MODIFIERCHAIN}>
                   <Container />
                   <span>{t('page_title_modifierchain_manager')}</span>
@@ -283,7 +299,7 @@ const LayoutSideBar = () => {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
+              <SidebarMenuButton asChild isActive={pathname.includes(CorpusenseRoutes.WORKERS)}>
                 <Link to={CorpusenseRoutes.WORKERS}>
                   <PocketKnife />
                   <span>{t('page_title_workers_manager')}</span>

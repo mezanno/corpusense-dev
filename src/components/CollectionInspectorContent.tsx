@@ -32,6 +32,7 @@ const CollectionInspectorContent = ({
   const { t } = useTranslation();
   const {
     collection,
+    canvases,
     getCanvasById,
     setCanvasToDisplay,
     canvasToDisplay,
@@ -41,6 +42,7 @@ const CollectionInspectorContent = ({
   const { openCollection } = useCollectionContext();
   const { setScope } = useAnnotationContext();
   const canvas = defaultCanvasId !== null ? getCanvasById(defaultCanvasId) : null;
+
   // const [activeTab, setActiveTab] = useState('document');
 
   const [colCount, setColCount] = useState(5);
@@ -68,11 +70,11 @@ const CollectionInspectorContent = ({
 
   useEffect(() => {
     setCanvasToDisplay(canvas);
-  }, [collectionId, canvas]);
+  }, [collectionId, canvas?.canvas.id]);
 
   useEffect(() => {
     if (canvasToDisplay !== null) {
-      setScope({ canvasId: canvasToDisplay.id, collectionId });
+      setScope({ canvasId: canvasToDisplay.canvas.id, collectionId });
     }
   }, [canvasToDisplay]);
 
@@ -178,11 +180,11 @@ const CollectionInspectorContent = ({
                                 {colVirtualizer.getVirtualItems().map((virtualColumn) => {
                                   const index = virtualRow.index * colCount + virtualColumn.index;
 
-                                  if (index >= collection.contentSize) return null;
-                                  const gtCanvas = getCanvasById(
-                                    collection.content[index].canvasId,
-                                  );
-                                  if (gtCanvas === null) return null;
+                                  if (index >= canvases.length) return null;
+                                  const gtCanvas = canvases[index];
+                                  if (gtCanvas === null || gtCanvas === undefined) return null;
+                                  // console.log('gtCanvas ', gtCanvas);
+
                                   return (
                                     <div
                                       key={`${virtualRow.key}-${virtualColumn.key}`}
@@ -196,7 +198,7 @@ const CollectionInspectorContent = ({
                                       }}
                                     >
                                       <GridThumb
-                                        canvas={gtCanvas}
+                                        canvasWithSourceId={gtCanvas}
                                         collectionId={collection.id}
                                         collectionContentIndex={index}
                                         thumbWidth={virtualColumn.size}
@@ -237,7 +239,8 @@ const CollectionInspectorContent = ({
             <div className='flex h-full w-full flex-col'>
               <CanvasViewer
                 collectionId={collectionId}
-                canvas={canvasToDisplay}
+                sourceId={canvasToDisplay.sourceId}
+                canvas={canvasToDisplay.canvas}
                 setCanvasToDisplay={setCanvasToDisplay}
               />
             </div>

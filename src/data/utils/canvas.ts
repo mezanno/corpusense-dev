@@ -1,7 +1,6 @@
-import { getConvertedFileRepository } from '@/data/repositories/indexeddb/dbFactory';
+import i18n from '@/i18n';
 import { useFSHandleStore } from '@/state/zustand/useFSHandleStore';
 import { Canvas, IIIFExternalWebResource, ImageService } from '@iiif/presentation-3';
-import i18n from '@/i18n';
 import { TileSource } from 'openseadragon';
 
 const getLabel = (canvas: Canvas): string => {
@@ -54,16 +53,15 @@ const getImageForThumbnail = (canvas: Canvas, maxWidth: number = 150): IIIFExter
   return image;
 };
 
-const getFile = async (filepath: string) => {
+const getFile = async (filepath: string, handle: FileSystemDirectoryHandle) => {
+  console.log('getFile ', filepath);
+
   const pathParts = filepath.split('/');
   if (pathParts.length < 2) {
     throw new Error(i18n.t('error_malformed_filepath', { path: filepath }));
   }
-  const convertedFilesRepository = getConvertedFileRepository();
   const folderName = pathParts[0];
   try {
-    const convertedFile = await convertedFilesRepository.getByFolderName(folderName);
-    const handle = convertedFile.outputDirectoryHandle;
     return await getFileFromHandle(pathParts[1], handle);
   } catch (e) {
     //if there is no converted file, we try to get it from the FSHandle store
@@ -86,11 +84,15 @@ const getFileFromHandle = async (filename: string, handle: FileSystemDirectoryHa
   return await fileHandle.getFile();
 };
 
-const getObjectUrl = async (filepath: string) => {
-  return URL.createObjectURL(await getFile(filepath));
+const getObjectUrl = async (filepath: string, handle: FileSystemDirectoryHandle) => {
+  return URL.createObjectURL(await getFile(filepath, handle));
 };
 
-const getSource = async (canvas: Canvas): Promise<TileSource[]> => {
+//TODO! refactor plus propre
+const getTileSource = async (
+  canvas: Canvas,
+  handle?: FileSystemDirectoryHandle,
+): Promise<TileSource[]> => {
   const image = getImage(canvas);
 
   let source: TileSource[] = [];
@@ -103,8 +105,8 @@ const getSource = async (canvas: Canvas): Promise<TileSource[]> => {
       }
     }
   } else {
-    if (image?.id !== undefined && !image.id.startsWith('http')) {
-      const url = await getObjectUrl(image.id);
+    if (image?.id !== undefined && !image.id.startsWith('http') && handle !== undefined) {
+      const url = await getObjectUrl(image.id, handle);
       source = [{ type: 'image', url: url }] as unknown as TileSource[];
     } else {
       source = [{ type: 'image', url: image.id }] as unknown as TileSource[];
@@ -153,8 +155,8 @@ export {
   getImage,
   getImageForThumbnail,
   getLabel,
-  getObjectUrl,
-  getSource,
+  // getObjectUrl,
+  getTileSource,
   imageToBase64,
   imageUrlToBase64,
   toGallicaUrl,

@@ -4,15 +4,17 @@ import { CollectionElement } from '@/data/models/CollectionElement';
 import { ConvertedFile } from '@/data/models/ConvertedFile';
 import { DataModel } from '@/data/models/DataModel';
 import { FSHandle } from '@/data/models/FSHandle';
-import { History } from '@/data/models/History';
 import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
 import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
 import { NamedEntity } from '@/data/models/NamedEntity';
+import { Project } from '@/data/models/Project';
 import { Result, ResultCreateDTO } from '@/data/models/Result';
 import { AnnotationScope, CanvasScope, Scope } from '@/data/models/Scope';
+import { AddSourceDTO, Source, SourceContent } from '@/data/models/Sources';
 import { StoredManifestDetails } from '@/data/models/StoredManifest';
 import { Tag } from '@/data/models/Tag';
 import { Worker } from '@/data/models/Worker';
+import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import { Canvas, Manifest } from '@iiif/presentation-3';
 
 export interface AnnotationRepository {
@@ -45,7 +47,8 @@ export interface CollectionRepository {
   getById(id: string): Promise<Collection>;
   getTagsByCollectionId(collectionId: string): Promise<Tag[]>;
   getCanvasesByCollectionId(collectionId: string): Promise<Canvas[]>;
-  getCanvasByScope(scope: CanvasScope | AnnotationScope): Promise<Canvas>;
+  getCanvasByScope(scope: CanvasScope | AnnotationScope): Promise<CanvasWithSourceId>;
+  getSourceIdsByCollectionId(collectionId: string): Promise<string[]>;
   getOfflineCollections(): Promise<CollectionDetails[]>;
   getOfflineCanvases(): Promise<Canvas[]>;
   exists(id: string): Promise<boolean>;
@@ -63,6 +66,7 @@ export interface CollectionRepository {
 
   delete(collectionToRemove: Collection): Promise<{ workersIds: string[]; collectionId: string }>;
   deleteMultiple(collectionsToRemoveIds: string[]): Promise<void>;
+  deleteById(collectionId: string): Promise<{ workersIds: string[]; collectionId: string }>;
   deleteElement(collectionId: string, canvasId: string): Promise<Collection>;
 }
 
@@ -79,12 +83,26 @@ export interface ManifestRepository {
   getById(manifestId: string): Promise<Manifest>;
   getDetailsByManifestIds(manifestIds: string[]): Promise<StoredManifestDetails[]>;
   getMetadata(manifestId: string): Promise<ItemMetadataAttribute[]>;
-  getHistoryEntries(): Promise<History[]>;
+}
 
-  add(manifest: Manifest): Promise<void>;
-  addToHistory(url: string): Promise<History>;
+export interface SourceRepository {
+  add(source: AddSourceDTO): Promise<string>;
 
-  deleteFromHistory(url: string): Promise<void>;
+  getBlob(blobId: string): Promise<Blob>;
+  getById(sourceId: string): Promise<Source>;
+  getContentById(sourceId: string): Promise<SourceContent>;
+  getContentByManifestUrl(manifestUrl: string): Promise<SourceContent | undefined>;
+  getCanvasById(sourceId: string, canvasId: string): Promise<Canvas>;
+
+  updateName(sourceId: string, name: string): Promise<void>;
+  update(
+    id: string,
+    changes: Partial<Omit<Source, 'thumbnailBlob' | 'outputDirectoryHandle'>> & {
+      githubManifestUrl?: string;
+    },
+  ): Promise<void>;
+
+  deleteById(sourceId: string): Promise<void>;
 }
 
 export interface TagRepository {
@@ -175,4 +193,13 @@ export interface ModifierChainRepository {
   put(chain: ModifierChainDTO): Promise<void>;
 
   delete(id: string): Promise<void>;
+}
+
+export interface ProjectRepository {
+  getAll(): Promise<Project[]>;
+  getById(id: string): Promise<Project>;
+
+  add(project: Project): Promise<void>;
+
+  addSource(projectId: string, sourceId: string): Promise<void>;
 }

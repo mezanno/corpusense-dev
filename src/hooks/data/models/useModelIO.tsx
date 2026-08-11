@@ -1,4 +1,4 @@
-import { DataModel } from '@/data/models/DataModel';
+import { DataModel, DataModelSchema } from '@/data/models/DataModel';
 import { getModelRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { useAppDispatch } from '@/hooks/hooks';
 import i18n from '@/i18n';
@@ -35,9 +35,13 @@ export const useModelIO = () => {
     }
   };
 
-  const importModel = async (data: object, overwrite: boolean) => {
+  const importModel = async (data: unknown, overwrite: boolean) => {
     try {
-      const model = data as DataModel; //TODO: validate the model structure and display error if invalid
+      const validation = DataModelSchema.safeParse(data);
+      if (!validation.success) {
+        throw new Error('Invalid model structure');
+      }
+      const model = validation.data;
       console.log(model);
 
       const existingModel = await modelRepository.getByName(model.name);

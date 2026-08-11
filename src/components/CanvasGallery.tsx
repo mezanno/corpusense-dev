@@ -1,6 +1,5 @@
-import { useAppSelector } from '@/hooks/hooks';
+import { SourceWithContent } from '@/data/models/Sources';
 import { useCanvasSelection } from '@/hooks/useCanvasSelection';
-import { selectCanvases, selectManifestURL } from '@/state/selectors/manifests';
 import { Canvas } from '@iiif/presentation-3';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Fragment, useEffect, useRef, useState } from 'react';
@@ -10,15 +9,16 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import CanvasCard from './CanvasCard';
 
 const CanvasGallery = ({
+  sourceWithContent,
   canvasToDisplay,
   setCanvasToDisplay,
 }: {
+  sourceWithContent: SourceWithContent;
   canvasToDisplay: Canvas | null;
   setCanvasToDisplay: (canvas: Canvas | null) => void;
 }) => {
   const { t } = useTranslation();
-  const canvases = useAppSelector(selectCanvases);
-  const manifestId = useAppSelector(selectManifestURL);
+  const canvases = sourceWithContent.content.manifest.items;
   const { setSelection, getSelectionCount } = useCanvasSelection();
 
   const [colCount, setColCount] = useState(5);
@@ -157,7 +157,7 @@ const CanvasGallery = ({
                                 <CanvasCard
                                   canvas={canvas}
                                   index={index}
-                                  manifestId={manifestId}
+                                  sourceId={sourceWithContent.id}
                                   thumbWidth={virtualColumn.size}
                                   thumbHeight={virtualRow.size}
                                   setCanvasToDisplay={setCanvasToDisplay}

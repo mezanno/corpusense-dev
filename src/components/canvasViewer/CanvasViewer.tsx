@@ -1,3 +1,4 @@
+import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { Annotorious } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
@@ -17,12 +18,14 @@ export enum CanvasViewerMode {
 
 const CanvasViewer = ({
   canvas,
-  collectionId: collectionId,
+  collectionId,
+  sourceId,
   setCanvasToDisplay,
 }: {
   canvas: Canvas;
   collectionId?: string;
-  setCanvasToDisplay?: (canvas: Canvas | null) => void;
+  sourceId: string;
+  setCanvasToDisplay?: (canvas: CanvasWithSourceId | null) => void;
 }) => {
   const [mode, setMode] = useState<CanvasViewerMode>(CanvasViewerMode.MOVE);
   const [showAnnotations, setShowAnnotations] = useState(true);
@@ -74,6 +77,7 @@ const CanvasViewer = ({
               <ResizablePanel minSize={50} className='flex h-full w-full flex-col'>
                 <CanvasViewerOSDContent
                   canvas={canvas}
+                  sourceId={sourceId}
                   mode={mode}
                   hovered={hovered}
                   setHovered={setHovered}

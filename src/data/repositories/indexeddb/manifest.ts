@@ -73,18 +73,4 @@ export class IndexedDBManifestRepository implements ManifestRepository {
       });
     }
   }
-
-  async getHistoryEntries() {
-    return await db.history.toArray();
-  }
-
-  async addToHistory(url: string) {
-    const addedHistory = { url };
-    await db.history.add(addedHistory);
-    return addedHistory;
-  }
-
-  async deleteFromHistory(url: string) {
-    await db.history.delete(url);
-  }
 }

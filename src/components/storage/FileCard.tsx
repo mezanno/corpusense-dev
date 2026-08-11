@@ -1,5 +1,5 @@
 import { ConvertedFile } from '@/data/models/ConvertedFile';
-import useConvertedFileIO from '@/hooks/data/convertedFiles/useConvertedFileIO';
+import useSources from '@/hooks/data/sources/useSources';
 import useDialog from '@/hooks/ui/useDialog';
 import useAppNavigation from '@/hooks/useAppNavigation';
 import { ClipboardCopy, Clock, Cloud, Layers, Trash2, UploadCloud } from 'lucide-react';
@@ -14,10 +14,10 @@ interface FileCardProps {
 
 export function FileCard({ file }: FileCardProps) {
   const { t } = useTranslation();
-  const { removeConvertedFile } = useConvertedFileIO();
   const { goToManifestExplorer } = useAppNavigation();
   const { openDialog } = useAlertDialogContext();
   const { openUploadSourceDialog } = useDialog();
+  const { removeSourceFromLibrary } = useSources();
 
   const thumbUrl = useMemo(() => URL.createObjectURL(file.thumbnailBlob), [file.thumbnailBlob]);
 
@@ -26,14 +26,14 @@ export function FileCard({ file }: FileCardProps) {
     openUploadSourceDialog({ sourceId: file.id });
   };
 
-  const handleRemoveConvertedFile: React.MouseEventHandler<HTMLDivElement> = (event) => {
+  const handleRemoveLocalSource: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.stopPropagation();
     openDialog({
       title: t('title_are_you_sure'),
       description: t('description_delete_converted_file'),
       onConfirm: {
         message: t('btn_yes'),
-        action: () => void removeConvertedFile(file.id),
+        action: () => void removeSourceFromLibrary(file.id),
       },
     });
   };
@@ -48,7 +48,7 @@ export function FileCard({ file }: FileCardProps) {
   return (
     <Card
       className='card-file flex flex-col overflow-hidden bg-white'
-      onClick={() => void goToManifestExplorer({ indexeddbId: file.id })}
+      onClick={() => void goToManifestExplorer(file.id)}
       style={{ cursor: 'pointer' }}
     >
       <CardHeader className='overflow-hidden'>
@@ -85,7 +85,7 @@ export function FileCard({ file }: FileCardProps) {
           <UploadCloud size={16} />
         </div>
         <div
-          onClick={handleRemoveConvertedFile}
+          onClick={handleRemoveLocalSource}
           title={t('btn_delete')}
           aria-label={t('btn_delete')}
           className='text-red-400 hover:text-red-600'

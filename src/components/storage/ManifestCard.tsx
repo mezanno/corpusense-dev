@@ -1,71 +1,124 @@
-import { StoredManifestDetails } from '@/data/models/StoredManifest';
-import { useManifests } from '@/hooks/data/manifests/useManifests';
+import { Source } from '@/data/models/Sources';
+import useBlob from '@/hooks/data/sources/useBlob';
+import useSource from '@/hooks/data/sources/useSource';
+import useSources from '@/hooks/data/sources/useSources';
+import useDialog from '@/hooks/ui/useDialog';
 import useAppNavigation from '@/hooks/useAppNavigation';
-import { IIIFExternalWebResource } from '@iiif/presentation-3';
-import { Thumbnail } from '@samvera/clover-iiif/primitives';
-import { FileImage, Trash2 } from 'lucide-react';
-import { useMemo } from 'react';
+import { cn } from '@/lib/utils';
+import { ClipboardCopy, Clock, Cloud, Layers, Pen, Trash2, UploadCloud } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAlertDialogContext } from '../reducers/useAlertDialogContext';
-import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
+import { Card, CardContent, CardFooter } from '../ui/card';
 
 interface ManifestCardProps {
-  details: StoredManifestDetails;
+  source: Source;
+  isHighlighted: boolean;
 }
 
-export function ManifestCard({ details }: ManifestCardProps) {
+export function ManifestCard({ source, isHighlighted }: ManifestCardProps) {
   const { t } = useTranslation();
   const { goToManifestExplorer } = useAppNavigation();
   const { openDialog } = useAlertDialogContext();
-  const { removeFromHistory } = useManifests();
+  const { openOpenManifestDialog, openUploadSourceDialog } = useDialog();
+  const { removeSourceFromLibrary } = useSources();
+  const { thumbUrl } = useBlob(source.thumbnailBlobId);
+  const { sourceWithContent } = useSource(source.id);
 
-  const thumbnail = useMemo(() => {
-    if (details.thumbnail !== undefined) {
-      return (
-        <Thumbnail
-          thumbnail={[details.thumbnail] as IIIFExternalWebResource[]}
-          style={{ objectFit: 'cover' }}
-          aria-label='thumbnail'
-        />
-      );
-    }
-    return <FileImage size={48} />;
-  }, [details]);
-
-  const handleRemoveConvertedFile: React.MouseEventHandler<HTMLDivElement> = (event) => {
+  const handleRemoveRemoteSource: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.stopPropagation();
     openDialog({
       title: t('title_are_you_sure'),
       description: t('description_delete_converted_file'),
       onConfirm: {
         message: t('btn_yes'),
-        action: () => void removeFromHistory(details.id),
+        action: () => void removeSourceFromLibrary(source.id),
       },
     });
   };
 
+  const handleUploadToCloud: React.MouseEventHandler<HTMLDivElement> = (event) => {
+    event.stopPropagation();
+    openUploadSourceDialog({ sourceId: source.id });
+  };
+
+  const handleEditRemoteSource: React.MouseEventHandler<HTMLDivElement> = (event) => {
+    event.stopPropagation();
+    openOpenManifestDialog({ existingSource: sourceWithContent });
+  };
+
+  const handleCopyToClipBoard: React.MouseEventHandler<HTMLDivElement> = (event) => {
+    event.stopPropagation();
+    if (
+      sourceWithContent?.content.type === 'local' &&
+      sourceWithContent.content.githubManifestUrl !== undefined
+    ) {
+      void navigator.clipboard.writeText(sourceWithContent.content.githubManifestUrl);
+    }
+  };
+
   return (
     <Card
-      className='card-file flex flex-col overflow-hidden bg-white'
-      onClick={() => void goToManifestExplorer({ manifestId: details.id })}
-      style={{ cursor: 'pointer' }}
+      className={cn(
+        'card-file flex min-w-40 flex-col overflow-hidden bg-white',
+        isHighlighted && 'border-4 border-primary-foreground',
+      )}
+      onClick={() => void goToManifestExplorer(source.id)}
+      style={{
+        backgroundImage: thumbUrl !== null ? `url(${thumbUrl})` : undefined,
+        backgroundSize: 'cover', // couvre tout le card
+        backgroundPosition: 'center', // centre l'image
+        backgroundRepeat: 'no-repeat', // évite la répétition
+        cursor: 'pointer',
+      }}
     >
-      <CardHeader className='overflow-hidden'>
-        {/* <img src={thumbUrl} alt={file.title} className='rounded-t-xl object-cover' /> */}
-        {thumbnail}
-      </CardHeader>
-      <CardContent className='flex flex-col justify-center'>
-        <h3 className='font-bold' title={details.name}>
-          {details.name}
+      <CardContent className='flex h-fit w-full flex-1 flex-col items-end justify-end rounded-t-xl bg-white/50 p-1'>
+        <h3 className='font-bold' title={source.name}>
+          {source.name}
         </h3>
+        <div className='flex items-center space-x-2 text-sm'>
+          <Layers size={14} /> <span>{source.pageCount} Pages</span>
+        </div>
+        {sourceWithContent?.content.type === 'local' && (
+          <>
+            <div className='flex items-center space-x-2 text-sm'>
+              <Clock size={14} /> <span>{new Date().toLocaleDateString()}</span>
+            </div>
+            {sourceWithContent.content.githubManifestUrl !== undefined && (
+              <div
+                className='flex items-center space-x-2 text-sm'
+                title={sourceWithContent.content.githubManifestUrl}
+                onClick={handleCopyToClipBoard}
+              >
+                <Cloud size={14} /> <span className='truncate'>This is online!</span>
+                <ClipboardCopy size={14} />
+              </div>
+            )}
+          </>
+        )}
       </CardContent>
-      <CardFooter
-        title={t('btn_delete')}
-        aria-label={t('btn_delete')}
-        className='cursor-pointer justify-end text-red-400 hover:text-red-600'
-        onClick={handleRemoveConvertedFile}
-      >
-        <Trash2 size={14} />
+      <CardFooter className='flex justify-between rounded-b-xl bg-white p-2'>
+        <div
+          onClick={handleEditRemoteSource}
+          className='cursor-pointer'
+          title={t('btn_edit_source')}
+        >
+          <Pen size={20} className='text-green-400 hover:text-green-600' />
+        </div>
+        <div
+          onClick={handleUploadToCloud}
+          title={t('btn_upload_to_cloud')}
+          aria-label={t('btn_upload_to_cloud')}
+          className='text-blue-400 hover:text-blue-600'
+        >
+          <UploadCloud size={16} />
+        </div>
+        <div
+          onClick={handleRemoveRemoteSource}
+          className='cursor-pointer'
+          title={t('btn_delete_source')}
+        >
+          <Trash2 size={20} className='text-red-400 hover:text-red-600' />
+        </div>
       </CardFooter>
     </Card>
   );

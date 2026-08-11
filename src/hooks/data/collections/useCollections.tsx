@@ -19,7 +19,7 @@ export interface CreateCollectionWithSelectionPayload {
   selection: Canvas[];
   name: string;
   id?: string;
-  manifestId: string;
+  sourceId: string;
 }
 
 export const useCollections = () => {
@@ -32,6 +32,10 @@ export const useCollections = () => {
     [],
     [] as CollectionDetails[],
   );
+
+  const collectionCount = useMemo(() => {
+    return collections.length;
+  }, [collections]);
 
   const getCollectionById = useCallback(
     (id: string) => collections.find((c) => c.id === id),
@@ -62,7 +66,7 @@ export const useCollections = () => {
   };
 
   const createCollectionWithSelection = async (action: CreateCollectionWithSelectionPayload) => {
-    const { id, name, selection, manifestId } = action;
+    const { id, name, selection, sourceId } = action;
     const collectionId = id ?? uuid();
     const newCollection: CollectionDetails = {
       id: collectionId,
@@ -74,7 +78,7 @@ export const useCollections = () => {
     const content = generateCollectionContent(
       0,
       selection.map((c) => c.id),
-      manifestId,
+      sourceId,
     );
 
     try {
@@ -113,9 +117,9 @@ export const useCollections = () => {
   const addSelectionToCollection = async (action: {
     selection: Canvas[];
     collectionId: string;
-    manifestId: string;
+    sourceId: string;
   }) => {
-    const { selection, collectionId, manifestId } = action;
+    const { selection, collectionId, sourceId } = action;
     try {
       const collection = await collectionRepository.getById(collectionId);
 
@@ -125,7 +129,7 @@ export const useCollections = () => {
       const newContent = generateCollectionContent(
         existingContent.length - 1,
         selection.map((canvas) => canvas.id),
-        manifestId,
+        sourceId,
         existingCanvasIds,
       );
       const updatedCollection = {
@@ -215,6 +219,7 @@ export const useCollections = () => {
 
   return {
     collections,
+    collectionCount,
     getCollectionById,
     nameAlreadyExists,
     createCollection,
