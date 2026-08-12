@@ -1,8 +1,16 @@
 # Résumé de l'Audit et des Recommandations
 
-**Dernière mise à jour** : 14 Avril 2026
+**Dernière mise à jour** : 25 Juin 2026
 **Date initiale** : 27 Novembre 2025
 **Contexte** : Audit complet du projet `corpusense-dev` pour identifier les pistes d'optimisation, les améliorations possibles et le respect des bonnes pratiques.
+
+## État d'avancement (Juin 2026)
+
+De nouvelles améliorations axées sur l'import/export de données et la qualité de vie utilisateur ont été ajoutées :
+
+- **Amélioration de l'Import/Export** : Refonte de la logique d'export (`useCollectionIO` / `ExportCollectionForm`) et d'import (`useCollectionImporter`). Intégration d'un suivi de progression détaillé en temps réel et d'une structure de code plus propre et maintenable.
+- **Feedback UI (Logger)** : Refactorisation du `LoggerPanel` pour qu'il scrolle automatiquement vers la dernière entrée lors de longs traitements, renforçant l'expérience de suivi d'activité.
+- **Traçabilité des erreurs** : Ajout de contexte (ex: `collectionId`) dans la génération de canevas pour simplifier le débogage.
 
 ## État d'avancement (Avril 2026)
 
@@ -61,9 +69,15 @@ L'ensemble des recommandations est détaillé dans les fichiers suivants :
 9. **[09-Unit-Tests-Documentation.md](./09-Unit-Tests-Documentation.md)** (Fait)
    - Documentation détaillée des tests implémentés, de la configuration globale et de la stratégie de mocking.
 
+10. **[10-Optimizations-Status.md](./10-Optimizations-Status.md)** (Nouveau - Juin 2026)
+    - Bilan complet des optimisations prévues versus réalisées, avec plan d'action détaillé pour les chantiers restants.
+
+
 ## Prochaines Étapes Prioritaires
 
 1. **Restructuration des composants** : Appliquer la proposition du document 07 pour améliorer la scalabilité.
-2. **Optimisation de `CanvasCard`** : Implémenter `React.memo` et améliorer le lazy-loading des images.
-3. **Nettoyage de Redux/Saga** : Continuer à migrer les Workers et les Manifestes pour supprimer totalement Redux-Saga à terme.
-4. **Tests E2E** : Commencer l'implémentation de tests de bout en bout avec Playwright comme suggéré dans le document 06.
+2. **Optimisation de `CanvasCard` et du chargement des vignettes** : Implémenter `React.memo` et un système de cache/lazy-loading dans `useThumbnail`.
+3. **Exclusion de `redux-logger` en Production** : Conditionner l'ajout du middleware logger dans `store.ts`.
+4. **Nettoyage de Redux/Saga** : Continuer à migrer les Workers et les Manifestes pour supprimer totalement Redux-Saga à terme.
+5. **Tests E2E** : Commencer l'implémentation de tests de bout en bout avec Playwright comme suggéré dans le document 06.
+

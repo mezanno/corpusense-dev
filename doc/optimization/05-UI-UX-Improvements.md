@@ -1,7 +1,7 @@
 # Améliorations UI/UX
 
-## Analyse Actuelle (Mise à jour Avril 2026)
-L'interface utilise Tailwind CSS et s'appuie sur des composants orientés shadcn/ui. Plusieurs améliorations ergonomiques récentes visent à rendre les expériences utilisateur plus fluides et dynamiques, par exemple grâce à un modèle d'interface adaptatif et immersif (Floating UI, mode plein écran contextuel) ainsi qu'à de meilleures validations.
+## Analyse Actuelle (Mise à jour Juin 2026)
+L'interface utilise Tailwind CSS et s'appuie sur des composants orientés shadcn/ui. Plusieurs améliorations ergonomiques récentes visent à rendre les expériences utilisateur plus fluides et dynamiques, par exemple grâce à un modèle d'interface adaptatif, de meilleurs retours de progression (ex: lors de l'export), et des panneaux de logs auto-scrollants.
 
 ## Bonnes Pratiques en Conception UI/UX
 
@@ -11,8 +11,8 @@ L'interface utilise Tailwind CSS et s'appuie sur des composants orientés shadcn
 ### 2. Transitions Immersives et Mode Plein Écran
 - **Recommandation** : Pour des workflows spécifiques nécessitant une grande concentration ou la manipulation de médias/canevas, déclencher des expériences en **Fullscreen mode** lors des premières interactions pertinentes (ex: bascule de l'état d'Initialisation vers l'état Actif). Cela favorise une immersion optimale et sans distraction.
 
-### 3. Feedback Utilisateur et Thématiques Visuelles Premium
-- **Recommandation** : Assurer des retours immédiats clairs pour chaque interaction à travers des micro-animations et validations (via `sonner` pour la réussite/l'échec, des Squelettes pour le chargement). Viser des designs dynamiques au rendu **"premium"**, exploitant correctement les couleurs du thème (dark/light) plutôt que des choix génériques, tout en tirant parti du CSS pour les transitions (plutôt que des scripts lourds).
+### 3. Feedback Utilisateur et Transparence des Processus
+- **Recommandation** : Assurer des retours immédiats clairs pour chaque interaction (via `sonner` pour la réussite/l'échec, des Squelettes pour le chargement, ou des barres de progression pour les exports/imports). Lors de traitements longs, fournir un **panneau de logs auto-scrollant** (comme implémenté dans `ExportCollectionForm` et `LoggerPanel`) pour maintenir la confiance et la transparence vis-à-vis de l'utilisateur. Viser des designs dynamiques au rendu **"premium"**, exploitant correctement les couleurs du thème (dark/light).
 
 ## Points d'Opérations Structurelles
 
