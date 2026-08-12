@@ -59,12 +59,18 @@ const useSources = () => {
     await sourceRepository.updateName(sourceId, name);
   };
 
+  const clearAllSources = async () => {
+    const sourceRepository = getSourceRepository();
+    await sourceRepository.deleteAll();
+  };
+
   return {
     removeSourceFromLibrary,
     fetchManifest,
     addManifestToLibrary,
     getSourceWithContent,
     updateSourceName,
+    clearAllSources,
   };
 };
 

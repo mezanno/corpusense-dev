@@ -3,6 +3,7 @@ import { useAlertDialogContext } from '@/components/reducers/useAlertDialogConte
 import { Checkbox } from '@/components/ui/checkbox';
 import { clearDatabase } from '@/data/repositories/indexeddb/db';
 import { GITHUB_TOKEN_STORAGE_KEY } from '@/hooks/data/convertedFiles/useRepository';
+import useSources from '@/hooks/data/sources/useSources';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useExperimental from '@/hooks/useExperimental';
 import { pushInfo } from '@/state/reducers/events';
@@ -18,6 +19,7 @@ const ConfigurationPage = () => {
   const { experimentalFeaturesActivated, setExperimentalFeaturesActivated } = useExperimental();
   const { openDialog } = useAlertDialogContext();
   const pluginsInfo = useAppSelector(selectWorkerPluginsInfo);
+  const { clearAllSources } = useSources();
 
   const flattenedFields = useMemo(
     () =>
@@ -101,6 +103,20 @@ const ConfigurationPage = () => {
     });
   };
 
+  const onResetSources = () => {
+    openDialog({
+      title: t('title_are_you_sure'),
+      description: t('info_reset_indexeddb'),
+      onConfirm: {
+        action: async () => {
+          await clearAllSources();
+          appDispatch(pushInfo(t('toast_indexeddb_cleared')));
+        },
+        message: t('btn_yes'),
+      },
+    });
+  };
+
   const handleCheckboxChange = (checked: boolean) => {
     setExperimentalFeaturesActivated(checked === true);
   };
@@ -160,13 +176,19 @@ const ConfigurationPage = () => {
           />
         </div>
       </div>
-      <div className='mt-2 border border-red-500 p-1 text-red-500'>
+      <div className='mt-2 gap-2 border border-red-500 p-1 text-red-500'>
         <strong className='mt-2'>Indexeddb</strong>
         <div>{t('info_reset_indexeddb')}</div>
-        <button className='soft-button' onClick={onResetIndexedDB}>
-          <DatabaseZap />
-          {t('btn_reset_indexeddb')}
-        </button>
+        <div className='mt-2 flex gap-2'>
+          <button className='soft-button' onClick={onResetIndexedDB}>
+            <DatabaseZap />
+            {t('btn_reset_indexeddb')}
+          </button>
+          <button className='soft-button' onClick={onResetSources}>
+            <DatabaseZap />
+            {t('btn_reset_sources')}
+          </button>
+        </div>
       </div>
     </section>
   );
