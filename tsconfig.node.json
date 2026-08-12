@@ -13,7 +13,8 @@
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
-    "noEmit": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./node_modules/.tmp/types",
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
