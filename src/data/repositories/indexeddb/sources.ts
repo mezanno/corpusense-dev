@@ -1,5 +1,9 @@
 import { AddSourceDTO, Source, SourceContent } from '@/data/models/Sources';
-import { extractCanvasById } from '@/data/utils/manifest';
+import { extractCanvasById, getThumbnailBlob } from '@/data/utils/manifest';
+import {
+  getManifestFromConvertedFile,
+  reconstructManifestFromConvertedFile,
+} from '@/utils/manifest';
 import { Canvas } from '@iiif/presentation-3';
 import { v4 as uuid } from 'uuid';
 import { db } from './db';
@@ -124,5 +128,158 @@ export class IndexedDBSourceRepository implements SourceRepository {
       await db.sources.delete(sourceId);
       await db.sourceContents.delete(sourceId);
     });
+  }
+
+  async deleteAll(): Promise<void> {
+    await db.transaction('rw', db.storedBlobs, db.sources, db.sourceContents, async () => {
+      const sources = await db.sources.toArray();
+      const thumbnailBlobIds = sources.map((source) => source.thumbnailBlobId);
+      await db.storedBlobs.bulkDelete(thumbnailBlobIds);
+      await db.sources.clear();
+      await db.sourceContents.clear();
+    });
+  }
+
+  /**
+   * Returns the total number of entries still present in the legacy tables
+   * (storedManifests + convertedFiles) that have not yet been migrated to
+   * the new sources/sourceContents schema.
+   */
+  async getPendingMigrationCount(): Promise<number> {
+    const [manifests, files, existingContents] = await Promise.all([
+      db.storedManifests.toArray(),
+      db.convertedFiles.toArray(),
+      db.sourceContents.toArray(),
+    ]);
+
+    // Build the set of manifest ids already present in sourceContents.
+    const migratedManifestIds = new Set(existingContents.map((c) => c.manifest.id));
+
+    // storedManifests.id is the manifest URL → already migrated if found in sourceContents.
+    const pendingManifests = manifests.filter((m) => !migratedManifestIds.has(m.id)).length;
+
+    const sourceContentsIds = new Set(existingContents.map((c) => c.id));
+    const pendingFiles = files.filter((f) => !sourceContentsIds.has(f.id)).length;
+
+    return pendingManifests + pendingFiles;
+  }
+
+  /**
+   * Migrates all legacy data (storedManifests + convertedFiles) to the new
+   * sources/sourceContents schema, then updates collection references and
+   * clears the legacy tables.
+   * This method is intended to be called on explicit user action.
+   */
+  async migrateAllSources(): Promise<void> {
+    const storedManifests = await db.storedManifests.toArray();
+    const storedManifestContents = await db.storedManifestContents.toArray();
+    const convertedFiles = await db.convertedFiles.toArray();
+
+    // Build an id mapping to update collection references after migration
+    const manifestIdMap = new Map<string, string>();
+
+    // ----------------------------
+    // 🔁 Remote manifests (storedManifests → sources)
+    // ----------------------------
+    for (const manifest of storedManifests) {
+      const content = storedManifestContents.find((c) => c.id === manifest.id);
+      if (content === undefined) {
+        console.warn(`No content found for manifest ${manifest.id}, skipping.`);
+        continue;
+      }
+
+      const sourceId = uuid();
+      const thumbnailBlobId = uuid();
+
+      let thumbnailBlob = new Blob();
+      try {
+        thumbnailBlob = await getThumbnailBlob(content.content);
+      } catch {
+        console.warn(`Could not fetch thumbnail for manifest ${manifest.id}.`);
+      }
+
+      try {
+        await db.transaction('rw', db.storedBlobs, db.sources, db.sourceContents, async () => {
+          await db.storedBlobs.add({ id: thumbnailBlobId, blob: thumbnailBlob });
+          await db.sources.add({
+            id: sourceId,
+            name: manifest.name,
+            type: 'remote',
+            pageCount: content.content?.items?.length ?? 0,
+            thumbnailBlobId,
+          });
+          await db.sourceContents.add({
+            id: sourceId,
+            type: 'remote',
+            manifest: content.content,
+          });
+        });
+        manifestIdMap.set(manifest.id, sourceId);
+      } catch (error) {
+        console.error(`Error migrating manifest ${manifest.id}:`, error);
+      }
+    }
+
+    // ----------------------------
+    // 🔁 Local files (convertedFiles → sources)
+    // ----------------------------
+    for (const file of convertedFiles) {
+      const thumbnailBlobId = uuid();
+
+      // Try to read the real manifest from disk; fall back to reconstruction
+      const manifest =
+        (await getManifestFromConvertedFile(file)) ?? reconstructManifestFromConvertedFile(file);
+
+      try {
+        await db.transaction('rw', db.storedBlobs, db.sources, db.sourceContents, async () => {
+          await db.storedBlobs.add({ id: thumbnailBlobId, blob: file.thumbnailBlob });
+          await db.sources.add({
+            id: file.id,
+            name: file.title,
+            type: 'local',
+            pageCount: file.pageCount,
+            thumbnailBlobId,
+          });
+          await db.sourceContents.add({
+            id: file.id,
+            type: 'local',
+            manifest,
+            localFile: {
+              outputDirectoryHandle: file.outputDirectoryHandle,
+              timestamp: file.timestamp,
+              manifestName: file.manifestName,
+              folderName: file.folderName,
+            },
+          } as SourceContent);
+        });
+        manifestIdMap.set(file.id, file.id);
+      } catch (error) {
+        console.error(`Error migrating converted file ${file.id}:`, error);
+      }
+    }
+
+    // ----------------------------
+    // 🔁 Update collection references (manifestId → sourceId)
+    // ----------------------------
+    await db.collectionContents.toCollection().modify((collection) => {
+      for (const element of collection.content) {
+        const oldId = element.manifestId;
+        if (oldId !== undefined && oldId !== '') {
+          const newId = manifestIdMap.get(oldId);
+          if (newId !== undefined && newId !== '') {
+            element.sourceId = newId;
+          } else if (element.sourceId === undefined || element.sourceId === '') {
+            element.sourceId = oldId;
+          }
+        }
+      }
+    });
+
+    // ----------------------------
+    // 🧹 Clear legacy tables
+    // ----------------------------
+    // await db.storedManifests.clear();
+    // await db.storedManifestContents.clear();
+    // await db.convertedFiles.clear();
   }
 }

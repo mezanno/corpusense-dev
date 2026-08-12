@@ -103,6 +103,10 @@ export interface SourceRepository {
   ): Promise<void>;
 
   deleteById(sourceId: string): Promise<void>;
+  deleteAll(): Promise<void>;
+
+  getPendingMigrationCount(): Promise<number>;
+  migrateAllSources(): Promise<void>;
 }
 
 export interface TagRepository {
