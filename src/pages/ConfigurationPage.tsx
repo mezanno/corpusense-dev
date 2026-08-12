@@ -1,14 +1,17 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { clearDatabase } from '@/data/repositories/indexeddb/db';
 import { GITHUB_TOKEN_STORAGE_KEY } from '@/hooks/data/convertedFiles/useRepository';
 import useSources from '@/hooks/data/sources/useSources';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import useDbBackup from '@/hooks/useDbBackup';
 import useExperimental from '@/hooks/useExperimental';
 import { pushInfo } from '@/state/reducers/events';
 import { selectWorkerPluginsInfo } from '@/state/selectors/workers';
-import { DatabaseZap } from 'lucide-react';
+import { DatabaseZap, Download, Upload } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +23,15 @@ const ConfigurationPage = () => {
   const { openDialog } = useAlertDialogContext();
   const pluginsInfo = useAppSelector(selectWorkerPluginsInfo);
   const { clearAllSources } = useSources();
+  const {
+    exportDatabase,
+    importDatabase,
+    triggerImportPicker,
+    importInputRef,
+    isBusy,
+    exportProgress,
+    importProgress,
+  } = useDbBackup();
 
   const flattenedFields = useMemo(
     () =>
@@ -123,73 +135,144 @@ const ConfigurationPage = () => {
 
   return (
     <section className='panel h-full flex-col'>
-      <h1 className='text-xl'>{t('page_title_configuration')}</h1>
-      <h2 className='mt-2'>GitHub</h2>
-      <div className='mt-2 w-1/2'>
-        <form onSubmit={handleGitHubSubmit(onGitHubSubmit)}>
-          <div className='mb-4'>
-            <label htmlFor='github_token' className='mb-1 block font-medium'>
-              {t('form_label_github_token')}
-            </label>
-            <input
-              type='password'
-              id='github_token'
-              {...registerGitHub('github_token')}
-              className='w-full rounded border border-gray-300 px-3 py-2'
-            />
+      <ScrollArea className='h-full'>
+        <div className='pr-4'>
+          <h1 className='text-xl'>{t('page_title_configuration')}</h1>
+          <h2 className='mt-2'>GitHub</h2>
+          <div className='mt-2 w-1/2'>
+            <form onSubmit={handleGitHubSubmit(onGitHubSubmit)}>
+              <div className='mb-4'>
+                <label htmlFor='github_token' className='mb-1 block font-medium'>
+                  {t('form_label_github_token')}
+                </label>
+                <input
+                  type='password'
+                  id='github_token'
+                  {...registerGitHub('github_token')}
+                  className='w-full rounded border border-gray-300 px-3 py-2'
+                />
+              </div>
+              <button className='soft-button' type='submit' title={t('btn_save')}>
+                {t('btn_save')}
+              </button>
+            </form>
           </div>
-          <button className='soft-button' type='submit' title={t('btn_save')}>
-            {t('btn_save')}
-          </button>
-        </form>
-      </div>
-      <h2 className='mt-2'>API</h2>
-      <div className='mt-2 w-1/2'>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          {flattenedFields.map((field) => (
-            <div key={field.key} className='mb-4'>
-              <label htmlFor={field.key} className='mb-1 block font-medium'>
-                {field.description}
-              </label>
-              <input
-                type='text'
-                id={field.key}
-                {...register(field.key)}
-                className='w-full rounded border border-gray-300 px-3 py-2'
+          <h2 className='mt-2'>API</h2>
+          <div className='mt-2 w-1/2'>
+            <form onSubmit={handleSubmit(onSubmit)}>
+              {flattenedFields.map((field) => (
+                <div key={field.key} className='mb-4'>
+                  <label htmlFor={field.key} className='mb-1 block font-medium'>
+                    {field.description}
+                  </label>
+                  <input
+                    type='text'
+                    id={field.key}
+                    {...register(field.key)}
+                    className='w-full rounded border border-gray-300 px-3 py-2'
+                  />
+                </div>
+              ))}
+              <button className='soft-button' type='submit' title={t('btn_save')}>
+                {t('btn_save')}
+              </button>
+            </form>
+          </div>
+          <div className='mt-2 border border-red-500 p-1 text-red-500'>
+            <div>
+              <strong>{t('attention')}</strong> {t('info_experimental_features')}
+            </div>
+            <div className='mt-2 flex items-center gap-2'>
+              <div>{t('btn_experimental_features')}</div>
+              <Checkbox
+                checked={experimentalFeaturesActivated}
+                onCheckedChange={handleCheckboxChange}
               />
             </div>
-          ))}
-          <button className='soft-button' type='submit' title={t('btn_save')}>
-            {t('btn_save')}
-          </button>
-        </form>
-      </div>
-      <div className='mt-2 border border-red-500 p-1 text-red-500'>
-        <div>
-          <strong>{t('attention')}</strong> {t('info_experimental_features')}
+          </div>
+          <div className='mt-2 gap-2 border p-1'>
+            <strong>Backup / Restore</strong>
+            <div>{t('info_backup_restore')}</div>
+            <div className='mt-2 flex gap-2'>
+              <button className='soft-button' onClick={exportDatabase} disabled={isBusy}>
+                <Download size={16} />
+                {t('btn_export_indexeddb')}
+              </button>
+              <button className='soft-button' onClick={triggerImportPicker} disabled={isBusy}>
+                <Upload size={16} />
+                {t('btn_import_indexeddb')}
+              </button>
+              <input
+                ref={importInputRef}
+                type='file'
+                accept='.json'
+                className='hidden'
+                onChange={importDatabase}
+              />
+            </div>
+            {exportProgress !== null && (
+              <div className='mt-2'>
+                <div className='mb-1 text-sm'>
+                  {exportProgress.done
+                    ? t('export_progress_done')
+                    : t('export_progress_status', {
+                        completedRows: exportProgress.completedRows,
+                        totalRows: exportProgress.totalRows,
+                        completedTables: exportProgress.completedTables,
+                        totalTables: exportProgress.totalTables,
+                      })}
+                </div>
+                <Progress
+                  value={
+                    exportProgress.totalRows != null && exportProgress.totalRows > 0
+                      ? (exportProgress.completedRows / exportProgress.totalRows) * 100
+                      : exportProgress.totalTables > 0
+                        ? (exportProgress.completedTables / exportProgress.totalTables) * 100
+                        : 0
+                  }
+                />
+              </div>
+            )}
+            {importProgress !== null && (
+              <div className='mt-2'>
+                <div className='mb-1 text-sm'>
+                  {importProgress.done
+                    ? t('import_progress_done')
+                    : t('import_progress_status', {
+                        completedRows: importProgress.completedRows,
+                        totalRows: importProgress.totalRows,
+                        completedTables: importProgress.completedTables,
+                        totalTables: importProgress.totalTables,
+                      })}
+                </div>
+                <Progress
+                  value={
+                    importProgress.totalRows != null && importProgress.totalRows > 0
+                      ? (importProgress.completedRows / importProgress.totalRows) * 100
+                      : importProgress.totalTables > 0
+                        ? (importProgress.completedTables / importProgress.totalTables) * 100
+                        : 0
+                  }
+                />
+              </div>
+            )}
+          </div>
+          <div className='mt-2 gap-2 border border-red-500 p-1 text-red-500'>
+            <strong className='mt-2'>Indexeddb</strong>
+            <div>{t('info_reset_indexeddb')}</div>
+            <div className='mt-2 flex gap-2'>
+              <button className='soft-button' onClick={onResetIndexedDB}>
+                <DatabaseZap />
+                {t('btn_reset_indexeddb')}
+              </button>
+              <button className='soft-button' onClick={onResetSources}>
+                <DatabaseZap />
+                {t('btn_reset_sources')}
+              </button>
+            </div>
+          </div>
         </div>
-        <div className='mt-2 flex items-center gap-2'>
-          <div>{t('btn_experimental_features')}</div>
-          <Checkbox
-            checked={experimentalFeaturesActivated}
-            onCheckedChange={handleCheckboxChange}
-          />
-        </div>
-      </div>
-      <div className='mt-2 gap-2 border border-red-500 p-1 text-red-500'>
-        <strong className='mt-2'>Indexeddb</strong>
-        <div>{t('info_reset_indexeddb')}</div>
-        <div className='mt-2 flex gap-2'>
-          <button className='soft-button' onClick={onResetIndexedDB}>
-            <DatabaseZap />
-            {t('btn_reset_indexeddb')}
-          </button>
-          <button className='soft-button' onClick={onResetSources}>
-            <DatabaseZap />
-            {t('btn_reset_sources')}
-          </button>
-        </div>
-      </div>
+      </ScrollArea>
     </section>
   );
 };
