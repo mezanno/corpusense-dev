@@ -13,11 +13,8 @@ import { Source, SourceContent, StoredBlob } from '@/data/models/Sources';
 import { StoredManifestContent, StoredManifestDetails } from '@/data/models/StoredManifest';
 import { Tag } from '@/data/models/Tag';
 import { Worker } from '@/data/models/Worker';
-import { getThumbnailBlob } from '@/data/utils/manifest';
-import { getManifestFromConvertedFile, reconstructManifestFromConvertedFile } from '@/utils/manifest';
 import Dexie, { type EntityTable } from 'dexie';
 import 'dexie-observable';
-import { v4 as uuid } from 'uuid';
 
 const db = new Dexie('mezanno') as Dexie & {
   collections: EntityTable<CollectionDetails, 'id'>;
@@ -69,153 +66,10 @@ db.version(30)
     sourceContents: '&id',
     storedBlobs: '&id',
   })
-  .upgrade(async (tx) => {
-    const storedManifests = (await tx
-      .table('storedManifests')
-      .toArray()) as StoredManifestDetails[];
-    const storedManifestContents = (await tx
-      .table('storedManifestContents')
-      .toArray()) as StoredManifestContent[];
-    const convertedFiles = (await tx.table('convertedFiles').toArray()) as ConvertedFile[];
-
-    const sourcesTable = tx.table('sources');
-    const sourceContentsTable = tx.table('sourceContents');
-    const storedBlobsTable = tx.table('storedBlobs');
-    const collectionContentsTable = tx.table('collectionContents');
-
-    console.log(
-      'Migrating ',
-      storedManifests.length,
-      ' stored manifests and ',
-      convertedFiles.length,
-      ' converted files',
-    );
-
-    // Table de correspondance pour mettre à jour les collections (oldId -> newId)
-    const manifestIdMap = new Map<string, string>();
-
-    // ----------------------------
-    // 🔁 MIGRATION StoredManifest (remote)
-    // ----------------------------
-    for (const manifest of storedManifests) {
-      console.log('Migrating storedManifest with id ', manifest.id);
-      const content = storedManifestContents.find((c) => c.id === manifest.id);
-      if (content === undefined) {
-        console.warn(`No content found for manifest with id ${manifest.id}`);
-        continue;
-      }
-
-      const manifestId = uuid();
-      const thumbnailBlobId = uuid();
-
-      try {
-        let thumbnailBlob = new Blob();
-        try {
-          thumbnailBlob = await Dexie.waitFor(getThumbnailBlob(content.content));
-        } catch (error) {
-          console.warn(`Could not fetch thumbnail for manifest ${manifest.id}, using fallback empty blob:`, error);
-        }
-
-        await storedBlobsTable.add({
-          id: thumbnailBlobId,
-          blob: thumbnailBlob,
-        });
-
-        await sourcesTable.add({
-          id: manifestId,
-          name: manifest.name,
-          type: 'remote',
-          pageCount: content.content?.items?.length ?? 0,
-          thumbnailBlobId,
-        });
-
-        await sourceContentsTable.add({
-          id: manifestId,
-          type: 'remote',
-          manifest: content.content,
-        });
-
-        manifestIdMap.set(manifest.id, manifestId);
-      } catch (error) {
-        console.error(`Error migrating manifest with id ${manifest.id}:`, error);
-      }
-    }
-
-    // ----------------------------
-    // 🔁 MIGRATION ConvertedFile (local)
-    // ----------------------------
-    for (const file of convertedFiles) {
-      console.log('Migrating convertedFile with id ', file.id);
-      const thumbnailBlobId = uuid();
-
-      // Reconstruction du manifest via l'utilitaire partagé
-      // 1. Tenter de lire le vrai manifest sur le disque
-      let manifest = await Dexie.waitFor(getManifestFromConvertedFile(file));
-
-      // 2. Si non autorisé ou inexistant, reconstruire le manifest en repli
-      if (manifest === null) {
-        console.warn(`Permission non accordée ou fichier introuvable pour ${file.title}, utilisation du manifest reconstruit en repli.`);
-        manifest = reconstructManifestFromConvertedFile(file);
-      }
-
-
-      try {
-        await storedBlobsTable.add({
-          id: thumbnailBlobId,
-          blob: file.thumbnailBlob,
-        });
-
-        await sourcesTable.add({
-          id: file.id,
-          name: file.title,
-          type: 'local',
-          pageCount: file.pageCount,
-          thumbnailBlobId,
-        });
-
-        await sourceContentsTable.add({
-          id: file.id,
-          type: 'local',
-          manifest,
-          localFile: {
-            outputDirectoryHandle: file.outputDirectoryHandle,
-            timestamp: file.timestamp,
-            manifestName: file.manifestName,
-            folderName: file.folderName,
-          },
-        });
-
-        manifestIdMap.set(file.id, file.id);
-      } catch (error) {
-        console.error(`Error migrating converted file with id ${file.id}:`, error);
-      }
-    }
-
-    // ----------------------------
-    // 🔁 MIGRATION DES COLLECTIONS (Passage unique global)
-    // ----------------------------
-    console.log('Migrating collection contents...');
-    await collectionContentsTable.toCollection().modify((collection: CollectionContent) => {
-      for (const element of collection.content) {
-        const manifestId = element.manifestId;
-        if (manifestId !== undefined && manifestId !== '') {
-          const mappedSourceId = manifestIdMap.get(manifestId);
-          if (mappedSourceId !== undefined && mappedSourceId !== '') {
-            element.sourceId = mappedSourceId;
-          } else if (element.sourceId === undefined || element.sourceId === '') {
-            // Repli au cas où la source n'a pas été trouvée ou est absente des tables de migration
-            element.sourceId = manifestId;
-          }
-        }
-      }
-    });
-
-    // ----------------------------
-    // 🧹 Nettoyage des anciennes tables (désactivé par défaut)
-    // ----------------------------
-    // await tx.table('storedManifests').clear();
-    // await tx.table('storedManifestContents').clear();
-    // await tx.table('convertedFiles').clear();
+  .upgrade(async () => {
+    // La migration des données (storedManifests, convertedFiles → sources/sourceContents)
+    // est désormais déclenchée manuellement par l'utilisateur depuis l'interface.
+    // Voir : IndexedDBSourceRepository.migrateAllSources()
   });
 
 export const clearDatabase = async () => {

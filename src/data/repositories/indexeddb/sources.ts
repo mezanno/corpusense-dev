@@ -261,10 +261,12 @@ export class IndexedDBSourceRepository implements SourceRepository {
     // ----------------------------
     // 🔁 Update collection references (manifestId → sourceId)
     // ----------------------------
+    console.log('manifestIdMap: ', manifestIdMap);
+
     await db.collectionContents.toCollection().modify((collection) => {
       for (const element of collection.content) {
         const oldId = element.manifestId;
-        if (oldId !== undefined && oldId !== '') {
+        if (oldId !== undefined) {
           const newId = manifestIdMap.get(oldId);
           if (newId !== undefined && newId !== '') {
             element.sourceId = newId;
