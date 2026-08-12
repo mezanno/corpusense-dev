@@ -14,7 +14,7 @@ import { StoredManifestContent, StoredManifestDetails } from '@/data/models/Stor
 import { Tag } from '@/data/models/Tag';
 import { Worker } from '@/data/models/Worker';
 import { getThumbnailBlob } from '@/data/utils/manifest';
-import { getManifestFromConvertedFile } from '@/utils/manifest';
+import { getManifestFromConvertedFile, reconstructManifestFromConvertedFile } from '@/utils/manifest';
 import Dexie, { type EntityTable } from 'dexie';
 import 'dexie-observable';
 import { v4 as uuid } from 'uuid';
@@ -90,6 +90,10 @@ db.version(30)
       convertedFiles.length,
       ' converted files',
     );
+
+    // Table de correspondance pour mettre à jour les collections (oldId -> newId)
+    const manifestIdMap = new Map<string, string>();
+
     // ----------------------------
     // 🔁 MIGRATION StoredManifest (remote)
     // ----------------------------
@@ -103,16 +107,20 @@ db.version(30)
 
       const manifestId = uuid();
       const thumbnailBlobId = uuid();
-      const thumbnailBlob = await Dexie.waitFor(getThumbnailBlob(content.content));
 
-      if (manifest.thumbnail) {
+      try {
+        let thumbnailBlob = new Blob();
+        try {
+          thumbnailBlob = await Dexie.waitFor(getThumbnailBlob(content.content));
+        } catch (error) {
+          console.warn(`Could not fetch thumbnail for manifest ${manifest.id}, using fallback empty blob:`, error);
+        }
+
         await storedBlobsTable.add({
           id: thumbnailBlobId,
           blob: thumbnailBlob,
         });
-      }
 
-      try {
         await sourcesTable.add({
           id: manifestId,
           name: manifest.name,
@@ -127,14 +135,7 @@ db.version(30)
           manifest: content.content,
         });
 
-        //On update aussi les éléments de collection qui pointaient vers ce manifest pour qu'ils pointent vers la source à la place
-        await collectionContentsTable.toCollection().modify((collection: CollectionContent) => {
-          for (const element of collection.content) {
-            if (element.manifestId === manifest.id) {
-              element.sourceId = manifestId;
-            }
-          }
-        });
+        manifestIdMap.set(manifest.id, manifestId);
       } catch (error) {
         console.error(`Error migrating manifest with id ${manifest.id}:`, error);
       }
@@ -146,11 +147,18 @@ db.version(30)
     for (const file of convertedFiles) {
       console.log('Migrating convertedFile with id ', file.id);
       const thumbnailBlobId = uuid();
-      const manifest = await Dexie.waitFor(getManifestFromConvertedFile(file));
+
+      // Reconstruction du manifest via l'utilitaire partagé
+      // 1. Tenter de lire le vrai manifest sur le disque
+      let manifest = await Dexie.waitFor(getManifestFromConvertedFile(file));
+
+      // 2. Si non autorisé ou inexistant, reconstruire le manifest en repli
       if (manifest === null) {
-        console.warn(`No manifest found for converted file with id ${file.id}`);
-        continue;
+        console.warn(`Permission non accordée ou fichier introuvable pour ${file.title}, utilisation du manifest reconstruit en repli.`);
+        manifest = reconstructManifestFromConvertedFile(file);
       }
+
+
       try {
         await storedBlobsTable.add({
           id: thumbnailBlobId,
@@ -176,13 +184,34 @@ db.version(30)
             folderName: file.folderName,
           },
         });
+
+        manifestIdMap.set(file.id, file.id);
       } catch (error) {
         console.error(`Error migrating converted file with id ${file.id}:`, error);
       }
     }
 
     // ----------------------------
-    // 🧹 (optionnel) nettoyage (à mettre en place à l'avenir pour nettoyer les vieilles versions de la base)
+    // 🔁 MIGRATION DES COLLECTIONS (Passage unique global)
+    // ----------------------------
+    console.log('Migrating collection contents...');
+    await collectionContentsTable.toCollection().modify((collection: CollectionContent) => {
+      for (const element of collection.content) {
+        const manifestId = element.manifestId;
+        if (manifestId !== undefined && manifestId !== '') {
+          const mappedSourceId = manifestIdMap.get(manifestId);
+          if (mappedSourceId !== undefined && mappedSourceId !== '') {
+            element.sourceId = mappedSourceId;
+          } else if (element.sourceId === undefined || element.sourceId === '') {
+            // Repli au cas où la source n'a pas été trouvée ou est absente des tables de migration
+            element.sourceId = manifestId;
+          }
+        }
+      }
+    });
+
+    // ----------------------------
+    // 🧹 Nettoyage des anciennes tables (désactivé par défaut)
     // ----------------------------
     // await tx.table('storedManifests').clear();
     // await tx.table('storedManifestContents').clear();

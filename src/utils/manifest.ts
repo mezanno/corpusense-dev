@@ -164,6 +164,29 @@ async function fetchManifestWithPlugin({
 
   return manifest;
 }
+export const reconstructManifestFromConvertedFile = (file: ConvertedFile): Manifest => {
+  const baseName = file.manifestName.replace('_manifest.json', '');
+  const canvasInfo: CanvasInfo[] = Array.from({ length: file.pageCount }).map((_, index) => {
+    const pageNum = index + 1;
+    const pageStr = pageNum.toString().padStart(3, '0');
+    const filename = `${baseName}_page_${pageStr}.png`;
+    const imageId = `${file.folderName}/${filename}`;
+    return {
+      id: imageId,
+      thumb: imageId,
+      width: 1000,
+      height: 1000,
+    };
+  });
+
+  return generateManifest({
+    documentName: file.title,
+    canvasInfo,
+    folder: file.folderName,
+    manifestId: file.manifestName,
+    isFileSystem: true,
+  });
+};
 
 export const getManifestFromConvertedFile = async (
   file: ConvertedFile,
