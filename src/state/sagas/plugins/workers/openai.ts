@@ -1,7 +1,8 @@
+import { LLMProfile } from '@/data/models/LLMProfile';
 import { Result } from '@/data/models/Result';
 import { isAnnotationScope, isCanvasScope, Scope, toString } from '@/data/models/Scope';
 import { Tag } from '@/data/models/Tag';
-import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
+import { Task, Worker, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
 import {
   getCollectionRepository,
   getModelRepository,
@@ -13,30 +14,20 @@ import {
   generateNumberedTextFromCanvas,
 } from '@/data/utils/export';
 import { generateSchema, hasPreviousValueField } from '@/data/utils/model';
-import { getValueForPluginParam } from '@/data/utils/plugins';
 import i18n from '@/i18n';
-import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
-import { Mistral } from '@mistralai/mistralai';
 import FileSaver from 'file-saver';
 import { json2csv } from 'json-2-csv';
 import * as XLSX from 'xlsx';
 import { WorkerCategory } from './WorkerCategory';
+import { OpenAICompatibleClient } from './openai/OpenAICompatibleClient';
 
-export const pluginName = 'mistral';
-export const pluginDisplayName = 'Extraction de données Mistral';
+export const pluginName = 'openai';
+export const pluginDisplayName = 'Extraction de données OpenAI API';
 export const pluginDescription =
   "Extrait des données structurées à partir du texte. Nécessite que l'OCR soit fait ainsi qu'un modèle de données.";
 export const pluginCategory = WorkerCategory.LLM;
 export const pluginExportFormats = ['json', 'csv', 'xlsx'];
-export const pluginConfigurationParams = {
-  apiKey: {
-    description: 'Clé API Mistral',
-  },
-  mistralModel: {
-    description: 'Modèle Mistral à utiliser (ex: mistral-medium-latest)',
-  },
-};
 
 //TODO: à déplacer dans un fichier utils
 async function getText(scope: Scope) {
@@ -54,12 +45,40 @@ async function getText(scope: Scope) {
 }
 
 /*
- * Mistral entry point for the Mistral plugin (default export)
- * It fetches the text from the scope, sends it to the Mistral API,
+ * LLM entry point (default export)
+ * It fetches the text from the scope, sends it,
  * and returns the response.
  */
-export default async function run(task: Task, _params: PluginParams): Promise<WorkerResponse> {
+export default async function run(task: Task, worker: Worker): Promise<WorkerResponse> {
   console.log(`Processing task for scope ${toString(task.scope)}`);
+
+  if (
+    worker.params === undefined ||
+    worker.params === null ||
+    typeof worker.params !== 'object' ||
+    !('profileId' in worker.params)
+  ) {
+    return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_no_profileId') };
+  }
+
+  const profileId = worker.params.profileId as string;
+  if (profileId === undefined) {
+    return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_no_mistral_key') };
+  }
+
+  const profiles: LLMProfile[] = (() => {
+    try {
+      const parsed: unknown = JSON.parse(localStorage.getItem('llm-profiles') ?? '[]');
+      return Array.isArray(parsed) ? (parsed as LLMProfile[]) : [];
+    } catch {
+      return [];
+    }
+  })();
+  const profile = profiles.find((p) => p.id === profileId);
+  if (profile === undefined) {
+    return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_no_mistral_key') };
+  }
+
   let model = undefined;
   const collectionRepository = getCollectionRepository();
   try {
@@ -81,17 +100,9 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
   }
 
   const text = await getText(task.scope);
-  //return an error if no text is found
   if (text === undefined || text.length === 0) {
     console.log('No text found for this canvas');
     return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_export_no_text') };
-  }
-
-  const apiKey = getValueForPluginParam(pluginName, 'apiKey');
-  //return an error if no API key is found
-  if (apiKey === null || apiKey === '') {
-    console.log('No Mistral API key found');
-    return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_no_mistral_key') };
   }
 
   const modelHasPreviousValueField = hasPreviousValueField(model);
@@ -113,25 +124,15 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
   console.log('previousResult: ', lastValue);
 
   const prompt = model.prompt.replace('{{schema}}', generateSchema(model, lastValue));
-  const mistralModel = localStorage.getItem('mistralModel') ?? 'mistral-medium-latest';
   console.log('prompt: ', prompt);
 
   try {
-    const client = new Mistral({
-      apiKey,
-      retryConfig: {
-        strategy: 'backoff',
-        backoff: {
-          initialInterval: 500, // intervalle initial en millisecondes
-          maxInterval: 30000, // intervalle maximal en millisecondes entre tentatives
-          exponent: 1.5, // facteur exponentiel
-          maxElapsedTime: 120000, // durée max (en millisecondes) totale pour toutes les tentatives
-        },
-        retryConnectionErrors: true, // réessayer en cas d'erreurs de connexion
-      },
+    const client = new OpenAICompatibleClient({
+      apiKey: profile.apiKey,
+      baseURL: profile.baseUrl,
     });
-    const response = await client.chat.complete({
-      model: mistralModel,
+    const response = await client.complete({
+      model: profile.model,
       messages: [
         {
           role: 'system',
@@ -142,16 +143,13 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
           content: text,
         },
       ],
-      temperature: 0,
-      maxTokens: text.length * 2,
       responseFormat: { type: 'json_object' },
     });
 
-    console.log('Response from Mistral:', response);
+    console.log('Response from Worker:', response);
     return {
       status: WorkerStatus.COMPLETED,
-      // content: response.choices[0].message.content as string,
-      content: response.choices[0]?.message?.content as string,
+      content: response.content,
     };
   } catch (error) {
     return {
@@ -208,7 +206,7 @@ export async function extractData(results: Result[]): Promise<unknown[]> {
 }
 
 /*
- * Export function to export results from the Mistral plugin saga.
+ * Export function to export results from the OpenAI plugin saga.
  * It takes an array of Result objects, extracts the data, and saves it as JSON and CSV files.
  */
 export async function exportResult(results: Result[], formats: string[]) {
