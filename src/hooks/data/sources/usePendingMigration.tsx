@@ -1,5 +1,5 @@
-import { getSourceRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { db } from '@/data/repositories/indexeddb/db';
+import { getSourceRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useState } from 'react';
 
@@ -12,10 +12,11 @@ const usePendingMigration = () => {
   const [isMigrating, setIsMigrating] = useState(false);
 
   // Re-runs whenever storedManifests or convertedFiles tables change
-  const pendingCount = useLiveQuery<number>(async () => {
-    const sourceRepository = getSourceRepository();
-    return sourceRepository.getPendingMigrationCount();
-  }, [db.storedManifests, db.convertedFiles]) ?? 0;
+  const pendingCount =
+    useLiveQuery<number>(async () => {
+      const sourceRepository = getSourceRepository();
+      return sourceRepository.getPendingMigrationCount();
+    }, [db.storedManifests, db.convertedFiles]) ?? 0;
 
   const migrateAll = useCallback(async () => {
     setIsMigrating(true);
@@ -29,7 +30,6 @@ const usePendingMigration = () => {
 
   return {
     pendingCount,
-    hasPendingMigration: pendingCount > 0,
     isMigrating,
     migrateAll,
   };

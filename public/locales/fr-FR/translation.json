@@ -24,7 +24,7 @@
   "btn_open_gallery": "Ouvrir la galerie",
   "btn_open_manifest": "Ouvrir un manifest",
   "btn_open_contact": "Contactez-nous !",
-  "btn_finalize_migration": "Finaliser la migration",
+  "btn_pending_migration": "{{count}} élément(s) en attente de migration",
   "migration_pending_banner": "Migration en attente ({{count}} éléments)",
   "migration_in_progress": "Migration en cours…",
   "btn_open_history": "Historique des manifests",

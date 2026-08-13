@@ -20,7 +20,7 @@ const Layout = () => {
   const { openContactUsDialog } = useDialog();
   const lastInfo = useAppSelector(selectLastInfoEvent);
   const lastError = useAppSelector(selectLastErrorEvent);
-  const { hasPendingMigration, isMigrating, migrateAll } = usePendingMigration();
+  const { pendingCount, isMigrating, migrateAll } = usePendingMigration();
   useJobRealtime();
 
   useEffect(() => {
@@ -47,16 +47,18 @@ const Layout = () => {
               <SidebarTrigger />
               <div className='flex gap-2'>
                 <LanguageFlag />
-                {hasPendingMigration && (
+                {pendingCount > 0 && (
                   <button
                     className='soft-button border-amber-400 text-amber-700 hover:bg-amber-50'
-                    aria-label={t('btn_finalize_migration')}
+                    aria-label={t('btn_pending_migration', { count: pendingCount })}
                     onClick={() => void migrateAll()}
                     disabled={isMigrating}
                     title={t('migration_pending_banner', { count: '' }).trim()}
                   >
                     <RefreshCw size={16} className={isMigrating ? 'animate-spin' : ''} />
-                    {isMigrating ? t('migration_in_progress') : t('btn_finalize_migration')}
+                    {isMigrating
+                      ? t('migration_in_progress')
+                      : t('btn_pending_migration', { count: pendingCount })}
                   </button>
                 )}
                 <button
