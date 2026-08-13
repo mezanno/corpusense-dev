@@ -7,6 +7,7 @@ import ExportCollectionForm from '@/components/forms/ExportCollectionForm';
 import ExportFormatSelectionForm from '@/components/forms/ExportFormatSelectionForm';
 import ImportCollectionForm from '@/components/forms/ImportCollectionForm';
 import ImportModelForm from '@/components/forms/ImportModelForm';
+import LLMProfileForm, { LLMProfileFormValues } from '@/components/forms/LLMProfileForm';
 import LoadModifierChainForm from '@/components/forms/LoadModifierChainForm';
 import LoginForm from '@/components/forms/LoginForm';
 import NewCollectionForm, { NewCollectionFormParams } from '@/components/forms/NewCollectionForm';
@@ -22,6 +23,7 @@ import { useAlertDialogContext } from '@/components/reducers/useAlertDialogConte
 import ModelPreview from '@/components/textviewer/ModelPreview';
 import { CollectionDetails } from '@/data/models/Collection';
 import { DataModel } from '@/data/models/DataModel';
+import { LLMProfile } from '@/data/models/LLMProfile';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { Project } from '@/data/models/Project';
 import { CanvasScope, Scope } from '@/data/models/Scope';
@@ -360,6 +362,34 @@ const useDialog = () => {
     });
   };
 
+  const openAddLLMProfileDialog = (onResult: (values: LLMProfileFormValues) => void) => {
+    openFormDialog({
+      title: t('dialog_llm_profile_add'),
+      confirmLabel: t('btn_save'),
+      renderForm: (formRef) => (
+        <LLMProfileForm formRef={formRef} setCanSubmit={setCanSubmit} onResult={onResult} />
+      ),
+    });
+  };
+
+  const openEditLLMProfileDialog = (
+    profile: LLMProfile,
+    onResult: (values: LLMProfileFormValues) => void,
+  ) => {
+    openFormDialog({
+      title: t('dialog_llm_profile_edit'),
+      confirmLabel: t('btn_save'),
+      renderForm: (formRef) => (
+        <LLMProfileForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          onResult={onResult}
+          defaultValues={profile}
+        />
+      ),
+    });
+  };
+
   return {
     openOpenManifestDialog,
     openImportCollectionDialog,
@@ -381,6 +411,8 @@ const useDialog = () => {
     openUploadSourceDialog,
     openCreateProjectDialog,
     openChangeSourceNameDialog,
+    openAddLLMProfileDialog,
+    openEditLLMProfileDialog,
   };
 };
 
