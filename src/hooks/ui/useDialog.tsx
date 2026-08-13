@@ -16,6 +16,7 @@ import NewProjectForm from '@/components/forms/NewProjectForm';
 import OpenManifestForm from '@/components/forms/OpenManifestForm';
 import RemoveAnnotationsForm from '@/components/forms/RemoveAnnotationsForm';
 import SaveModifierChainForm from '@/components/forms/SaveModifierChainForm';
+import SelectLlmForm from '@/components/forms/SelectLlmForm';
 import StartWorkerForm from '@/components/forms/StartWorkerForm';
 import UpdateSourceNameForm from '@/components/forms/UpdateSourceNameForm';
 import UploadSourceForm, { UploadSourceFormParams } from '@/components/forms/UploadSourceForm';
@@ -136,6 +137,16 @@ const useDialog = () => {
       confirmLabel: t('btn_export'),
       renderForm: (formRef) => (
         <ExportFormatSelectionForm worker={worker} formRef={formRef} setCanSubmit={setCanSubmit} />
+      ),
+    });
+  };
+
+  const openSelectLLMDialog = (onResult: (llmId: string) => void) => {
+    openFormDialog({
+      title: t('title_select_llm'),
+      confirmLabel: t('btn_start'),
+      renderForm: (formRef) => (
+        <SelectLlmForm formRef={formRef} setCanSubmit={setCanSubmit} onResult={onResult} />
       ),
     });
   };
@@ -413,6 +424,7 @@ const useDialog = () => {
     openChangeSourceNameDialog,
     openAddLLMProfileDialog,
     openEditLLMProfileDialog,
+    openSelectLLMDialog,
   };
 };
 

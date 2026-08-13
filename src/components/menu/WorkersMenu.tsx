@@ -10,7 +10,7 @@ import MultiOptionsMenu from './MultiOptionsMenu';
 const WorkersMenu = ({ scope }: { scope: Scope }) => {
   const appDispatch = useAppDispatch();
   const pluginsInfo = useAppSelector(selectWorkerPluginsInfo);
-  const { openStartWorkerDialog } = useDialog();
+  const { openStartWorkerDialog, openSelectLLMDialog } = useDialog();
 
   const params = {
     name: 'btn_start_analysis',
@@ -32,13 +32,25 @@ const WorkersMenu = ({ scope }: { scope: Scope }) => {
           if (workerPlugin.runtimeParametersSchema !== undefined) {
             openStartWorkerDialog(plugin.name, scope);
           } else {
-            appDispatch(
-              startWorkerProcessRequest({
-                workerName: plugin.name,
-                params: {},
-                scope,
-              }),
-            );
+            if (plugin.category === 'llm') {
+              openSelectLLMDialog((profileId) => {
+                appDispatch(
+                  startWorkerProcessRequest({
+                    workerName: plugin.name,
+                    params: { profileId },
+                    scope,
+                  }),
+                );
+              });
+            } else {
+              appDispatch(
+                startWorkerProcessRequest({
+                  workerName: plugin.name,
+                  params: {},
+                  scope,
+                }),
+              );
+            }
           }
         },
         category: plugin.category,

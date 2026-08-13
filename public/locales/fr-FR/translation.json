@@ -483,5 +483,7 @@
   "form_label_llm_profile_name": "Nom du profil",
   "form_label_llm_profile_base_url": "URL de base",
   "form_label_llm_profile_api_key": "Clé API",
-  "form_label_llm_profile_model": "Modèle"
+  "form_label_llm_profile_model": "Modèle",
+  "form_label_select_llm_profile": "Profil LLM",
+  "form_placeholder_select_llm_profile": "Sélectionner un profil"
 }
