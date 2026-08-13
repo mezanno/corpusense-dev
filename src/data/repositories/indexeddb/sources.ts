@@ -226,11 +226,11 @@ export class IndexedDBSourceRepository implements SourceRepository {
     for (const file of convertedFiles) {
       const thumbnailBlobId = uuid();
 
-      // Try to read the real manifest from disk; fall back to reconstruction
-      const manifest =
-        (await getManifestFromConvertedFile(file)) ?? reconstructManifestFromConvertedFile(file);
-
       try {
+        // Try to read the real manifest from disk; fall back to reconstruction
+        const manifest =
+          (await getManifestFromConvertedFile(file)) ?? reconstructManifestFromConvertedFile(file);
+
         await db.transaction('rw', db.storedBlobs, db.sources, db.sourceContents, async () => {
           await db.storedBlobs.add({ id: thumbnailBlobId, blob: file.thumbnailBlob });
           await db.sources.add({
