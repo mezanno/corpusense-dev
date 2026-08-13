@@ -238,6 +238,7 @@ function* startWorker(
               const result: ResultCreateDTO = {
                 scope: task.scope,
                 workerName: currentWorker.name,
+                workerCategory: workerPlugins[currentWorker.name].info.category,
                 workerId: currentWorker.id,
                 value,
                 taskId: task.id,

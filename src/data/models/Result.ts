@@ -5,6 +5,7 @@ export const ResultCreateDTOSchema = z
   .object({
     scope: ScopeSchema,
     workerName: z.string(),
+    workerCategory: z.string().optional(),
     workerId: z.string(),
     taskId: z.number(),
     value: z.unknown(),
