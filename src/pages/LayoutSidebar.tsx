@@ -319,12 +319,17 @@ const LayoutSideBar = () => {
               <span>{t('page_title_documentation')}</span>
             </Link>
           </SidebarMenuButton>
-          <div className='flex items-center justify-between gap-2 px-2 py-1'>
-            <VersionDisplay />
-            <Link to={CorpusenseRoutes.CONFIGURATION} title={t('page_title_configuration')}>
+          <SidebarMenuButton>
+            <Link
+              to={CorpusenseRoutes.CONFIGURATION}
+              title={t('page_title_configuration')}
+              className='flex space-x-2'
+            >
               <Bolt />
+              <span>{t('page_title_configuration')}</span>
             </Link>
-          </div>
+          </SidebarMenuButton>
+          <VersionDisplay />
         </div>
       </SidebarFooter>
     </Sidebar>
