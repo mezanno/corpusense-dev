@@ -4,6 +4,7 @@ import useDialog from '@/hooks/ui/useDialog';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAlertDialogContext } from '../reducers/useAlertDialogContext';
 
 const STORAGE_KEY = 'llm-profiles';
 
@@ -24,6 +25,7 @@ const ConfigurationAITab = () => {
   const { t } = useTranslation();
   const { openAddLLMProfileDialog, openEditLLMProfileDialog } = useDialog();
   const [profiles, setProfiles] = useState<LLMProfile[]>(loadProfiles);
+  const { openDialog } = useAlertDialogContext();
 
   const persist = (updated: LLMProfile[]) => {
     setProfiles(updated);
@@ -43,7 +45,14 @@ const ConfigurationAITab = () => {
   };
 
   const handleRemove = (id: string) => {
-    persist(profiles.filter((p) => p.id !== id));
+    openDialog({
+      title: t('title_are_you_sure'),
+      description: t('description_delete_profile'),
+      onConfirm: {
+        message: t('btn_yes'),
+        action: () => persist(profiles.filter((p) => p.id !== id)),
+      },
+    });
   };
 
   return (
