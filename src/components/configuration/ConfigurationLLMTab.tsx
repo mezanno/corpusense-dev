@@ -1,7 +1,7 @@
 import { LLMProfileFormValues } from '@/components/forms/LLMProfileForm';
 import { LLMProfile } from '@/data/models/LLMProfile';
 import useDialog from '@/hooks/ui/useDialog';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Copy, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAlertDialogContext } from '../reducers/useAlertDialogContext';
@@ -42,6 +42,11 @@ const ConfigurationLLMTab = () => {
     openEditLLMProfileDialog(profile, (values: LLMProfileFormValues) => {
       persist(profiles.map((p) => (p.id === profile.id ? { ...profile, ...values } : p)));
     });
+  };
+
+  const handleDuplicate = (profile: LLMProfile) => {
+    const { id, ...rest } = profile;
+    persist([...profiles, { id: crypto.randomUUID(), ...rest }]);
   };
 
   const handleRemove = (id: string) => {
@@ -91,6 +96,13 @@ const ConfigurationLLMTab = () => {
                       title={t('btn_edit')}
                     >
                       <Pencil size={14} />
+                    </button>
+                    <button
+                      className='soft-button'
+                      onClick={() => handleDuplicate(profile)}
+                      title={t('btn_duplicate')}
+                    >
+                      <Copy size={14} />
                     </button>
                     <button
                       className='soft-button'
