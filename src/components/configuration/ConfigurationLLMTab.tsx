@@ -21,7 +21,7 @@ function saveProfiles(profiles: LLMProfile[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(profiles));
 }
 
-const ConfigurationAITab = () => {
+const ConfigurationLLMTab = () => {
   const { t } = useTranslation();
   const { openAddLLMProfileDialog, openEditLLMProfileDialog } = useDialog();
   const [profiles, setProfiles] = useState<LLMProfile[]>(loadProfiles);
@@ -110,4 +110,4 @@ const ConfigurationAITab = () => {
   );
 };
 
-export default ConfigurationAITab;
+export default ConfigurationLLMTab;
