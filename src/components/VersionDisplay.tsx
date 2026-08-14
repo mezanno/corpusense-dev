@@ -8,7 +8,7 @@ const VersionDisplay = () => {
       : 'Unknown';
 
   return (
-    <div className='flex flex-col'>
+    <div className='flex w-full flex-col text-sm font-light'>
       <span>Corpusense v{import.meta.env.VITE_APP_VERSION}</span>
       <span>Build : {buildDate}</span>
       <span>Commit : {import.meta.env.VITE_GIT_HASH ?? 'Unknown'}</span>
