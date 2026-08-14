@@ -368,6 +368,7 @@
   "description_delete_datafield": "Are you sure you want to delete this field? This action is irreversible",
   "description_select_export_formats": "Select the desired export formats:",
   "description_delete_converted_file": "Are you sure you want to remove the document from Corpusense? This action is irreversible. Warning! This will not delete the documents from your hard drive.",
+  "description_delete_profile": " Are you sure you want to delete this LLM profile? This action is irreversible.",
   "description_local_manifest": "Select a folder containing either a pdf or one or more images (jpg, png, tiff). Corpusense will generate a IIIF manifest from these files.",
   "description_select_pdf": "Select a PDF file to extract pages and generate a manifest",
   "description_pdf_files": "PDF files",
