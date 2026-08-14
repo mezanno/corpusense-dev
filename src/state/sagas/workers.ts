@@ -136,17 +136,6 @@ function* startWorker(
         status: currentWorker.status,
       });
     } else {
-      //else, if it's a WorkerCreateDTO, we need to create a new worker
-      //but we delete previous worker with same name and same scope if it exists
-      const existingWorker = (yield call(
-        [workerRepository, workerRepository.getByNameAndScope],
-        worker.name,
-        worker.scope,
-      )) as Worker | undefined;
-      if (existingWorker !== undefined) {
-        yield call([workerRepository, workerRepository.deleteById], existingWorker.id);
-      }
-      //then, create a new worker
       currentWorker = (yield call([workerRepository, workerRepository.add], worker)) as Worker;
 
       const collectionRepository = getCollectionRepository();

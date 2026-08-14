@@ -48,7 +48,7 @@ const useNamedEntities = (annotationIds: string[]) => {
     const resultRepository = getResultRepository();
     const result = await resultRepository.getByScopeAndWorkerName(
       scope,
-      'mistral', //TODO! paramétrer le worker
+      'openai', //TODO! paramétrer le worker
     );
     if (result === undefined) {
       appDisptach(pushError('error_result_undefined'));

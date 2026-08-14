@@ -19,10 +19,13 @@ export class IndexedDBWorkerLiveRepository implements WorkerLiveRepository {
     return () => db.workers.toArray();
   }
 
-  hasResult(scope: CanvasScope | CollectionScope, workerName: string): () => Promise<boolean> {
+  hasResult(scope: CanvasScope | CollectionScope, workerNames: string[]): () => Promise<boolean> {
+    const scopeKey = computeScopeKey(scope);
+
     return () =>
       db.workers
-        .where({ '[scopeKey+name]': [computeScopeKey(scope), workerName] })
+        .where('[scopeKey+name]')
+        .anyOf(workerNames.map((name) => [scopeKey, name]))
         .count()
         .then((count) => count > 0);
   }

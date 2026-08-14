@@ -155,7 +155,7 @@ export interface WorkerRepository {
   getAll(): Promise<Worker[]>;
   getById(id: string): Promise<Worker>;
   getByScope(scope: Scope, subScope: boolean): Promise<Worker[]>;
-  getByNameAndScope(workerName: string, scope: Scope): Promise<Worker | undefined>;
+  getByNamesAndScope(workerName: string[], scope: Scope): Promise<Worker[]>;
 
   add(worker: Worker): Promise<Worker>;
   addAll(workers: Worker[]): Promise<void>;

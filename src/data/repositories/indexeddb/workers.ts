@@ -26,9 +26,16 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
     return await db.workers.where('scopeKey').equals(computeScopeKey(scope)).toArray();
   }
 
-  async getByNameAndScope(workerName: string, scope: Scope): Promise<Worker | undefined> {
-    //TODO return an array
-    return await db.workers.where({ scopeKey: computeScopeKey(scope), name: workerName }).first();
+  async getByNamesAndScope(workerNames: string[], scope: Scope): Promise<Worker[]> {
+    const scopeKey = computeScopeKey(scope);
+
+    const workers = await db.workers
+      .where('[scopeKey+name]')
+      .anyOf(workerNames.map((name) => [scopeKey, name]))
+      .toArray();
+
+    // Sort workers by createdAt in descending order
+    return workers.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
   async add(worker: WorkerCreateDTO): Promise<Worker> {

@@ -50,7 +50,7 @@ export interface NamedEntityLiveRepository {
 export interface WorkerLiveRepository {
   getById(id: string): () => Promise<Worker>;
   getAll(): () => Promise<Worker[]>;
-  hasResult(scope: CanvasScope | CollectionScope, workerName: string): () => Promise<boolean>;
+  hasResult(scope: CanvasScope | CollectionScope, workerNames: string[]): () => Promise<boolean>;
 }
 
 export interface ResultLiveRepository {

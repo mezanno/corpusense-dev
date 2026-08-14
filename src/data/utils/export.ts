@@ -108,7 +108,7 @@ const generateAnnotationPage = async (canvasId: string, collectionId: string) =>
       collectionId,
       canvasId,
     },
-    'mistral',
+    'openai',
   );
 
   const lineAnnotations = await getAnnotationRepository().getByScopeAndTypes(
