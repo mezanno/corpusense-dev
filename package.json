@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.5.1",
   "type": "module",
+  "packageManager": "npm@11.6.4",
   "scripts": {
     "dev": "vite",
     "build": "node scripts/generate-env.js && tsc -b && vite build",
