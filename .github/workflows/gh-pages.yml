@@ -18,6 +18,7 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     permissions:
+      pages: read # Requis pour le déploiement Pages natif
       contents: read # Droit de lecture uniquement sur le dépôt
     steps:
       - name: Checkout Repository
@@ -30,10 +31,14 @@ jobs:
           cache: 'npm'
 
       - name: Setup npm
-  run: npm install --global npm@11.6.4
+        run: npm install --global npm@11.6.4
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@1f0c5cde4bc74cd7e1254d0cb4de8d49e9068c7d # v4
 
       - name: Build Project
         run: npm run build
