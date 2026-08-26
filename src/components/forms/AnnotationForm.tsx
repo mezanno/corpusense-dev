@@ -64,8 +64,10 @@ const AnnotationForm = ({
     form.setValue('value', value);
 
     async function fetchParent() {
-      const p = await getParentAnnotation(annotation);
-      setParent(p);
+      const result = await getParentAnnotation(annotation);
+      if (result.ok) {
+        setParent(result.value);
+      }
     }
     void fetchParent();
   }, [annotation]);

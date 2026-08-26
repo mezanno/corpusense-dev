@@ -52,15 +52,18 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     }
     let regions = JSON.stringify([]);
     if (isAnnotationScope(task.scope)) {
-      const annotation = await annotationRepository.getById(task.scope.annotationId);
-      regions = JSON.stringify([
-        {
-          xtl: annotation.target.selector.geometry.bounds.minX,
-          ytl: annotation.target.selector.geometry.bounds.minY,
-          xbr: annotation.target.selector.geometry.bounds.maxX,
-          ybr: annotation.target.selector.geometry.bounds.maxY,
-        },
-      ]);
+      const result = await annotationRepository.getById(task.scope.annotationId);
+      if (result.ok) {
+        const annotation = result.value;
+        regions = JSON.stringify([
+          {
+            xtl: annotation.target.selector.geometry.bounds.minX,
+            ytl: annotation.target.selector.geometry.bounds.minY,
+            xbr: annotation.target.selector.geometry.bounds.maxX,
+            ybr: annotation.target.selector.geometry.bounds.maxY,
+          },
+        ]);
+      }
     } else {
       const annotations = await annotationRepository.getByScope({
         canvasId: canvasWithSourceId.canvas.id,

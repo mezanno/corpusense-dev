@@ -3,22 +3,33 @@ import { containsAtLeast2Corners, getSurface } from '@/data/utils/annotations';
 import i18n from '@/i18n';
 import { ShapeType } from '@annotorious/annotorious';
 import { Annotation, AnnotationDTO, ElementType, getAnnotationType } from '../../models/Annotation';
+import { EntityNotFoundError, err, FunctionResult, ok } from '../errors';
 import { db } from './db';
 import { AnnotationRepository } from './types';
 
 export class IndexedDBAnnotationRepository implements AnnotationRepository {
-  async getById(id: string): Promise<Annotation> {
+  async getById(id: string): Promise<FunctionResult<Annotation, EntityNotFoundError>> {
     const annotation = await db.annotations.get(id);
     if (annotation === undefined) {
-      throw new Error(i18n.t('error_annotation_not_found'));
+      return err(
+        new EntityNotFoundError({
+          id,
+          entity: 'Annotation',
+        }),
+      );
     }
-    return annotation;
+
+    return ok(annotation);
   }
 
   async getByScope(scope: Scope): Promise<Annotation[]> {
     if (isAnnotationScope(scope)) {
-      const annotation = await this.getById(scope.annotationId);
-      return [annotation];
+      const result = await this.getById(scope.annotationId);
+      if (result.ok) {
+        return [result.value];
+      } else {
+        return [];
+      }
     } else if (isCanvasScope(scope)) {
       return db.annotations
         .where({
@@ -50,7 +61,9 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
   /*
    * This function is used to get the parent annotation of a text line annotation. The parent annotation is the annotation that has the same canvasId and collectionId, and contains at least 2 corners of the given annotation. If there are multiple annotations that satisfy this condition, we return the one that has the smallest area. If there is no annotation that satisfies this condition, we throw an error.
    */
-  async getParent(annotation: Annotation): Promise<Annotation | null> {
+  async getParent(
+    annotation: Annotation,
+  ): Promise<FunctionResult<Annotation, EntityNotFoundError>> {
     if (
       getAnnotationType(annotation) !== ElementType.TEXT_LINE &&
       getAnnotationType(annotation) !== ElementType.TEMP
@@ -76,7 +89,16 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
       null as Annotation | null,
     );
 
-    return parent;
+    if (parent === null) {
+      return err(
+        new EntityNotFoundError({
+          entity: 'Annotation',
+          id: annotation.id,
+        }),
+      );
+    }
+
+    return ok(parent);
   }
 
   //TODO! il faut ordonner les annotations par collection et canvas sinon l'ordre sera faux

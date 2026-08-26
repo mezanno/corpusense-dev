@@ -16,13 +16,14 @@ import { Tag } from '@/data/models/Tag';
 import { Worker } from '@/data/models/Worker';
 import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import { Canvas, Manifest } from '@iiif/presentation-3';
+import { EntityNotFoundError, FunctionResult } from '../errors';
 
 export interface AnnotationRepository {
-  getById(id: string): Promise<Annotation>;
+  getById(id: string): Promise<FunctionResult<Annotation, EntityNotFoundError>>;
   getByScope(scope: Scope): Promise<Annotation[]>;
   getByScopeAndTypes(scope: Scope, types: ElementType[]): Promise<Annotation[]>;
   getNextOrderByScopeAndType(scope: Scope, type: ElementType): Promise<number>;
-  getParent(annotation: Annotation): Promise<Annotation | null>;
+  getParent(annotation: Annotation): Promise<FunctionResult<Annotation, EntityNotFoundError>>;
 
   addAll(annotations: AnnotationDTO[]): Promise<Annotation[]>;
 

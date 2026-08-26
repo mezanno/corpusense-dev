@@ -199,7 +199,12 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
     const parents = new Map<string, Annotation | null>();
     await Promise.all(
       annotations.map(async (a) => {
-        parents.set(a.id, await annotationRepository.getParent(a));
+        const result = await annotationRepository.getParent(a);
+        if (result.ok) {
+          parents.set(a.id, result.value);
+        } else {
+          parents.set(a.id, null);
+        }
       }),
     );
 

@@ -52,19 +52,22 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     }
     let regions: Tesseract.Rectangle[] = [];
     if (isAnnotationScope(task.scope)) {
-      const annotation = await annotationRepository.getById(task.scope.annotationId);
-      regions = [
-        {
-          left: annotation.target.selector.geometry.bounds.minX,
-          top: annotation.target.selector.geometry.bounds.minY,
-          width:
-            annotation.target.selector.geometry.bounds.maxX -
-            annotation.target.selector.geometry.bounds.minX,
-          height:
-            annotation.target.selector.geometry.bounds.maxY -
-            annotation.target.selector.geometry.bounds.minY,
-        },
-      ];
+      const result = await annotationRepository.getById(task.scope.annotationId);
+      if (result.ok) {
+        const annotation = result.value;
+        regions = [
+          {
+            left: annotation.target.selector.geometry.bounds.minX,
+            top: annotation.target.selector.geometry.bounds.minY,
+            width:
+              annotation.target.selector.geometry.bounds.maxX -
+              annotation.target.selector.geometry.bounds.minX,
+            height:
+              annotation.target.selector.geometry.bounds.maxY -
+              annotation.target.selector.geometry.bounds.minY,
+          },
+        ];
+      }
     } else {
       const annotations = await annotationRepository.getByScope({
         canvasId: canvasWithSourceId.canvas.id,
