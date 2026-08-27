@@ -581,3 +581,191 @@ La stratégie pragmatique : **commencer avec le type local**, mesurer la valeur 
 4. **Corriger les absorptions silencieuses** (`console.warn` dans `useAnnotationActions`) indépendamment du Result pattern — c'est un bug UX, pas un problème de typage.
 
 5. **Ne pas migrer** les `try/catch → pushError` uniformes qui ne bénéficient d'aucune discrimination d'erreur.
+
+---
+
+## Implémentation réalisée
+
+La mise en place du Result Pattern a été formalisée et intégrée dans le projet.
+
+### 1. Modules d'infrastructure
+
+#### `src/utils/functionResult.ts` (et `src/utils/result.ts`)
+
+Le type `FunctionResult<T, E>` (ou `Result<T, E>`) et son objet namespace associé regroupent les constructeurs et combinateurs fondamentaux :
+
+```ts
+export type FunctionResult<T, E = BaseError> =
+  | { ok: true; value: T }
+  | { ok: false; error: E };
+
+export const FunctionResult = {
+  // Constructeurs
+  ok: <T>(value: T): FunctionResult<T, never> => ({ ok: true, value }),
+  err: <E>(error: E): FunctionResult<never, E> => ({ ok: false, error }),
+
+  // Transforme la valeur si OK
+  map: <T, U, E>(result: FunctionResult<T, E>, fn: (val: T) => U): FunctionResult<U, E> =>
+    result.ok ? FunctionResult.ok(fn(result.value)) : result,
+
+  // Chaîne une autre opération qui renvoie un FunctionResult (flatMap)
+  flatMap: <T, U, E>(
+    result: FunctionResult<T, E>,
+    fn: (val: T) => FunctionResult<U, E>
+  ): FunctionResult<U, E> => (result.ok ? fn(result.value) : result),
+
+  // Extrait la valeur ou renvoie une valeur par défaut en cas d'erreur
+  unwrapOr: <T, E>(result: FunctionResult<T, E>, fallback: T): T =>
+    result.ok ? result.value : fallback,
+
+  // Pattern matching pour exécuter un callback selon le résultat
+  match: <T, E, R>(
+    result: FunctionResult<T, E>,
+    handlers: { ok: (value: T) => R; err: (error: E) => R }
+  ): R => (result.ok ? handlers.ok(result.value) : handlers.err(result.error)),
+
+  // Enrobe une Promise/fonction async pour capturer les exceptions inattendues
+  fromPromise: async <T, E = BaseError>(
+    promise: Promise<T>,
+    onError: (error: unknown) => E
+  ): Promise<FunctionResult<T, E>> => {
+    try {
+      const data = await promise;
+      return FunctionResult.ok(data);
+    } catch (e) {
+      return FunctionResult.err(onError(e));
+    }
+  },
+};
+```
+
+#### Erreurs Métier (`src/data/repositories/EntityNotFoundError.ts`)
+
+Les erreurs héritent de `BaseError` pour conserver le typage et le contexte :
+
+```ts
+export class EntityNotFoundError extends BaseError {
+  constructor(context: { entity: string; id: string }) {
+    super(`${context.entity} with id ${context.id} not found`);
+  }
+}
+```
+
+---
+
+### 2. Exemples d'utilisation concrets dans ton projet
+
+#### Cas 1 : Gestion différenciée et Pattern Matching (`FunctionResult.match`)
+
+Dans les hooks ou actions déclenchées par l'interface utilisateur, `match` permet de séparer proprement la branche succès (`ok`) de la branche erreur (`err`) sans accumuler de blocs `if (!result.ok)` :
+
+```ts
+// src/hooks/data/export/useExportActions.tsx
+const exportTextOfCollection = async (collectionId: string) => {
+  const textResult = await generateTextForCollection(collectionId);
+
+  FunctionResult.match(textResult, {
+    ok: (text) => {
+      FileSaver.saveAs(new Blob([text], { type: 'text/plain;charset=utf-8' }), 'exported_text.txt');
+    },
+    err: (error) => {
+      console.error('Error generating text:', getErrorMessage(error));
+      // Exemple : notification toast via Redux
+      // appDispatch(pushError(getErrorMessage(error)));
+    },
+  });
+};
+```
+
+#### Cas 2 : Extraction de valeur par défaut avec `FunctionResult.unwrapOr`
+
+Lorsque l'absence de données ne constitue pas un blocage majeur et qu'une valeur de fallback (ex. tableau vide) est adaptée :
+
+```ts
+// src/hooks/data/sources/useLiveSources.tsx
+const collectionSourceIdsArrays = await Promise.all(
+  allCollectionIds.map(async (collectionId) =>
+    FunctionResult.unwrapOr(
+      await collectionRepository.getSourceIdsByCollectionId(collectionId),
+      []
+    )
+  )
+);
+```
+
+#### Cas 3 : Transformation directe de données avec `FunctionResult.map`
+
+Pour manipuler la valeur interne contenue dans un `FunctionResult` sans avoir à le déballer manuellement :
+
+```ts
+// src/data/utils/scope.ts
+const contains = async (scope: Scope, value: string): Promise<boolean> => {
+  const collectionResult = await getCollectionRepository().getById(scope.collectionId);
+
+  // Si collectionResult est ok, on vérifie l'inclusion ; sinon on retourne false par défaut
+  return FunctionResult.unwrapOr(
+    FunctionResult.map(collectionResult, (c) => c.name.toLowerCase().includes(value.toLowerCase())),
+    false
+  );
+};
+```
+
+#### Cas 4 : Sécurisation d'appels asynchrones / Dexie avec `FunctionResult.fromPromise`
+
+Pour convertir des requêtes de base de données pouvant throw des exceptions système en `FunctionResult` sans blocs `try/catch` répétitifs :
+
+```ts
+// src/data/repositories/indexeddb/collections.ts
+async getById(id: string): Promise<FunctionResult<Collection, BaseError>> {
+  return FunctionResult.fromPromise(
+    (async () => {
+      const details = await db.collections.get(id);
+      if (!details) {
+        throw new EntityNotFoundError({ entity: 'Collection', id });
+      }
+      const content = await db.collectionContents.get(id);
+      return { ...details, content: content?.content || [] };
+    })(),
+    (err) => (err instanceof BaseError ? err : new BaseError(`Database error: ${err}`))
+  );
+}
+```
+
+---
+
+### 3. Récapitulatif des helpers
+
+| Helper                         | Description                                        | Cas d'usage type                                              |
+| :----------------------------- | :------------------------------------------------- | :------------------------------------------------------------ |
+| `ok(value)` / `err(error)`     | Constructeurs du résultat                          | Retour de fonction faillible dans repositories ou utilitaires |
+| `map(res, fn)`                 | Transforme la valeur interne si `ok`               | Transformer les données sans déplier le Result                |
+| `flatMap(res, fn)`             | Chaîne une fonction retournant un `Result`         | Séquencement d'opérations faillibles                          |
+| `unwrapOr(res, fallback)`      | Extrait la valeur ou renvoie une valeur par défaut | Valeur de secours si l'opération échoue                       |
+| `match(res, { ok, err })`      | Pattern matching synchrone                         | Gestion différenciée dans les composants UI ou les hooks      |
+| `fromPromise(promise, mapErr)` | Sécurise les fonctions `async` qui peuvent throw   | Enrobage d'appels IndexedDB / API externes                    |
+
+---
+
+### 4. Périmètre de la refactorisation
+
+Les composants et services suivants ont été migrés pour retourner ou consommer des `FunctionResult` :
+
+1. **Repositories IndexedDB (`IndexedDBCollectionRepository`)** :
+   - `getById(id)` → `Promise<FunctionResult<Collection, EntityNotFoundError>>`
+   - `getTagsByCollectionId(id)` → `Promise<FunctionResult<Tag[], EntityNotFoundError>>`
+   - `getCanvasesByCollectionId(id)` → `Promise<FunctionResult<Canvas[], EntityNotFoundError>>`
+   - `getSourceIdsByCollectionId(id)` → `Promise<FunctionResult<string[], EntityNotFoundError>>`
+   - `getCanvasByScope(scope)` → `Promise<FunctionResult<CanvasWithSourceId, EntityNotFoundError>>`
+   - `deleteElement(collectionId, canvasId)` → `Promise<FunctionResult<Collection, EntityNotFoundError>>`
+
+2. **Utilitaires métier (`src/data/utils/`)** :
+   - `export.ts` : `generateManifestFromCollection`, `generateNumberedTextForCollection`, `generateTextForCollection` retournent `Promise<FunctionResult<...>>`.
+   - `scope.ts` : `contains` consomme `getById` de façon défensive sans `try/catch`.
+   - `modifierChain.ts` : `applyModifiersToScope` vérifie `!canvasesResult.ok`.
+
+3. **Hooks et UI** :
+   - `OcrStatus.tsx` : Affiche une boîte de dialogue d'erreur si `!textResult.ok`.
+   - `useCollectionIO.tsx` : Contrôle les étapes d'export avec `generateManifestFromCollection`.
+   - `useCollections.tsx` : Traitement explicite lors de la suppression et sélection.
+   - `useExportActions.tsx` : Gestion des échecs de génération de texte.
+   - `useNamedEntities.tsx` & `useLiveSources.tsx` : Remplacement des exceptions par des traitements défensifs explicites.
