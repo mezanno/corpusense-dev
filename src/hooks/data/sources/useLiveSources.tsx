@@ -46,9 +46,14 @@ const useLiveSources = () => {
       (collection) => collection.id,
     );
     const collectionSourceIdsArrays = await Promise.all(
-      allCollectionIds.map((collectionId) =>
-        collectionRepository.getSourceIdsByCollectionId(collectionId),
-      ),
+      allCollectionIds.map(async (collectionId) => {
+        const result = await collectionRepository.getSourceIdsByCollectionId(collectionId);
+        if (result.ok) {
+          return result.value;
+        } else {
+          return [];
+        }
+      }),
     );
     const collectionSourceIds = [...new Set(collectionSourceIdsArrays.flat())];
 

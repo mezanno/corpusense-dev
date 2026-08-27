@@ -42,7 +42,14 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
   const annotationRepository = getAnnotationRepository();
   try {
     const collectionRepository = getCollectionRepository();
-    const canvasWithSourceId = await collectionRepository.getCanvasByScope(task.scope);
+    const canvasWithSourceIdResult = await collectionRepository.getCanvasByScope(task.scope);
+    if (!canvasWithSourceIdResult.ok) {
+      return {
+        status: WorkerStatus.ERROR,
+        statusMessage: canvasWithSourceIdResult.error.message,
+      };
+    }
+    const canvasWithSourceId = canvasWithSourceIdResult.value;
     const image = getImage(canvasWithSourceId.canvas);
     if (image.id === undefined) {
       return {
@@ -113,14 +120,17 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       );
 
       //if a post-processing function is defined for the collection, apply it to the new annotations before saving them
-      const collection = await collectionRepository.getById(task.scope.collectionId);
+      const collectionResult = await collectionRepository.getById(task.scope.collectionId);
+      const postOcrModifierChainId = collectionResult.ok
+        ? collectionResult.value.postOcrModifierChainId
+        : undefined;
       let savedAnnotations;
       if (
-        collection.postOcrModifierChainId !== undefined &&
-        collection.postOcrModifierChainId.trim() !== ''
+        postOcrModifierChainId !== undefined &&
+        postOcrModifierChainId.trim() !== ''
       ) {
         const updatedAnnotations = await applyModifierChainToAnnotations(
-          collection.postOcrModifierChainId,
+          postOcrModifierChainId,
           newAnnotations.map((a) => ({ ...a, order: 0 })), //we have to set the order to transofrm AnnotationDTO into Annotation for the modifier chain function, but it will be reset when saving the annotations
         );
         savedAnnotations = await annotationRepository.addAll(updatedAnnotations);

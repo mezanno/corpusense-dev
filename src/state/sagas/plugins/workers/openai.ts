@@ -1,7 +1,6 @@
 import { LLMProfile } from '@/data/models/LLMProfile';
 import { Result } from '@/data/models/Result';
 import { isAnnotationScope, isCanvasScope, Scope, toString } from '@/data/models/Scope';
-import { Tag } from '@/data/models/Tag';
 import { Task, Worker, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
 import {
   getCollectionRepository,
@@ -15,6 +14,7 @@ import {
 } from '@/data/utils/export';
 import { generateSchema, hasPreviousValueField } from '@/data/utils/model';
 import i18n from '@/i18n';
+import { FunctionResult } from '@/utils/functionResult';
 import { getErrorMessage } from '@/utils/utils';
 import FileSaver from 'file-saver';
 import { json2csv } from 'json-2-csv';
@@ -39,7 +39,11 @@ async function getText(scope: Scope) {
     //TODO: implement text extraction from annotation
     fullText = '';
   } else {
-    fullText = await generateNumberedTextForCollection(scope.collectionId);
+    //TODO : en cas d'erreur ?
+    fullText = FunctionResult.unwrapOr(
+      await generateNumberedTextForCollection(scope.collectionId),
+      '',
+    );
   }
   return fullText.replace(/["«»]/g, '');
 }
@@ -82,7 +86,14 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
   let model = undefined;
   const collectionRepository = getCollectionRepository();
   try {
-    const collection = await collectionRepository.getById(task.scope.collectionId);
+    const collectionResult = await collectionRepository.getById(task.scope.collectionId);
+    if (!collectionResult.ok) {
+      return {
+        status: WorkerStatus.ERROR,
+        statusMessage: collectionResult.error.message,
+      };
+    }
+    const collection = collectionResult.value;
     const modelId = collection.modelId;
     if (modelId === undefined) {
       return {
@@ -91,7 +102,14 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
       };
     }
     const modelRepository = getModelRepository();
-    model = await modelRepository.getById(modelId);
+    const modelResult = await modelRepository.getById(modelId);
+    if (!modelResult.ok) {
+      return {
+        status: WorkerStatus.ERROR,
+        statusMessage: modelResult.error.message,
+      };
+    }
+    model = modelResult.value;
   } catch (error) {
     return {
       status: WorkerStatus.ERROR,
@@ -114,11 +132,13 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
       task.previousTask.workerId,
       task.previousTask.taskId,
     );
-    const previousResult = JSON.parse(result.value as string) as unknown;
-    if (Array.isArray(previousResult)) {
-      lastValue = previousResult[previousResult.length - 1] as unknown; //on prend la dernière entrée si le résultat est un tableau
-    } else {
-      lastValue = previousResult;
+    if (result.ok) {
+      const previousResult = JSON.parse(result.value.value as string) as unknown;
+      if (Array.isArray(previousResult)) {
+        lastValue = previousResult[previousResult.length - 1] as unknown; //on prend la dernière entrée si le résultat est un tableau
+      } else {
+        lastValue = previousResult;
+      }
     }
   }
   console.log('previousResult: ', lastValue);
@@ -172,14 +192,19 @@ export async function extractData(results: Result[]): Promise<unknown[]> {
     const result = results[i];
     const canvasId = isCanvasScope(result.scope) ? toGallicaUrl(result.scope.canvasId) : undefined;
 
-    const tags: Tag[] = await collectionRepository.getTagsByCollectionId(result.scope.collectionId);
-    const tagsAsColumns = tags.reduce(
-      (acc, t, index) => {
-        acc[`tag${index + 1}`] = t.label;
-        return acc;
-      },
-      {} as Record<string, string>,
-    );
+    const tagsResult = await collectionRepository.getTagsByCollectionId(result.scope.collectionId);
+
+    let tagsAsColumns: Record<string, string> = {};
+    if (tagsResult.ok) {
+      const tags = tagsResult.value;
+      tagsAsColumns = tags.reduce(
+        (acc, t, index) => {
+          acc[`tag${index + 1}`] = t.label;
+          return acc;
+        },
+        {} as Record<string, string>,
+      );
+    }
 
     try {
       const dataParsed = JSON.parse(result.value as string) as unknown;
@@ -217,9 +242,10 @@ export async function exportResult(results: Result[], formats: string[]) {
 
   const collectionRepository = getCollectionRepository();
   const collectionId = results[0].scope.collectionId;
-  const collection = await collectionRepository.getById(collectionId);
+  const collectionResult = await collectionRepository.getById(collectionId);
+  const collectionName = collectionResult.ok ? collectionResult.value.name : undefined;
 
-  const filename = `mistral_export_${collection.name ?? collectionId}_${new Date().toLocaleDateString()}`;
+  const filename = `mistral_export_${collectionName ?? collectionId}_${new Date().toLocaleDateString()}`;
 
   const allTheData = await extractData(results);
 

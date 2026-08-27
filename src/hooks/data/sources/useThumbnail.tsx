@@ -16,24 +16,27 @@ const useThumbnail = ({ canvas, sourceId }: CanvasWithSourceId) => {
   useEffect(() => {
     const fetchThumbnail = async () => {
       setError(null);
-      const sourceWithContent = await getSourceWithContent(sourceId);
+      const sourceWithContentResutlt = await getSourceWithContent(sourceId);
 
-      const originalThumb = (canvas.thumbnail as IIIFExternalWebResource[]) ?? [
-        getImageForThumbnail(canvas, 200),
-      ];
-      const thumb = [...originalThumb];
-      if (sourceWithContent.content.type === 'local') {
-        const content = sourceWithContent.content;
-        const thumbPath = canvas.thumbnail?.[0]?.id;
-        if (thumbPath === undefined) {
-          setError(t('error_no_thumbnail'));
-          return;
+      if (sourceWithContentResutlt.ok) {
+        const sourceWithContent = sourceWithContentResutlt.value;
+        const originalThumb = (canvas.thumbnail as IIIFExternalWebResource[]) ?? [
+          getImageForThumbnail(canvas, 200),
+        ];
+        const thumb = [...originalThumb];
+        if (sourceWithContent.content.type === 'local') {
+          const content = sourceWithContent.content;
+          const thumbPath = canvas.thumbnail?.[0]?.id;
+          if (thumbPath === undefined) {
+            setError(t('error_no_thumbnail'));
+            return;
+          }
+          const item = { ...thumb[0] };
+          item.id = await getLocalObjectUrl(thumbPath, content.localFile.outputDirectoryHandle);
+          thumb[0] = item;
         }
-        const item = { ...thumb[0] };
-        item.id = await getLocalObjectUrl(thumbPath, content.localFile.outputDirectoryHandle);
-        thumb[0] = item;
+        setThumbnail(thumb);
       }
-      setThumbnail(thumb);
     };
 
     void fetchThumbnail();

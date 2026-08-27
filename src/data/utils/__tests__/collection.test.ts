@@ -23,12 +23,12 @@ describe('collection utils', () => {
         {
           canvasId: 'canvas1',
           position: 1,
-          manifestId,
+          sourceId: manifestId,
         },
         {
           canvasId: 'canvas2',
           position: 2,
-          manifestId,
+          sourceId: manifestId,
         },
       ]);
     });
@@ -44,7 +44,7 @@ describe('collection utils', () => {
         {
           canvasId: 'canvas2',
           position: 1,
-          manifestId,
+          sourceId: manifestId,
         },
       ]);
     });

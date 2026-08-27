@@ -19,8 +19,10 @@ const SourceSection = ({ selectedProjectId }: SourceSectionProps) => {
   const onProjectId = useEffectEvent(() => {
     async function loadProject() {
       if (selectedProjectId !== undefined) {
-        const project = await getProjectById(selectedProjectId);
-        setCurrentProject(project);
+        const projectResult = await getProjectById(selectedProjectId);
+        if (projectResult.ok) {
+          setCurrentProject(projectResult.value);
+        }
       } else {
         setCurrentProject(undefined);
       }

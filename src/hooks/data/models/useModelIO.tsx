@@ -23,7 +23,12 @@ export const useModelIO = () => {
 
   const exportModel = async (id: string) => {
     try {
-      const model = await modelRepository.getById(id);
+      const modelResult = await modelRepository.getById(id);
+      if (!modelResult.ok) {
+        appDispatch(pushError('Error exporting model: ' + getErrorMessage(modelResult.error)));
+        return;
+      }
+      const model = modelResult.value;
 
       FileSaver.saveAs(
         new Blob([JSON.stringify(model)], { type: 'application/json' }),
@@ -44,8 +49,9 @@ export const useModelIO = () => {
       const model = validation.data;
       console.log(model);
 
-      const existingModel = await modelRepository.getByName(model.name);
-      if (existingModel !== null) {
+      const existingModelResult = await modelRepository.getByName(model.name);
+      if (existingModelResult.ok) {
+        const existingModel = existingModelResult.value;
         if (!overwrite) {
           model.name = model.name + ' (imported)';
           model.id = uuid();

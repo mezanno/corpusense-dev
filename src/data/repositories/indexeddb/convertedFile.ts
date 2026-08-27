@@ -1,23 +1,24 @@
 import { ConvertedFile } from '@/data/models/ConvertedFile';
-import { t } from 'i18next';
+import { FunctionResult } from '@/utils/functionResult';
+import { EntityNotFoundError } from '../EntityNotFoundError';
 import { db } from './db';
 import { ConvertedFileRepository } from './types';
 
 export class IndexedDBConvertedFileRepository implements ConvertedFileRepository {
-  async getById(id: string): Promise<ConvertedFile> {
+  async getById(id: string): Promise<FunctionResult<ConvertedFile, EntityNotFoundError>> {
     const file = await db.convertedFiles.get(id);
     if (!file) {
-      throw new Error(t('error_fsfile_not_found', { id: id }));
+      return FunctionResult.err(new EntityNotFoundError({ entity: 'ConvertedFile', id }));
     }
-    return file;
+    return FunctionResult.ok(file);
   }
 
-  async getByFolderName(folderName: string): Promise<ConvertedFile> {
+  async getByFolderName(folderName: string): Promise<FunctionResult<ConvertedFile, EntityNotFoundError>> {
     const file = await db.convertedFiles.where('folderName').equals(folderName).first();
     if (!file) {
-      throw new Error(t('error_fsfolder_not_found', { name: folderName }));
+      return FunctionResult.err(new EntityNotFoundError({ entity: 'ConvertedFile', id: folderName }));
     }
-    return file;
+    return FunctionResult.ok(file);
   }
 
   async add(file: ConvertedFile): Promise<void> {

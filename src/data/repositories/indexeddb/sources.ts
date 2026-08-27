@@ -1,11 +1,13 @@
 import { AddSourceDTO, Source, SourceContent } from '@/data/models/Sources';
 import { extractCanvasById, getThumbnailBlob } from '@/data/utils/manifest';
+import { FunctionResult } from '@/utils/functionResult';
 import {
   getManifestFromConvertedFile,
   reconstructManifestFromConvertedFile,
 } from '@/utils/manifest';
 import { Canvas } from '@iiif/presentation-3';
 import { v4 as uuid } from 'uuid';
+import { EntityNotFoundError } from '../EntityNotFoundError';
 import { db } from './db';
 import { SourceRepository } from './types';
 
@@ -52,44 +54,58 @@ export class IndexedDBSourceRepository implements SourceRepository {
     }
   }
 
-  async getBlob(blobId: string): Promise<Blob> {
+  async getBlob(blobId: string): Promise<FunctionResult<Blob, EntityNotFoundError>> {
     const storedBlob = await db.storedBlobs.get(blobId);
     if (!storedBlob) {
-      throw new Error(`Blob with id ${blobId} not found`);
+      return FunctionResult.err(new EntityNotFoundError({ entity: 'Blob', id: blobId }));
     }
-    return storedBlob.blob;
+    return FunctionResult.ok(storedBlob.blob);
   }
 
-  async getById(sourceId: string) {
+  async getById(sourceId: string): Promise<FunctionResult<Source, EntityNotFoundError>> {
     const source = await db.sources.get(sourceId);
     if (!source) {
-      throw new Error(`Source with id ${sourceId} not found`);
+      return FunctionResult.err(new EntityNotFoundError({ entity: 'Source', id: sourceId }));
     }
-    return source;
+    return FunctionResult.ok(source);
   }
 
-  async getContentById(sourceId: string): Promise<SourceContent> {
-    console.log('getContentById ', sourceId);
-
+  async getContentById(sourceId: string): Promise<FunctionResult<SourceContent, EntityNotFoundError>> {
     const content = await db.sourceContents.get(sourceId);
     if (!content) {
-      throw new Error(`Content for source with id ${sourceId} not found`);
+      return FunctionResult.err(new EntityNotFoundError({ entity: 'SourceContent', id: sourceId }));
     }
-    return content;
+    return FunctionResult.ok(content);
   }
 
-  async getContentByManifestUrl(manifestUrl: string): Promise<SourceContent | undefined> {
-    return (await db.sourceContents.toArray()).find(
+  async getContentByManifestUrl(
+    manifestUrl: string,
+  ): Promise<FunctionResult<SourceContent, EntityNotFoundError>> {
+    const content = (await db.sourceContents.toArray()).find(
       (content) => content.manifest.id === manifestUrl,
     );
+    if (!content) {
+      return FunctionResult.err(
+        new EntityNotFoundError({ entity: 'SourceContent', id: manifestUrl }),
+      );
+    }
+    return FunctionResult.ok(content);
   }
 
-  async getCanvasById(sourceId: string, canvasId: string): Promise<Canvas> {
-    const content = await db.sourceContents.get(sourceId);
-    if (!content) {
-      throw new Error(`Content for source with id ${sourceId} not found`);
+  async getCanvasById(
+    sourceId: string,
+    canvasId: string,
+  ): Promise<FunctionResult<Canvas, EntityNotFoundError>> {
+    const contentResult = await this.getContentById(sourceId);
+    if (!contentResult.ok) {
+      return contentResult;
     }
-    return extractCanvasById(content.manifest, canvasId);
+    try {
+      const canvas = extractCanvasById(contentResult.value.manifest, canvasId);
+      return FunctionResult.ok(canvas);
+    } catch {
+      return FunctionResult.err(new EntityNotFoundError({ entity: 'Canvas', id: canvasId }));
+    }
   }
 
   async updateName(sourceId: string, name: string): Promise<void> {

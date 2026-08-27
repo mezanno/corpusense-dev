@@ -1,19 +1,22 @@
 import { isCollectionScope, Scope } from '@/data/models/Scope';
 import { Worker, WorkerCreateDTO, WorkerStatus } from '@/data/models/Worker';
+import { FunctionResult } from '@/utils/functionResult';
+import { EntityNotFoundError } from '../EntityNotFoundError';
 import { db } from './db';
 import { WorkerRepository } from './types';
 import { computeScopeKey } from './utils';
+
 export class IndexedDBWorkerRepository implements WorkerRepository {
   async getAll(): Promise<Worker[]> {
     return await db.workers.toArray();
   }
 
-  async getById(id: string): Promise<Worker> {
+  async getById(id: string): Promise<FunctionResult<Worker, EntityNotFoundError>> {
     const worker = await db.workers.get(id);
     if (!worker) {
-      throw new Error(`Worker with id ${id} not found`);
+      return FunctionResult.err(new EntityNotFoundError({ entity: 'Worker', id }));
     }
-    return worker;
+    return FunctionResult.ok(worker);
   }
 
   async getByScope(scope: Scope, subScope: boolean): Promise<Worker[]> {

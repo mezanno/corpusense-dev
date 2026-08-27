@@ -1,4 +1,4 @@
-import i18n from '@/i18n';
+import { BaseError } from '@/utils/BaseError';
 import { AnnotationPage, Canvas, Manifest } from '@iiif/presentation-3';
 import {
   Annotation,
@@ -7,6 +7,7 @@ import {
   getAnnotationType,
 } from '../models/Annotation';
 import { IIIF_CONTEXT } from '../models/converters/iiif';
+import { EntityNotFoundError } from '../repositories/EntityNotFoundError';
 import {
   getAnnotationRepository,
   getCollectionRepository,
@@ -14,92 +15,97 @@ import {
   getTagRepository,
 } from '../repositories/indexeddb/dbFactory';
 import { contains } from './annotations';
+import { EmptyCollectionError } from './errors';
 import { convertResultToIIIFAnnotation } from './result';
+import { FunctionResult } from '@/utils/functionResult';
 
 export interface ManifestExport {
   name: string;
   manifest: Manifest;
 }
 
-const generateManifestFromCollection = async (collectionId: string): Promise<ManifestExport> => {
-  try {
-    const collection = await getCollectionRepository().getById(collectionId);
-
-    if (collection.content.length === 0) {
-      throw new Error(i18n.t('error_export_collection_empty', { name: collection.name }));
-    }
-
-    const manifestId = 'https://1.rp.mezanno.xyz/toto.json'; //TODO: to be changed
-    const items: Canvas[] = [];
-    for (let i = 0; i < collection.content.length; i++) {
-      const canvasId = collection.content[i].canvasId;
-      const canvas = await generateCanvas(canvasId, manifestId, collectionId);
-      items.push(canvas);
-    }
-
-    const tags = await getTagRepository().getByIds(collection.tags);
-
-    return {
-      name: collection.name,
-      manifest: {
-        '@context': IIIF_CONTEXT,
-        // id: list.id as string,
-        id: manifestId,
-        type: 'Manifest',
-        label: {
-          none: [collection.name],
-        },
-        items,
-        ...(tags.length > 0 && { tags }),
-      },
-    };
-  } catch (error) {
-    //TODO: revoir le type d'erreur
-    console.log('error', error);
-    throw new Error(i18n.t('error_export_collection_not_found'));
+const generateManifestFromCollection = async (
+  collectionId: string,
+): Promise<FunctionResult<ManifestExport, BaseError>> => {
+  const result = await getCollectionRepository().getById(collectionId);
+  if (!result.ok) {
+    return FunctionResult.err(result.error);
   }
+
+  const collection = result.value;
+
+  if (collection.content.length === 0) {
+    return FunctionResult.err(new EmptyCollectionError({ id: collection.id, name: collection.name }));
+  }
+
+  const manifestId = 'https://1.rp.mezanno.xyz/toto.json'; //TODO: to be changed
+  const items: Canvas[] = [];
+  for (let i = 0; i < collection.content.length; i++) {
+    const canvasId = collection.content[i].canvasId;
+    const canvas = await generateCanvas(canvasId, manifestId, collectionId);
+    if (canvas.ok) {
+      items.push(canvas.value);
+    }
+    //TODO: on fait quoi en cas d'erreur : il faut l'afficher quelque part
+  }
+
+  const tags = await getTagRepository().getByIds(collection.tags);
+
+  return FunctionResult.ok({
+    name: collection.name,
+    manifest: {
+      '@context': IIIF_CONTEXT,
+      // id: list.id as string,
+      id: manifestId,
+      type: 'Manifest',
+      label: {
+        none: [collection.name],
+      },
+      items,
+      ...(tags.length > 0 && { tags }),
+    },
+  });
 };
 
 const generateCanvas = async (
   canvasId: string,
   manifestId: string,
   collectionId: string,
-): Promise<Canvas> => {
-  try {
-    const canvasWithSourceId = await getCollectionRepository().getCanvasByScope({
-      canvasId,
-      collectionId,
-    });
-
-    let allAnnotationPages: AnnotationPage[] = [];
-    //TODO: il faudra ajouter les annotations déjà existantes
-    // if (canvas.annotations !== undefined && canvas.annotations.length > 0) {
-    //   allAnnotationPages = allAnnotationPages.concat(canvas.annotations);
-    // }
-
-    try {
-      const canvasAnnotationPage = await generateAnnotationPage(canvasId, collectionId);
-      if (canvasAnnotationPage !== undefined) {
-        allAnnotationPages = allAnnotationPages.concat(canvasAnnotationPage);
-      }
-    } catch (error) {
-      console.error(`${collectionId} : Skipping annotation page for canvas ${canvasId}: `, error);
-    }
-
-    const canvasIif: Canvas = {
-      ...canvasWithSourceId.canvas,
-      partOf: [{ id: manifestId, type: 'Manifest' }],
-    };
-
-    if (allAnnotationPages.length > 0) {
-      canvasIif.annotations = allAnnotationPages;
-    }
-
-    return canvasIif;
-  } catch (error) {
-    console.error('Error generating annotation page:', error);
-    throw error;
+): Promise<FunctionResult<Canvas, BaseError>> => {
+  const result = await getCollectionRepository().getCanvasByScope({
+    canvasId,
+    collectionId,
+  });
+  if (!result.ok) {
+    return FunctionResult.err(new EntityNotFoundError({ entity: 'Canvas', id: canvasId }));
   }
+  const canvasWithSourceId = result.value;
+
+  let allAnnotationPages: AnnotationPage[] = [];
+  //TODO: il faudra ajouter les annotations déjà existantes
+  // if (canvas.annotations !== undefined && canvas.annotations.length > 0) {
+  //   allAnnotationPages = allAnnotationPages.concat(canvas.annotations);
+  // }
+
+  try {
+    const canvasAnnotationPage = await generateAnnotationPage(canvasId, collectionId);
+    if (canvasAnnotationPage !== undefined) {
+      allAnnotationPages = allAnnotationPages.concat(canvasAnnotationPage);
+    }
+  } catch (error) {
+    console.error(`${collectionId} : Skipping annotation page for canvas ${canvasId}: `, error);
+  }
+
+  const canvasIif: Canvas = {
+    ...canvasWithSourceId.canvas,
+    partOf: [{ id: manifestId, type: 'Manifest' }],
+  };
+
+  if (allAnnotationPages.length > 0) {
+    canvasIif.annotations = allAnnotationPages;
+  }
+
+  return FunctionResult.ok(canvasIif);
 };
 
 const generateAnnotationPage = async (canvasId: string, collectionId: string) => {
@@ -115,11 +121,11 @@ const generateAnnotationPage = async (canvasId: string, collectionId: string) =>
     { canvasId, collectionId },
     [ElementType.TEXT_LINE],
   );
-  if (result === undefined || lineAnnotations.length === 0) {
+  if (!result.ok || lineAnnotations.length === 0) {
     return undefined;
   }
 
-  return await convertResultToIIIFAnnotation(result);
+  return await convertResultToIIIFAnnotation(result.value);
 };
 
 const generateTextForAnnotation = async (annotation: Annotation) => {
@@ -213,12 +219,16 @@ const generateNumberedTextFromCanvas = async (
   return { text, numLines: lineNumber };
 };
 
-const generateNumberedTextForCollection = async (collectionId: string) => {
-  const canvases = await getCollectionRepository().getCanvasesByCollectionId(collectionId);
-  if (canvases === undefined || canvases.length === 0) {
-    throw new Error(i18n.t('error_export_collection_empty'));
+const generateNumberedTextForCollection = async (
+  collectionId: string,
+): Promise<FunctionResult<string, BaseError>> => {
+  const canvasesResult = await getCollectionRepository().getCanvasesByCollectionId(collectionId);
+
+  if (!canvasesResult.ok || canvasesResult.value.length === 0) {
+    return FunctionResult.err(new EmptyCollectionError({ id: collectionId, name: 'unknown' }));
   }
 
+  const canvases = canvasesResult.value;
   let allTheText = '';
   let lineCount = 0;
   for (let i = 0; i < canvases.length; i++) {
@@ -233,15 +243,19 @@ const generateNumberedTextForCollection = async (collectionId: string) => {
     }
   }
 
-  return allTheText;
+  return FunctionResult.ok(allTheText);
 };
 
-const generateTextForCollection = async (collectionId: string) => {
-  const canvases = await getCollectionRepository().getCanvasesByCollectionId(collectionId);
-  if (canvases === undefined || canvases.length === 0) {
-    throw new Error(i18n.t('error_export_collection_empty'));
+const generateTextForCollection = async (
+  collectionId: string,
+): Promise<FunctionResult<string, BaseError>> => {
+  const canvasesResult = await getCollectionRepository().getCanvasesByCollectionId(collectionId);
+
+  if (!canvasesResult.ok || canvasesResult.value.length === 0) {
+    return FunctionResult.err(new EmptyCollectionError({ id: collectionId, name: 'unknown' }));
   }
 
+  const canvases = canvasesResult.value;
   let allTheText = '';
   for (let i = 0; i < canvases.length; i++) {
     const text = await generateTextFromCanvas(canvases[i].id, collectionId);
@@ -250,7 +264,7 @@ const generateTextForCollection = async (collectionId: string) => {
     }
   }
 
-  return allTheText;
+  return FunctionResult.ok(allTheText);
 };
 
 export {

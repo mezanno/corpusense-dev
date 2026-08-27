@@ -15,7 +15,17 @@ const OcrStatus = ({ collectionId }: { collectionId: string }) => {
   }
 
   const handleClick = async () => {
-    const text = await generateTextForCollection(collectionId);
+    const textResult = await generateTextForCollection(collectionId);
+
+    if (!textResult.ok) {
+      openDialog({
+        title: t('title_ocr_text'),
+        children: <div className='whitespace-pre-line'>{t('error_ocr_text')}</div>,
+      });
+      return;
+    }
+
+    const text = textResult.value;
     openDialog({
       title: t('title_ocr_text'),
       children: <div className='whitespace-pre-line'>{text}</div>,

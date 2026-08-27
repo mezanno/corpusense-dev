@@ -38,29 +38,16 @@ export class IndexedDBCollectionLiveRepository implements CollectionLiveReposito
 
       console.log('content ', content);
 
-      //get the list of canvases in the collection (with their sourceId)
-      const canvases = await Promise.all(
+      const canvasesWithResults = await Promise.all(
         content.map(async ({ sourceId, canvasId }) => ({
-          canvas: await sourceRepository.getCanvasById(sourceId, canvasId),
+          canvasResult: await sourceRepository.getCanvasById(sourceId, canvasId),
           sourceId,
         })),
       );
 
-      // const canvasesOrderedBySourceId = groupBy(canvasesWithSourceId, 'sourceId');
-
-      // //group the canvases by manifestId
-      // const groupedCanvasesIds = mapValues(canvasesOrderedBySourceId, (value) =>
-      //   value.map((elt) => elt.canvasId),
-      // );
-
-      // const canvases: Canvas[] = [];
-      // for (const sourceId in groupedCanvasesIds) {
-      //   const canvasIds = groupedCanvasesIds[sourceId];
-      //   const results = canvasIds.length
-      //     ? await Promise.all(canvasIds.map((id) => sourceRepository.getCanvasById(sourceId, id)))
-      //     : [];
-      //   canvases.push(...results);
-      // }
+      const canvases = canvasesWithResults
+        .filter((item): item is { canvasResult: { ok: true; value: Canvas }; sourceId: string } => item.canvasResult.ok)
+        .map((item) => ({ canvas: item.canvasResult.value, sourceId: item.sourceId }));
 
       console.log('canvases ', canvases);
 

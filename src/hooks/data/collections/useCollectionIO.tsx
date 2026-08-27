@@ -38,13 +38,12 @@ export const useCollectionIO = (setters: ProgressLoggerSetters) => {
     for (let i = 0; i < collectionIds.length; i++) {
       const id = collectionIds[i];
 
-      const exists = await collectionRepository.exists(id);
-      if (!exists) {
+      const collectionResult = await collectionRepository.getById(id);
+      if (!collectionResult.ok) {
         addLog(`Collection with id ${id} does not exist, skipping export`, 'error');
         continue;
       }
-
-      const collection = await collectionRepository.getById(id);
+      const collection = collectionResult.value;
       addLog(`Exporting collection ${collection.name} (${i + 1}/${collectionIds.length})`);
 
       const exportedCollection = { collection };
@@ -64,8 +63,10 @@ export const useCollectionIO = (setters: ProgressLoggerSetters) => {
       if (options.model === true && collection.modelId !== undefined) {
         try {
           const modelRepository = getModelRepository();
-          const model = await modelRepository.getById(collection.modelId);
-          Object.assign(exportedCollection, { model });
+          const modelResult = await modelRepository.getById(collection.modelId);
+          if (modelResult.ok) {
+            Object.assign(exportedCollection, { model: modelResult.value });
+          }
         } catch (error) {
           addLog(`Error adding model: ${getErrorMessage(error)}`, 'error');
         }
@@ -94,9 +95,14 @@ export const useCollectionIO = (setters: ProgressLoggerSetters) => {
       }
 
       if (options.manifest === true) {
+        const manifestResult = await generateManifestFromCollection(id);
+        if (!manifestResult.ok) {
+          addLog(`Error generating manifest: ${getErrorMessage(manifestResult.error)}`, 'error');
+          continue;
+        }
+
+        const { name, manifest } = manifestResult.value;
         try {
-          const { name, manifest } = await generateManifestFromCollection(id);
-          console.log(name, ' --> ', manifest);
           zip.file(name + '_manifest.json', JSON.stringify(manifest, null, 2));
         } catch (error) {
           addLog(`Error generating manifest: ${getErrorMessage(error)}`, 'error');

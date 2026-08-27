@@ -35,10 +35,10 @@ describe('manifest utils', () => {
             expect(name).toBe('Manifest Label');
         });
 
-        it('should return empty name if both summary and label are missing', () => {
+        it('should return empty name fallback key if both summary and label are missing', () => {
             const emptyManifest = { ...mockManifest, summary: undefined, label: {} };
             const { name } = extractManifestDetails(emptyManifest as Manifest);
-            expect(name).toBe('');
+            expect(name).toBe('error_manifest_empty_name');
         });
     });
 

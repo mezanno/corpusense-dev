@@ -33,7 +33,15 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
   }
   try {
     const collectionRepository = getCollectionRepository();
-    const canvasWithSourceId = await collectionRepository.getCanvasByScope(task.scope);
+    const canvasWithSourceIdResult = await collectionRepository.getCanvasByScope(task.scope);
+
+    if (!canvasWithSourceIdResult.ok) {
+      return {
+        status: WorkerStatus.ERROR,
+        statusMessage: i18n.t('error_canvas_not_found'),
+      };
+    }
+    const canvasWithSourceId = canvasWithSourceIdResult.value;
     const image = getImage(canvasWithSourceId.canvas);
 
     const url = getValueForPluginParam(pluginName, 'apiUrl');

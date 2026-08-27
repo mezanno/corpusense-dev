@@ -42,7 +42,14 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
   try {
     const annotationRepository = getAnnotationRepository();
     const collectionRepository = getCollectionRepository();
-    const canvasWithSourceId = await collectionRepository.getCanvasByScope(task.scope);
+    const canvasWithSourceIdResult = await collectionRepository.getCanvasByScope(task.scope);
+    if (!canvasWithSourceIdResult.ok) {
+      return {
+        status: WorkerStatus.ERROR,
+        statusMessage: canvasWithSourceIdResult.error.message,
+      };
+    }
+    const canvasWithSourceId = canvasWithSourceIdResult.value;
     const image = getImage(canvasWithSourceId.canvas);
     if (image.id === undefined) {
       return {

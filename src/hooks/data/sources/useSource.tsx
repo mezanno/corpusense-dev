@@ -13,11 +13,17 @@ const useSource = (sourceId: string) => {
     queryKey: [QUERY_KEY_CURRENT_SOURCE, sourceId],
     queryFn: async () => {
       const sourceRepository = getSourceRepository();
-      const source = await sourceRepository.getById(sourceId);
-      const content = await sourceRepository.getContentById(sourceId);
+      const sourceResult = await sourceRepository.getById(sourceId);
+      if (!sourceResult.ok) {
+        throw new Error(sourceResult.error.message);
+      }
+      const contentResult = await sourceRepository.getContentById(sourceId);
+      if (!contentResult.ok) {
+        throw new Error(contentResult.error.message);
+      }
       return {
-        ...source,
-        content,
+        ...sourceResult.value,
+        content: contentResult.value,
       };
     },
   });

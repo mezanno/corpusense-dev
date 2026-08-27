@@ -15,8 +15,9 @@ import { StoredManifestDetails } from '@/data/models/StoredManifest';
 import { Tag } from '@/data/models/Tag';
 import { Worker } from '@/data/models/Worker';
 import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
+import { FunctionResult } from '@/utils/functionResult';
 import { Canvas, Manifest } from '@iiif/presentation-3';
-import { EntityNotFoundError, FunctionResult } from '../errors';
+import { EntityNotFoundError } from '../EntityNotFoundError';
 
 export interface AnnotationRepository {
   getById(id: string): Promise<FunctionResult<Annotation, EntityNotFoundError>>;
@@ -45,18 +46,27 @@ export interface AnnotationTempRepository {
 
 export interface CollectionRepository {
   getAllDetails(): Promise<CollectionDetails[]>;
-  getById(id: string): Promise<Collection>;
-  getTagsByCollectionId(collectionId: string): Promise<Tag[]>;
-  getCanvasesByCollectionId(collectionId: string): Promise<Canvas[]>;
-  getCanvasByScope(scope: CanvasScope | AnnotationScope): Promise<CanvasWithSourceId>;
-  getSourceIdsByCollectionId(collectionId: string): Promise<string[]>;
+  getById(id: string): Promise<FunctionResult<Collection, EntityNotFoundError>>;
+  getTagsByCollectionId(collectionId: string): Promise<FunctionResult<Tag[], EntityNotFoundError>>;
+  getCanvasesByCollectionId(
+    collectionId: string,
+  ): Promise<FunctionResult<Canvas[], EntityNotFoundError>>;
+  getCanvasByScope(
+    scope: CanvasScope | AnnotationScope,
+  ): Promise<FunctionResult<CanvasWithSourceId, EntityNotFoundError>>;
+  getSourceIdsByCollectionId(
+    collectionId: string,
+  ): Promise<FunctionResult<string[], EntityNotFoundError>>;
   getOfflineCollections(): Promise<CollectionDetails[]>;
   getOfflineCanvases(): Promise<Canvas[]>;
   exists(id: string): Promise<boolean>;
 
   create(collection: Collection): Promise<void>;
   addContentToCollection(collection: Collection): Promise<void>;
-  duplicate(collectionId: string, newName: string): Promise<void>;
+  duplicate(
+    collectionId: string,
+    newName: string,
+  ): Promise<FunctionResult<CollectionDetails, EntityNotFoundError>>;
 
   update(
     id: string,
@@ -68,7 +78,10 @@ export interface CollectionRepository {
   delete(collectionToRemove: Collection): Promise<{ workersIds: string[]; collectionId: string }>;
   deleteMultiple(collectionsToRemoveIds: string[]): Promise<void>;
   deleteById(collectionId: string): Promise<{ workersIds: string[]; collectionId: string }>;
-  deleteElement(collectionId: string, canvasId: string): Promise<Collection>;
+  deleteElement(
+    collectionId: string,
+    canvasId: string,
+  ): Promise<FunctionResult<Collection, EntityNotFoundError>>;
 }
 
 export interface ItemMetadataRepository {
@@ -77,11 +90,9 @@ export interface ItemMetadataRepository {
 }
 
 export interface ManifestRepository {
-  // exists(id: string): Promise<boolean>;
-
-  getCanvasById(manifestId: string, canvasId: string): Promise<Canvas>;
-  getCanvasesByIds(manifestId: string, canvasId: string[]): Promise<Canvas[]>;
-  getById(manifestId: string): Promise<Manifest>;
+  getCanvasById(manifestId: string, canvasId: string): Promise<FunctionResult<Canvas, EntityNotFoundError>>;
+  getCanvasesByIds(manifestId: string, canvasId: string[]): Promise<FunctionResult<Canvas[], EntityNotFoundError>>;
+  getById(manifestId: string): Promise<FunctionResult<Manifest, EntityNotFoundError>>;
   getDetailsByManifestIds(manifestIds: string[]): Promise<StoredManifestDetails[]>;
   getMetadata(manifestId: string): Promise<ItemMetadataAttribute[]>;
 }
@@ -89,11 +100,11 @@ export interface ManifestRepository {
 export interface SourceRepository {
   add(source: AddSourceDTO): Promise<string>;
 
-  getBlob(blobId: string): Promise<Blob>;
-  getById(sourceId: string): Promise<Source>;
-  getContentById(sourceId: string): Promise<SourceContent>;
-  getContentByManifestUrl(manifestUrl: string): Promise<SourceContent | undefined>;
-  getCanvasById(sourceId: string, canvasId: string): Promise<Canvas>;
+  getBlob(blobId: string): Promise<FunctionResult<Blob, EntityNotFoundError>>;
+  getById(sourceId: string): Promise<FunctionResult<Source, EntityNotFoundError>>;
+  getContentById(sourceId: string): Promise<FunctionResult<SourceContent, EntityNotFoundError>>;
+  getContentByManifestUrl(manifestUrl: string): Promise<FunctionResult<SourceContent, EntityNotFoundError>>;
+  getCanvasById(sourceId: string, canvasId: string): Promise<FunctionResult<Canvas, EntityNotFoundError>>;
 
   updateName(sourceId: string, name: string): Promise<void>;
   update(
@@ -119,9 +130,9 @@ export interface TagRepository {
 }
 
 export interface ModelRepository {
-  getById(id: string): Promise<DataModel>;
+  getById(id: string): Promise<FunctionResult<DataModel, EntityNotFoundError>>;
   getAll(): Promise<DataModel[]>;
-  getByName(name: string): Promise<DataModel | null>;
+  getByName(name: string): Promise<FunctionResult<DataModel, EntityNotFoundError>>;
 
   add(model: DataModel): Promise<void>;
 
@@ -141,27 +152,23 @@ export interface NamedEntityRepository {
 
 export interface ResultRepository {
   getAll(): Promise<Result[]>;
-  // getAllByWorkerName(workerName: string): Promise<Result[]>;
   getAllByWorkerId(workerId: string): Promise<Result[]>;
-  getByScopeAndWorkerName(scope: Scope, workerName: string): Promise<Result | undefined>;
-  getResultByWorkerIdAndTaskId(workerId: string, taskId: number): Promise<Result>;
+  getByScopeAndWorkerName(scope: Scope, workerName: string): Promise<FunctionResult<Result, EntityNotFoundError>>;
+  getResultByWorkerIdAndTaskId(workerId: string, taskId: number): Promise<FunctionResult<Result, EntityNotFoundError>>;
 
   add(result: ResultCreateDTO): Promise<Result>;
   addAll(results: Result[]): Promise<void>;
-
-  // patch(id: number, changes: Partial<Result>): Promise<void>;
 }
 
 export interface WorkerRepository {
   getAll(): Promise<Worker[]>;
-  getById(id: string): Promise<Worker>;
+  getById(id: string): Promise<FunctionResult<Worker, EntityNotFoundError>>;
   getByScope(scope: Scope, subScope: boolean): Promise<Worker[]>;
   getByNamesAndScope(workerName: string[], scope: Scope): Promise<Worker[]>;
 
   add(worker: Worker): Promise<Worker>;
   addAll(workers: Worker[]): Promise<void>;
 
-  // update(worker: Worker): Promise<void>;
   patch(id: string, changes: Partial<Worker>): Promise<void>;
 
   deleteById(workerId: string): Promise<void>;
@@ -175,8 +182,8 @@ export interface FSHandleRepository {
 }
 
 export interface ConvertedFileRepository {
-  getById(id: string): Promise<ConvertedFile>;
-  getByFolderName(folderName: string): Promise<ConvertedFile>;
+  getById(id: string): Promise<FunctionResult<ConvertedFile, EntityNotFoundError>>;
+  getByFolderName(folderName: string): Promise<FunctionResult<ConvertedFile, EntityNotFoundError>>;
 
   add(file: ConvertedFile): Promise<void>;
 
@@ -190,8 +197,8 @@ export interface ConvertedFileRepository {
 
 export interface ModifierChainRepository {
   getAll(): Promise<ModifierChainDTO[]>;
-  getById(id: string): Promise<ModifierChainDTO>;
-  getByName(name: string): Promise<ModifierChainDTO | undefined>;
+  getById(id: string): Promise<FunctionResult<ModifierChainDTO, EntityNotFoundError>>;
+  getByName(name: string): Promise<FunctionResult<ModifierChainDTO, EntityNotFoundError>>;
 
   add(chain: ModifierChainDTO): Promise<void>;
 
@@ -202,7 +209,7 @@ export interface ModifierChainRepository {
 
 export interface ProjectRepository {
   getAll(): Promise<Project[]>;
-  getById(id: string): Promise<Project>;
+  getById(id: string): Promise<FunctionResult<Project, EntityNotFoundError>>;
 
   add(project: Project): Promise<void>;
 

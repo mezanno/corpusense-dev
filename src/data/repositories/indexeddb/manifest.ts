@@ -4,47 +4,53 @@ import {
   extractCanvasesByIds,
   extractManifestDetails,
 } from '@/data/utils/manifest';
-import i18n from '@/i18n';
-import { getErrorMessage } from '@/utils/utils';
+import { FunctionResult } from '@/utils/functionResult';
 import { Canvas, Manifest } from '@iiif/presentation-3';
+import { EntityNotFoundError } from '../EntityNotFoundError';
 import { db } from './db';
 import { ManifestRepository } from './types';
 
 export class IndexedDBManifestRepository implements ManifestRepository {
-  // async exists(id: string): Promise<boolean> {
-  //   return !!(await db.storedManifests.get(id));
-  // }
-
-  async getCanvasById(manifestId: string, canvasId: string): Promise<Canvas> {
+  async getCanvasById(
+    manifestId: string,
+    canvasId: string,
+  ): Promise<FunctionResult<Canvas, EntityNotFoundError>> {
+    const result = await this.getById(manifestId);
+    if (!result.ok) {
+      return result;
+    }
     try {
-      const manifest = await this.getById(manifestId);
-      return extractCanvasById(manifest, canvasId);
-    } catch (error) {
-      // throw new Error(i18n.t('error_canvas_not_found'));
-      throw new Error(getErrorMessage(error));
+      const canvas = extractCanvasById(result.value, canvasId);
+      return FunctionResult.ok(canvas);
+    } catch {
+      return FunctionResult.err(new EntityNotFoundError({ entity: 'Canvas', id: canvasId }));
     }
   }
 
-  async getCanvasesByIds(manifestId: string, canvasIds: string[]): Promise<Canvas[]> {
+  async getCanvasesByIds(
+    manifestId: string,
+    canvasIds: string[],
+  ): Promise<FunctionResult<Canvas[], EntityNotFoundError>> {
+    const result = await this.getById(manifestId);
+    if (!result.ok) {
+      return result;
+    }
     try {
-      const manifest = await this.getById(manifestId);
-      return extractCanvasesByIds(manifest, canvasIds);
-    } catch (error) {
-      throw new Error(getErrorMessage(error));
+      const canvases = extractCanvasesByIds(result.value, canvasIds);
+      return FunctionResult.ok(canvases);
+    } catch {
+      return FunctionResult.err(
+        new EntityNotFoundError({ entity: 'Canvas', id: canvasIds.join(',') }),
+      );
     }
   }
 
-  async getById(manifestId: string): Promise<Manifest> {
-    try {
-      const manifestContent = await db.storedManifestContents.get(manifestId);
-      if (!manifestContent) {
-        throw new Error(i18n.t('error_manifest_not_found_storage'));
-      }
-      return manifestContent.content;
-    } catch (error) {
-      // throw new Error(i18n.t('error_manifest_not_found'));
-      throw new Error(getErrorMessage(error));
+  async getById(manifestId: string): Promise<FunctionResult<Manifest, EntityNotFoundError>> {
+    const manifestContent = await db.storedManifestContents.get(manifestId);
+    if (!manifestContent) {
+      return FunctionResult.err(new EntityNotFoundError({ entity: 'Manifest', id: manifestId }));
     }
+    return FunctionResult.ok(manifestContent.content);
   }
 
   async getDetailsByManifestIds(manifestIds: string[]): Promise<StoredManifestDetails[]> {

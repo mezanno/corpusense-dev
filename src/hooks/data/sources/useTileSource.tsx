@@ -2,6 +2,7 @@ import { useCollectionContext } from '@/components/reducers/CollectionContext';
 import { getImage } from '@/data/utils/canvas';
 import { Canvas, ImageService } from '@iiif/presentation-3';
 import { Cozy } from 'cozy-iiif';
+import { t } from 'i18next';
 import { TileSource } from 'openseadragon';
 import { useEffect, useState } from 'react';
 import useSources from './useSources';
@@ -15,7 +16,12 @@ const useTileSource = ({ canvas, sourceId }: { canvas: Canvas; sourceId: string 
   useEffect(() => {
     const fetchThumbnail = async () => {
       setError(null);
-      const sourceWithContent = await getSourceWithContent(sourceId);
+      const sourceWithContentResult = await getSourceWithContent(sourceId);
+      if (!sourceWithContentResult.ok) {
+        setError(t('error_source_not_found'));
+        return;
+      }
+      const sourceWithContent = sourceWithContentResult.value;
       const parsedManifest = Cozy.parse(sourceWithContent.content.manifest);
 
       if (sourceWithContent.content.type === 'local' && parsedManifest.type === 'manifest') {

@@ -8,6 +8,8 @@ import { generateFirstAnnotation } from '@/data/utils/annotations';
 import { generateCollectionContent } from '@/data/utils/collections';
 import i18n from '@/i18n';
 import { pushError, pushInfo } from '@/state/reducers/events';
+import { BaseError } from '@/utils/BaseError';
+import { FunctionResult } from '@/utils/functionResult';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -65,7 +67,9 @@ export const useCollections = () => {
     }
   };
 
-  const createCollectionWithSelection = async (action: CreateCollectionWithSelectionPayload) => {
+  const createCollectionWithSelection = async (
+    action: CreateCollectionWithSelectionPayload,
+  ): Promise<FunctionResult<CollectionDetails, BaseError>> => {
     const { id, name, selection, sourceId } = action;
     const collectionId = id ?? uuid();
     const newCollection: CollectionDetails = {
@@ -93,19 +97,20 @@ export const useCollections = () => {
         await annotationRepository.addAll(firstAnnotations);
       }
       appDispatch(pushInfo(i18n.t('toast_collection_created')));
+      return FunctionResult.ok({ ...newCollection, content });
     } catch (e) {
-      appDispatch(pushError(getErrorMessage(e)));
+      const errorMsg = getErrorMessage(e);
+      appDispatch(pushError(errorMsg));
+      return FunctionResult.err(new BaseError(errorMsg));
     }
-
-    return { ...newCollection, content };
   };
 
   const duplicateCollection = async (collectionId: string, newName: string) => {
-    try {
-      await collectionRepository.duplicate(collectionId, newName);
+    const result = await collectionRepository.duplicate(collectionId, newName);
+    if (result.ok) {
       appDispatch(pushInfo(i18n.t('toast_collection_duplicated')));
-    } catch (e) {
-      appDispatch(pushError(getErrorMessage(e)));
+    } else {
+      appDispatch(pushError(getErrorMessage(result.error)));
     }
   };
 
@@ -120,9 +125,14 @@ export const useCollections = () => {
     sourceId: string;
   }) => {
     const { selection, collectionId, sourceId } = action;
-    try {
-      const collection = await collectionRepository.getById(collectionId);
 
+    const collectionResult = await collectionRepository.getById(collectionId);
+    if (!collectionResult.ok) {
+      appDispatch(pushError(getErrorMessage(collectionResult.error)));
+      return;
+    }
+    const collection = collectionResult.value;
+    try {
       //we check the existing content of the collection and add only the new canvases
       const existingContent = collection.content ?? [];
       const existingCanvasIds = existingContent.map((elt) => elt.canvasId);
@@ -187,33 +197,33 @@ export const useCollections = () => {
   };
 
   const removeElementFromCollection = async (collectionId: string, canvasId: string) => {
-    try {
-      await collectionRepository.deleteElement(collectionId, canvasId);
+    const result = await collectionRepository.deleteElement(collectionId, canvasId);
+    if (result.ok) {
       appDispatch(pushInfo(i18n.t('toast_element_removed')));
-    } catch (e) {
-      appDispatch(pushError(getErrorMessage(e)));
+    } else {
+      appDispatch(pushError(getErrorMessage(result.error)));
     }
   };
 
   const removeCollection = async (id: string) => {
-    try {
-      const collectionToRemove = await collectionRepository.getById(id);
-      await collectionRepository.delete(collectionToRemove);
-      appDispatch(pushInfo(i18n.t('toast_collection_deleted')));
-    } catch (e) {
-      appDispatch(pushError(getErrorMessage(e)));
+    const collectionToRemoveResult = await collectionRepository.getById(id);
+    if (!collectionToRemoveResult.ok) {
+      appDispatch(pushError(getErrorMessage(collectionToRemoveResult.error)));
+      return;
     }
+    await collectionRepository.deleteById(id);
+    appDispatch(pushInfo(i18n.t('toast_collection_deleted')));
   };
 
   const removeMultipleCollections = async (ids: string[]) => {
-    try {
-      for (const id of ids) {
-        const collectionToRemove = await collectionRepository.getById(id);
-        await collectionRepository.delete(collectionToRemove);
-        appDispatch(pushInfo(i18n.t('toast_collection_deleted')));
+    for (const id of ids) {
+      const collectionToRemoveResult = await collectionRepository.getById(id);
+      if (!collectionToRemoveResult.ok) {
+        appDispatch(pushError(getErrorMessage(collectionToRemoveResult.error)));
+        continue;
       }
-    } catch (e) {
-      appDispatch(pushError(getErrorMessage(e)));
+      await collectionRepository.deleteById(id);
+      appDispatch(pushInfo(i18n.t('toast_collection_deleted')));
     }
   };
 

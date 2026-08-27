@@ -65,7 +65,14 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
   }
   try {
     const collectionRepository = getCollectionRepository();
-    const canvasWithSourceId = await collectionRepository.getCanvasByScope(task.scope);
+    const canvasWithSourceIdResult = await collectionRepository.getCanvasByScope(task.scope);
+    if (!canvasWithSourceIdResult.ok) {
+      return {
+        status: WorkerStatus.ERROR,
+        statusMessage: canvasWithSourceIdResult.error.message,
+      };
+    }
+    const canvasWithSourceId = canvasWithSourceIdResult.value;
     const image = getImage(canvasWithSourceId.canvas);
     if (image.id === undefined) {
       return {
@@ -215,14 +222,17 @@ export async function processResult(result: PeroLayoutResult, task: Task): Promi
 
   //if a post-processing function is defined for the collection, apply it to the new annotations before saving them
   const collectionRepository = getCollectionRepository();
-  const collection = await collectionRepository.getById(task.scope.collectionId);
+  const collectionResult = await collectionRepository.getById(task.scope.collectionId);
+  const postLayoutModifierChainId = collectionResult.ok
+    ? collectionResult.value.postLayoutModifierChainId
+    : undefined;
   let savedAnnotations;
   if (
-    collection.postLayoutModifierChainId !== undefined &&
-    collection.postLayoutModifierChainId.trim() !== ''
+    postLayoutModifierChainId !== undefined &&
+    postLayoutModifierChainId.trim() !== ''
   ) {
     const updatedAnnotations = await applyModifierChainToAnnotations(
-      collection.postLayoutModifierChainId,
+      postLayoutModifierChainId,
       newAnnotations.map((a) => ({ ...a, order: 0 })), //we have to set the order to transofrm AnnotationDTO into Annotation for the modifier chain function, but it will be reset when saving the annotations
     );
     savedAnnotations = await annotationRepository.addAll(updatedAnnotations);

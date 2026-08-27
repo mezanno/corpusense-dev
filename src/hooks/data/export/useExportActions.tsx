@@ -14,10 +14,14 @@ const useExportActions = () => {
    * Export all the text from all the annotations of a collection
    */
   const exportTextOfCollection = async (collectionId: string) => {
+    const textResult = await generateTextForCollection(collectionId);
+    if (!textResult.ok) {
+      console.error('Error generating text:', getErrorMessage(textResult.error));
+      //TODO: Handle the error properly, e.g., show a notification to the user
+      return;
+    }
+    const text = textResult.value;
     try {
-      const text = await generateTextForCollection(collectionId);
-      console.log('Text generated:', text);
-
       FileSaver.saveAs(new Blob([text], { type: 'text/plain;charset=utf-8' }), 'exported_text.txt');
     } catch (error) {
       console.error('Error generating text:', getErrorMessage(error));

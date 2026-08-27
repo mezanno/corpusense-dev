@@ -42,7 +42,10 @@ export function convertW3CAnnotationsToIIIF(annotations: Annotation[]): Annotati
     const bounds = w3cAnnotation.target.selector.geometry.bounds;
     const bodies = w3cAnnotation.bodies;
     for (let b = 0; b < bodies.length; b++) {
-      if (bodies[b].purpose === W3CMotivationEnum.Tagging) {
+      if (
+        bodies[b].purpose === W3CMotivationEnum.Tagging ||
+        bodies[b].purpose === W3CMotivationEnum.Classifying
+      ) {
         const body = bodies[b];
         const iifAnnotation = {
           '@context': IIIF_CONTEXT,

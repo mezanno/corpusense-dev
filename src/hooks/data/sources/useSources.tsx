@@ -1,5 +1,8 @@
+import { SourceWithContent } from '@/data/models/Sources';
+import { EntityNotFoundError } from '@/data/repositories/EntityNotFoundError';
 import { getSourceRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { getThumbnailBlob } from '@/data/utils/manifest';
+import { FunctionResult } from '@/utils/functionResult';
 import { containsArkIdentifier, fetchManifestFromURL, isManifestUrl } from '@/utils/manifest';
 import { Manifest } from '@iiif/presentation-3';
 import { useCallback } from 'react';
@@ -44,14 +47,22 @@ const useSources = () => {
     return await sourceRepository.add(newRemoteSourceDTO);
   }, []);
 
-  const getSourceWithContent = async (sourceId: string) => {
+  const getSourceWithContent = async (
+    sourceId: string,
+  ): Promise<FunctionResult<SourceWithContent, EntityNotFoundError>> => {
     const sourceRepository = getSourceRepository();
-    const source = await sourceRepository.getById(sourceId);
-    const content = await sourceRepository.getContentById(sourceId);
-    return {
-      ...source,
-      content,
-    };
+    const sourceResult = await sourceRepository.getById(sourceId);
+    if (!sourceResult.ok) {
+      return sourceResult;
+    }
+    const contentResult = await sourceRepository.getContentById(sourceId);
+    if (!contentResult.ok) {
+      return contentResult;
+    }
+    return FunctionResult.ok({
+      ...sourceResult.value,
+      content: contentResult.value,
+    });
   };
 
   const updateSourceName = async (sourceId: string, name: string) => {

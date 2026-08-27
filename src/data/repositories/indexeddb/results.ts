@@ -1,5 +1,7 @@
 import { Result, ResultCreateDTO } from '@/data/models/Result';
 import { Scope } from '@/data/models/Scope';
+import { FunctionResult } from '@/utils/functionResult';
+import { EntityNotFoundError } from '../EntityNotFoundError';
 import { db } from './db';
 import { ResultRepository } from './types';
 import { computeScopeKey } from './utils';
@@ -18,35 +20,39 @@ export class IndexedDBResultRepository implements ResultRepository {
     await db.results.bulkAdd(results);
   }
 
-  // async patch(id: number, changes: Partial<Result>): Promise<void> {
-  //   await db.results.update(id, changes);
-  // }
-
   async getAll(): Promise<Result[]> {
     return await db.results.orderBy('id').toArray();
   }
 
-  // async getAllByWorkerName(workerName: string): Promise<Result[]> {
-  //   // Note: Using sortBy('taskId') to ensure results are returned in the order of their taskId
-  //   return await db.results.where('workerName').equals(workerName).sortBy('taskId');
-  // }
-
   async getAllByWorkerId(workerId: string): Promise<Result[]> {
-    // Note: Using sortBy('taskId') to ensure results are returned in the order of their taskId
     return await db.results.where('workerId').equals(workerId).sortBy('taskId');
   }
 
-  async getResultByWorkerIdAndTaskId(workerId: string, taskId: number): Promise<Result> {
+  async getResultByWorkerIdAndTaskId(
+    workerId: string,
+    taskId: number,
+  ): Promise<FunctionResult<Result, EntityNotFoundError>> {
     const result = await db.results.where({ workerId: workerId, taskId: taskId }).first();
     if (result === undefined) {
-      throw new Error(`No result found for workerId ${workerId} and taskId ${taskId}`);
+      return FunctionResult.err(
+        new EntityNotFoundError({ entity: 'Result', id: `${workerId}_${taskId}` }),
+      );
     }
-    return result;
+    return FunctionResult.ok(result);
   }
 
-  async getByScopeAndWorkerName(scope: Scope, workerName: string): Promise<Result | undefined> {
-    return await db.results
+  async getByScopeAndWorkerName(
+    scope: Scope,
+    workerName: string,
+  ): Promise<FunctionResult<Result, EntityNotFoundError>> {
+    const result = await db.results
       .where({ scopeKey: computeScopeKey(scope), workerName: workerName })
       .first();
+    if (result === undefined) {
+      return FunctionResult.err(
+        new EntityNotFoundError({ entity: 'Result', id: `${computeScopeKey(scope)}_${workerName}` }),
+      );
+    }
+    return FunctionResult.ok(result);
   }
 }

@@ -1,4 +1,6 @@
 import { Project } from '@/data/models/Project';
+import { FunctionResult } from '@/utils/functionResult';
+import { EntityNotFoundError } from '../EntityNotFoundError';
 import { db } from './db';
 import { ProjectRepository } from './types';
 
@@ -7,12 +9,12 @@ export class IndexedDBProjectRepository implements ProjectRepository {
     return await db.projects.toArray();
   }
 
-  async getById(id: string): Promise<Project> {
+  async getById(id: string): Promise<FunctionResult<Project, EntityNotFoundError>> {
     const project = await db.projects.get(id);
     if (!project) {
-      throw new Error(`Project with id ${id} not found`);
+      return FunctionResult.err(new EntityNotFoundError({ entity: 'Project', id }));
     }
-    return project;
+    return FunctionResult.ok(project);
   }
 
   async add(project: Project): Promise<void> {
@@ -20,7 +22,11 @@ export class IndexedDBProjectRepository implements ProjectRepository {
   }
 
   async addSource(projectId: string, sourceId: string): Promise<void> {
-    const project = await this.getById(projectId);
+    const result = await this.getById(projectId);
+    if (!result.ok) {
+      throw new Error(`Project with id ${projectId} not found`);
+    }
+    const project = result.value;
     if (project.sources.includes(sourceId)) {
       throw new Error(`Source with id ${sourceId} already exists in project ${projectId}`);
     }

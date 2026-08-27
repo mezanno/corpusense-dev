@@ -9,6 +9,7 @@ import { getDimensions } from '@/data/utils/annotations';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { FunctionResult } from '@/utils/functionResult';
 import { Save, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -65,9 +66,7 @@ const AnnotationForm = ({
 
     async function fetchParent() {
       const result = await getParentAnnotation(annotation);
-      if (result.ok) {
-        setParent(result.value);
-      }
+      setParent(FunctionResult.unwrapOr(result, null));
     }
     void fetchParent();
   }, [annotation]);

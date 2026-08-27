@@ -162,8 +162,10 @@ const useJobRealtime = () => {
       console.log('handleJobRowUpdate ', job);
 
       try {
-        const worker = await workerRepository.getById(job.worker_id);
-        await processSingleTask(worker, job);
+        const workerResult = await workerRepository.getById(job.worker_id);
+        if (workerResult.ok) {
+          await processSingleTask(workerResult.value, job);
+        }
       } catch (error) {
         console.error('Error processing realtime job update:', error);
       }

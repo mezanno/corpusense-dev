@@ -8,7 +8,6 @@ import {
 } from '@/data/models/Annotation';
 import { Result } from '@/data/models/Result';
 import { isAnnotationScope, isCanvasScope, toString } from '@/data/models/Scope';
-import { Tag } from '@/data/models/Tag';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
 import {
   getAnnotationRepository,
@@ -79,7 +78,14 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
   const annotationRepository = getAnnotationRepository();
   try {
     const collectionRepository = getCollectionRepository();
-    const canvasWithSourceId = await collectionRepository.getCanvasByScope(task.scope);
+    const canvasWithSourceIdResult = await collectionRepository.getCanvasByScope(task.scope);
+    if (!canvasWithSourceIdResult.ok) {
+      return {
+        status: WorkerStatus.ERROR,
+        statusMessage: i18n.t('error_canvas_not_found'),
+      };
+    }
+    const canvasWithSourceId = canvasWithSourceIdResult.value;
     const image = getImage(canvasWithSourceId.canvas);
     if (image.id === undefined) {
       return {
@@ -142,14 +148,16 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     }
 
     const sourceRepository = getSourceRepository();
-    const sourceContent = await sourceRepository.getContentById(canvasWithSourceId.sourceId);
+    const sourceContentResult = await sourceRepository.getContentById(canvasWithSourceId.sourceId);
 
     //TODO: peut mieux faire
     let imageToProcess: string | File = image.id;
-    // if (imageToProcess !== null && imageToProcess.startsWith('http') === false) {
-    if (sourceContent.type === 'local') {
+    if (sourceContentResult.ok && sourceContentResult.value.type === 'local') {
       try {
-        imageToProcess = await getFile(image.id, sourceContent.localFile.outputDirectoryHandle);
+        imageToProcess = await getFile(
+          image.id,
+          sourceContentResult.value.localFile.outputDirectoryHandle,
+        );
       } catch (err) {
         console.error('Failed to get file for thumbnail:', err);
       }
@@ -265,14 +273,19 @@ export async function exportResult(results: Result[], formats: string[]) {
     const canvasId = isCanvasScope(result.scope) ? toGallicaUrl(result.scope.canvasId) : undefined;
 
     const collectionRepository = getCollectionRepository();
-    const tags: Tag[] = await collectionRepository.getTagsByCollectionId(result.scope.collectionId);
-    const tagsAsColumns = tags.reduce(
-      (acc, t, index) => {
-        acc[`tag${index + 1}`] = t.label;
-        return acc;
-      },
-      {} as Record<string, string>,
-    );
+    const tagsResult = await collectionRepository.getTagsByCollectionId(result.scope.collectionId);
+
+    let tagsAsColumns: Record<string, string> = {};
+    if (tagsResult.ok) {
+      const tags = tagsResult.value;
+      tagsAsColumns = tags.reduce(
+        (acc, t, index) => {
+          acc[`tag${index + 1}`] = t.label;
+          return acc;
+        },
+        {} as Record<string, string>,
+      );
+    }
 
     try {
       const dataParsed = JSON.parse(result.value as string) as unknown;

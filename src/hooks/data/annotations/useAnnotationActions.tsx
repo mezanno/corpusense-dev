@@ -93,9 +93,9 @@ export const useAnnotationActions = () => {
     }
 
     try {
-      const existingAnnotation = await annotationRepository.getById(annotationToSave.id);
+      const existingAnnotationResult = await annotationRepository.getById(annotationToSave.id);
       //save only if annotations are different to avoid unnecessary writes and call to saveAnnotationSuccess
-      if (!isEqual(existingAnnotation, annotationToSave)) {
+      if (!existingAnnotationResult.ok || !isEqual(existingAnnotationResult.value, annotationToSave)) {
         await annotationRepository.update(annotationToSave);
         appDispatch(pushInfo(i18n.t('toast_annotation_saved')));
       }
@@ -114,45 +114,47 @@ export const useAnnotationActions = () => {
 
   const duplicateRegions = async (payload: DuplicateRegionsPayload) => {
     const { scope, distribution, limit } = payload;
-    try {
-      const collectionRepository = getCollectionRepository();
-      const collection = await collectionRepository.getById(scope.collectionId);
-      //Element dans la collection qui sert de référence pour la duplication
-      const baseElement = collection.content.find(
-        (el: CollectionElement) => el.canvasId === scope.canvasId,
-      );
-      if (!baseElement) {
-        appDispatch(pushError(i18n.t('error_collection_no_canvas')));
-        return;
-      }
 
-      //filtrer by distribution
-      let filteredContent: CollectionElement[] = [];
-      if (distribution === DuplicateDistribution.ALL_PAGES) {
-        filteredContent = collection.content;
-      } else {
-        if (baseElement.position % 2 === 0) {
-          filteredContent = collection.content.filter((el) => el.position % 2 === 0);
-        } else {
-          filteredContent = collection.content.filter((el) => el.position % 2 !== 0);
-        }
-      }
-      //filtrer by limit
-      if (limit === DuplicateLimit.BEFORE) {
-        filteredContent = filteredContent.filter((el) => el.position <= baseElement.position);
-      } else if (limit === DuplicateLimit.AFTER) {
-        filteredContent = filteredContent.filter((el) => el.position >= baseElement.position);
-      }
-
-      await duplicateAnnotationsToPages(
-        scope,
-        filteredContent.map((el) => el.canvasId).filter((id) => id !== scope.canvasId),
-      );
-
-      appDispatch(pushInfo(i18n.t('toast_duplicate_success')));
-    } catch (e) {
-      console.warn(e);
+    const collectionRepository = getCollectionRepository();
+    const collectionResult = await collectionRepository.getById(scope.collectionId);
+    if (!collectionResult.ok) {
+      appDispatch(pushError(i18n.t('error_collection_not_found')));
+      return;
     }
+    const collection = collectionResult.value;
+    //Element dans la collection qui sert de référence pour la duplication
+    const baseElement = collection.content.find(
+      (el: CollectionElement) => el.canvasId === scope.canvasId,
+    );
+    if (!baseElement) {
+      appDispatch(pushError(i18n.t('error_collection_no_canvas')));
+      return;
+    }
+
+    //filtrer by distribution
+    let filteredContent: CollectionElement[] = [];
+    if (distribution === DuplicateDistribution.ALL_PAGES) {
+      filteredContent = collection.content;
+    } else {
+      if (baseElement.position % 2 === 0) {
+        filteredContent = collection.content.filter((el) => el.position % 2 === 0);
+      } else {
+        filteredContent = collection.content.filter((el) => el.position % 2 !== 0);
+      }
+    }
+    //filtrer by limit
+    if (limit === DuplicateLimit.BEFORE) {
+      filteredContent = filteredContent.filter((el) => el.position <= baseElement.position);
+    } else if (limit === DuplicateLimit.AFTER) {
+      filteredContent = filteredContent.filter((el) => el.position >= baseElement.position);
+    }
+
+    await duplicateAnnotationsToPages(
+      scope,
+      filteredContent.map((el) => el.canvasId).filter((id) => id !== scope.canvasId),
+    );
+
+    appDispatch(pushInfo(i18n.t('toast_duplicate_success')));
   };
 
   const duplicateAnnotationsToPages = async (scope: CanvasScope, canvasIds: string[]) => {
@@ -200,8 +202,12 @@ export const useAnnotationActions = () => {
     if there is no line on the canvas, create a region annotation that covers the whole canvas
   */
     const collectionRepository = getCollectionRepository();
-    const canvases = await collectionRepository.getCanvasesByCollectionId(collectionId);
+    const canvasesResult = await collectionRepository.getCanvasesByCollectionId(collectionId);
+    if (!canvasesResult.ok) {
+      throw new Error(`Collection ${collectionId} not found`);
+    }
 
+    const canvases = canvasesResult.value;
     let removedAnnotations: string[] = [];
     const newRegionsAnnotations: AnnotationDTO[] = [];
     for (const canvas of canvases) {

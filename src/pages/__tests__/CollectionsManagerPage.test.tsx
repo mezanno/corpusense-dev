@@ -27,6 +27,7 @@ describe('CollectionsManagerPage', () => {
     });
     (useTags as Mock).mockReturnValue({
       getTagsByIds: vi.fn().mockReturnValue([]),
+      getLabelById: vi.fn((id: string) => id),
     });
     (useDialog as Mock).mockReturnValue({
       openImportCollectionDialog: vi.fn(),
@@ -57,6 +58,7 @@ describe('CollectionsManagerPage', () => {
       getTagsByIds: vi.fn((ids: string[]) =>
         ids.includes('tag-1') ? [{ id: 'tag-1', label: 'Tag 1' }] : [],
       ),
+      getLabelById: vi.fn((id: string) => (id === 'tag-1' ? 'Tag 1' : id)),
     });
 
     renderWithProviders(<CollectionsManagerPage />);

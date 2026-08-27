@@ -16,7 +16,11 @@ export const convertResultToIIIFAnnotation = async (result: Result): Promise<Ann
     throw new Error(`Result scope is not a canvas scope`);
   }
   const { canvasId, collectionId } = result.scope;
-  const collection = await getCollectionRepository().getById(collectionId);
+  const collectionResult = await getCollectionRepository().getById(collectionId);
+  if (!collectionResult.ok) {
+    throw new Error(`Collection with id ${collectionId} not found`);
+  }
+  const collection = collectionResult.value;
   const modelId = collection.modelId;
   if (modelId === undefined) {
     throw new Error(`No model found for collection ${collection.name}`);

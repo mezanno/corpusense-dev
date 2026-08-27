@@ -16,7 +16,11 @@ export type ModifierChainData = {
 
 const getModifiersAndValues = async (id: string): Promise<ModifierChainData> => {
   const modifierChainRepository = getModifierChainRepository();
-  const modifierDTO = await modifierChainRepository.getById(id);
+  const modifierResult = await modifierChainRepository.getById(id);
+  if (!modifierResult.ok) {
+    throw new Error(`Modifier chain with id "${id}" not found`);
+  }
+  const modifierDTO = modifierResult.value;
 
   const modifiers = modifierDTO.modifiers.map((dto) => {
     const factory = modifierRegistry[dto.type];
@@ -55,7 +59,15 @@ const applyModifiersToScope = async (
   } else {
     //for collection scope, we get the annotations for each canvas, apply the modifier chain and save the updated annotations
     const collectionRepository = getCollectionRepository();
-    const canvases = await collectionRepository.getCanvasesByCollectionId(scope.collectionId);
+    const canvasesResult = await collectionRepository.getCanvasesByCollectionId(scope.collectionId);
+    if (!canvasesResult.ok) {
+      console.error(
+        `Error fetching canvases for collection ${scope.collectionId}:`,
+        canvasesResult.error,
+      );
+      return;
+    }
+    const canvases = canvasesResult.value;
     for (const canvas of canvases) {
       const canvasScope = { collectionId: scope.collectionId, canvasId: canvas.id };
       const scopeAnnotations = await annotationRepository.getByScopeAndTypes(canvasScope, [type]);

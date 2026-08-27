@@ -59,7 +59,14 @@ export async function suryaRun(
   const annotationRepository = getAnnotationRepository();
   try {
     const collectionRepository = getCollectionRepository();
-    const canvasWithSourceId = await collectionRepository.getCanvasByScope(task.scope);
+    const canvasWithSourceIdResult = await collectionRepository.getCanvasByScope(task.scope);
+    if (!canvasWithSourceIdResult.ok) {
+      return {
+        status: WorkerStatus.ERROR,
+        statusMessage: canvasWithSourceIdResult.error.message,
+      };
+    }
+    const canvasWithSourceId = canvasWithSourceIdResult.value;
     const image = getImage(canvasWithSourceId.canvas);
     let regions: Region[] = [];
     if (isAnnotationScope(task.scope)) {

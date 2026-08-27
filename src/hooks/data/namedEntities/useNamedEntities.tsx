@@ -50,24 +50,33 @@ const useNamedEntities = (annotationIds: string[]) => {
       scope,
       'openai', //TODO! paramétrer le worker
     );
-    if (result === undefined) {
+    if (!result.ok) {
       appDisptach(pushError('error_result_undefined'));
       return;
     }
-    const { value } = result;
+    const { value } = result.value;
 
     let model = undefined;
     const collectionRepository = getCollectionRepository();
     try {
       //get the collection, its content and the model
-      const collection = await collectionRepository.getById(scope.collectionId);
-      const modelId = collection.modelId;
+      const collectionResult = await collectionRepository.getById(scope.collectionId);
+      if (!collectionResult.ok) {
+        appDisptach(pushError('error_collection_undefined'));
+        return;
+      }
+      const modelId = collectionResult.value.modelId;
       if (modelId === undefined) {
         appDisptach(pushError('error_model_undefined'));
         return;
       }
       const modelRepository = getModelRepository();
-      model = await modelRepository.getById(modelId);
+      const modelResult = await modelRepository.getById(modelId);
+      if (!modelResult.ok) {
+        appDisptach(pushError('error_model_undefined'));
+        return;
+      }
+      model = modelResult.value;
     } catch (error) {
       appDisptach(pushError('error_model_undefined'));
       return;

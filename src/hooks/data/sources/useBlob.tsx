@@ -9,9 +9,9 @@ const useBlob = (blobId: string) => {
     queryKey: ['blob', blobId],
     queryFn: async () => {
       const sourceRepository = getSourceRepository();
-      const blob = await sourceRepository.getBlob(blobId);
-      if (blob === undefined || blob === null) throw new Error(`Blob not found: ${blobId}`);
-      return blob;
+      const blobResult = await sourceRepository.getBlob(blobId);
+      if (!blobResult.ok) throw blobResult.error;
+      return blobResult.value;
     },
   });
 

@@ -2,10 +2,12 @@ import { CollectionElement } from '@/data/models/CollectionElement';
 import { AnnotationScope, CanvasScope } from '@/data/models/Scope';
 import { Tag } from '@/data/models/Tag';
 import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
+import { FunctionResult } from '@/utils/functionResult';
 import { Canvas } from '@iiif/presentation-3';
 import { groupBy, mapValues } from 'lodash';
 import { v4 as uuid } from 'uuid';
 import { Collection, CollectionDetails } from '../../models/Collection';
+import { EntityNotFoundError } from '../EntityNotFoundError';
 import { db } from './db';
 import {
   getAnnotationRepository,
@@ -20,52 +22,61 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     return await db.collections.toArray();
   }
 
-  async getById(id: string): Promise<Collection> {
+  async getById(id: string): Promise<FunctionResult<Collection, EntityNotFoundError>> {
     const details = await db.collections.get(id);
     if (details === undefined) {
-      throw new Error(`Collection with id ${id} not found`);
+      return FunctionResult.err(new EntityNotFoundError({ entity: 'Collection', id }));
     }
-    const content = await db.collectionContents.get(id);
 
-    return { ...details, content: content?.content || [] };
+    const content = await db.collectionContents.get(id);
+    return FunctionResult.ok({ ...details, content: content?.content || [] });
   }
 
-  async getTagsByCollectionId(collectionId: string): Promise<Tag[]> {
-    const collection = await this.getById(collectionId);
-    const tagIds = collection.tags;
+  async getTagsByCollectionId(
+    collectionId: string,
+  ): Promise<FunctionResult<Tag[], EntityNotFoundError>> {
+    const result = await this.getById(collectionId);
+    if (!result.ok) {
+      return result;
+    }
+    const tagIds = result.value.tags;
     if (tagIds.length === 0) {
-      return [];
+      return FunctionResult.ok([]);
     }
     const tagRepository = getTagRepository();
-    return await tagRepository.getByIds(tagIds);
+    return FunctionResult.ok(await tagRepository.getByIds(tagIds));
   }
 
-  async getCanvasesByCollectionId(collectionId: string): Promise<Canvas[]> {
-    const collection = await this.getById(collectionId);
-    if (collection === undefined) {
-      throw new Error(`Collection with id ${collectionId} not found`);
+  async getCanvasesByCollectionId(
+    collectionId: string,
+  ): Promise<FunctionResult<Canvas[], EntityNotFoundError>> {
+    const result = await this.getById(collectionId);
+    if (!result.ok) {
+      return result;
     }
 
     const collectionContent = await db.collectionContents.get(collectionId);
     const content = collectionContent?.content || [];
     if (content.length === 0) {
-      return [];
+      return FunctionResult.ok([]);
     }
 
     const sourceRepository = getSourceRepository();
 
     //get the list of canvases in the collection (with their manifestId)
-    const canvaseIdsWithSourceIds = await Promise.all(
-      content.map(async (elt) => {
-        const sourceId = elt.sourceId;
-        const source = await sourceRepository.getContentById(sourceId);
-
-        return {
-          canvasId: elt.canvasId,
-          sourceId: source.id,
-        };
-      }),
-    );
+    const canvaseIdsWithSourceIds = (
+      await Promise.all(
+        content.map(async (elt) => {
+          return FunctionResult.match(await sourceRepository.getContentById(elt.sourceId), {
+            ok: (source) => ({
+              canvasId: elt.canvasId,
+              sourceId: source.id,
+            }),
+            err: () => null,
+          });
+        }),
+      )
+    ).filter((c): c is { canvasId: string; sourceId: string } => c !== null);
 
     const canvasesBySourceId = groupBy(canvaseIdsWithSourceIds, 'sourceId');
 
@@ -78,26 +89,27 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     for (const sourceId in groupedCanvasesIds) {
       const canvasIds = groupedCanvasesIds[sourceId];
       if (canvasIds.length > 0) {
-        const results = canvasIds.length
-          ? await Promise.all(canvasIds.map((id) => sourceRepository.getCanvasById(sourceId, id)))
-          : [];
-        canvases.push(...results);
+        const results = await Promise.all(
+          canvasIds.map((id) => sourceRepository.getCanvasById(sourceId, id)),
+        );
+        for (const res of results) {
+          if (res.ok) {
+            canvases.push(res.value);
+          }
+        }
       }
     }
 
-    return canvases;
+    return FunctionResult.ok(canvases);
   }
 
-  async getSourceIdsByCollectionId(collectionId: string): Promise<string[]> {
-    const collection = await this.getById(collectionId);
-    if (collection === undefined) {
-      throw new Error(`Collection with id ${collectionId} not found`);
-    }
-    const content = collection.content;
-    if (content.length === 0) {
-      return [];
-    }
-    return [...new Set(content.map((elt) => elt.sourceId))];
+  async getSourceIdsByCollectionId(
+    collectionId: string,
+  ): Promise<FunctionResult<string[], EntityNotFoundError>> {
+    const result = await this.getById(collectionId);
+    return FunctionResult.map(result, (col) => [
+      ...new Set(col.content.map((elt) => elt.sourceId)),
+    ]);
   }
 
   async getOfflineCollections(): Promise<CollectionDetails[]> {
@@ -106,30 +118,41 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
 
   async getOfflineCanvases(): Promise<Canvas[]> {
     const offlineCollections = await this.getOfflineCollections();
-    return await Promise.all(
-      offlineCollections.map(async (collection) => {
-        return await this.getCanvasesByCollectionId(collection.id);
-      }),
-    ).then((canvases) => canvases.flat());
+    const canvasArrays = await Promise.all(
+      offlineCollections.map(async (collection) =>
+        FunctionResult.unwrapOr(await this.getCanvasesByCollectionId(collection.id), []),
+      ),
+    );
+    return canvasArrays.flat();
   }
 
-  async getCanvasByScope(scope: CanvasScope | AnnotationScope): Promise<CanvasWithSourceId> {
-    const collection = await this.getById(scope.collectionId);
-    if (collection === undefined) {
-      throw new Error(`Collection with id ${scope.collectionId} not found`);
+  async getCanvasByScope(
+    scope: CanvasScope | AnnotationScope,
+  ): Promise<FunctionResult<CanvasWithSourceId, EntityNotFoundError>> {
+    const result = await this.getById(scope.collectionId);
+    if (!result.ok) {
+      return result;
     }
 
-    const collectionElement = collection.content.find((elt) => elt.canvasId === scope.canvasId);
+    const collectionElement = result.value.content.find((elt) => elt.canvasId === scope.canvasId);
     if (!collectionElement) {
-      throw new Error(
-        `Canvas with id ${scope.canvasId} not found in collection ${scope.collectionId}`,
+      return FunctionResult.err(
+        new EntityNotFoundError({ entity: 'CollectionElement', id: scope.canvasId }),
       );
     }
 
-    return {
-      canvas: await getSourceRepository().getCanvasById(collectionElement.sourceId, scope.canvasId),
+    const canvasResult = await getSourceRepository().getCanvasById(
+      collectionElement.sourceId,
+      scope.canvasId,
+    );
+    if (!canvasResult.ok) {
+      return canvasResult;
+    }
+
+    return FunctionResult.ok({
+      canvas: canvasResult.value,
       sourceId: collectionElement.sourceId,
-    };
+    });
   }
 
   async exists(id: string): Promise<boolean> {
@@ -148,21 +171,27 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     });
   }
 
-  async duplicate(collectionId: string, newName: string): Promise<void> {
-    await db.transaction('rw', db.collections, db.collectionContents, db.annotations, async () => {
-      const collection = await db.collections.get(collectionId);
-      if (collection === undefined) {
-        throw new Error(`Collection with id ${collectionId} not found`);
-      }
-      const content = await db.collectionContents.get(collectionId);
+  async duplicate(
+    collectionId: string,
+    newName: string,
+  ): Promise<FunctionResult<CollectionDetails, EntityNotFoundError>> {
+    const collectionResult = await this.getById(collectionId);
+    if (!collectionResult.ok) {
+      return collectionResult;
+    }
+    const collection = collectionResult.value;
+    const content = await db.collectionContents.get(collectionId);
 
-      const newCollectionId = uuid();
-      await db.collections.add({
-        ...collection,
-        id: newCollectionId,
-        name: newName,
-        contentSize: content?.content.length ?? 0,
-      });
+    const newCollectionId = uuid();
+    const newCollection: CollectionDetails = {
+      ...collection,
+      id: newCollectionId,
+      name: newName,
+      contentSize: content?.content.length ?? 0,
+    };
+
+    await db.transaction('rw', db.collections, db.collectionContents, db.annotations, async () => {
+      await db.collections.add(newCollection);
       await db.collectionContents.add({
         id: newCollectionId,
         content: content?.content ?? [],
@@ -178,6 +207,8 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
       }));
       await annotationRepository.addAll(duplicatedAnnotations);
     });
+
+    return FunctionResult.ok(newCollection);
   }
 
   async update(
@@ -272,17 +303,22 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
 
   async deleteMultiple(collectionsToRemoveIds: string[]): Promise<void> {
     for (const collectionId of collectionsToRemoveIds) {
-      const collectionToRemove = await this.getById(collectionId);
-      await this.delete(collectionToRemove);
+      const result = await this.getById(collectionId);
+      if (result.ok) {
+        await this.deleteById(collectionId);
+      }
     }
   }
 
-  async deleteElement(collectionId: string, canvasId: string): Promise<Collection> {
-    const collection = await this.getById(collectionId);
-    if (collection === undefined) {
-      throw new Error(`Collection with id ${collectionId} not found`);
+  async deleteElement(
+    collectionId: string,
+    canvasId: string,
+  ): Promise<FunctionResult<Collection, EntityNotFoundError>> {
+    const result = await this.getById(collectionId);
+    if (!result.ok) {
+      return result;
     }
-    const { content, ...collectionDetails } = collection;
+    const { content, ...collectionDetails } = result.value;
 
     const updatedContent = content.filter((elt) => elt.canvasId !== canvasId);
     const updatedDetails = { ...collectionDetails, contentSize: updatedContent.length };
@@ -296,6 +332,6 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     const updatedCollection = { ...updatedDetails, content: updatedContent };
     await this.addContentToCollection(updatedCollection);
 
-    return updatedCollection;
+    return FunctionResult.ok(updatedCollection);
   }
 }

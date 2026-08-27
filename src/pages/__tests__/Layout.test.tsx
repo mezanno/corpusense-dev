@@ -10,6 +10,9 @@ import Layout from '../Layout';
 
 vi.mock('@/hooks/data/manifests/useManifests');
 vi.mock('@/hooks/data/collections/useCollections');
+vi.mock('@/hooks/useJobRealtime', () => ({
+  default: vi.fn(),
+}));
 vi.mock('@/components/reducers/CollectionContext');
 vi.mock('@/components/reducers/WorkerContext');
 vi.mock('@/components/reducers/ConnectedUserContext');
@@ -57,6 +60,8 @@ describe('Layout', () => {
     });
     (useWorkerContext as Mock).mockReturnValue({
       getWorkersByStatus: vi.fn(() => []),
+      getPostedWorkers: vi.fn(() => []),
+      getRunningWorkers: vi.fn(() => []),
     });
     (useConnectedUserContext as Mock).mockReturnValue({
       user: null,

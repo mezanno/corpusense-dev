@@ -115,11 +115,11 @@ export async function fetchManifestFromURL(url: string): Promise<Manifest> {
 
   //check if the manifest is already stored in IndexedDB
   const sourceRepository = getSourceRepository();
-  const content = await sourceRepository.getContentByManifestUrl(url);
-  if (content) {
-    return content.manifest;
+  const contentResult = await sourceRepository.getContentByManifestUrl(url);
+  if (contentResult.ok) {
+    return contentResult.value.manifest;
   }
-  console.log('Manifest not found in IndexedDB');
+  console.log('Manifest not found in IndexedDB: ', getErrorMessage(contentResult.error));
   // If the manifest is not found in IndexedDB, we try to fetch it from the URL
   const importerKey = keys.find((key) => url.includes(key));
   const importer =

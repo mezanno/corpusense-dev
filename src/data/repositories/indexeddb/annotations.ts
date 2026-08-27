@@ -1,9 +1,10 @@
 import { isAnnotationScope, isCanvasScope, Scope } from '@/data/models/Scope';
 import { containsAtLeast2Corners, getSurface } from '@/data/utils/annotations';
 import i18n from '@/i18n';
+import { FunctionResult } from '@/utils/functionResult';
 import { ShapeType } from '@annotorious/annotorious';
 import { Annotation, AnnotationDTO, ElementType, getAnnotationType } from '../../models/Annotation';
-import { EntityNotFoundError, err, FunctionResult, ok } from '../errors';
+import { EntityNotFoundError } from '../EntityNotFoundError';
 import { db } from './db';
 import { AnnotationRepository } from './types';
 
@@ -11,7 +12,7 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
   async getById(id: string): Promise<FunctionResult<Annotation, EntityNotFoundError>> {
     const annotation = await db.annotations.get(id);
     if (annotation === undefined) {
-      return err(
+      return FunctionResult.err(
         new EntityNotFoundError({
           id,
           entity: 'Annotation',
@@ -19,17 +20,15 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
       );
     }
 
-    return ok(annotation);
+    return FunctionResult.ok(annotation);
   }
 
   async getByScope(scope: Scope): Promise<Annotation[]> {
     if (isAnnotationScope(scope)) {
-      const result = await this.getById(scope.annotationId);
-      if (result.ok) {
-        return [result.value];
-      } else {
-        return [];
-      }
+      return FunctionResult.match(await this.getById(scope.annotationId), {
+        ok: (annotation) => [annotation],
+        err: () => [],
+      });
     } else if (isCanvasScope(scope)) {
       return db.annotations
         .where({
@@ -68,7 +67,12 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
       getAnnotationType(annotation) !== ElementType.TEXT_LINE &&
       getAnnotationType(annotation) !== ElementType.TEMP
     ) {
-      throw new Error(i18n.t('error_annotation_not_of_type_text_line'));
+      return FunctionResult.err(
+        new EntityNotFoundError({
+          entity: 'Annotation',
+          id: annotation.id,
+        }),
+      );
     }
     const regionAnnotations = await this.getByScopeAndTypes(
       { collectionId: annotation.collectionId, canvasId: annotation.canvasId },
@@ -90,7 +94,7 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
     );
 
     if (parent === null) {
-      return err(
+      return FunctionResult.err(
         new EntityNotFoundError({
           entity: 'Annotation',
           id: annotation.id,
@@ -98,7 +102,7 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
       );
     }
 
-    return ok(parent);
+    return FunctionResult.ok(parent);
   }
 
   //TODO! il faut ordonner les annotations par collection et canvas sinon l'ordre sera faux
@@ -172,10 +176,11 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
   }
 
   async updateOrder(annotationId: string, order: number) {
-    const annotationToUpdate = await db.annotations.get(annotationId);
-    if (annotationToUpdate === undefined) {
-      throw new Error(i18n.t('error_annotation_not_found'));
+    const result = await this.getById(annotationId);
+    if (!result.ok) {
+      return [];
     }
+    const annotationToUpdate = result.value;
     const actualOrder = annotationToUpdate.order;
     const { canvasId, collectionId } = annotationToUpdate;
     const type = getAnnotationType(annotationToUpdate);
