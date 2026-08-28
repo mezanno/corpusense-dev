@@ -1,6 +1,6 @@
 import { ContentResource, Manifest } from '@iiif/presentation-3';
 import z from 'zod';
-import { ObjectWithStringIdSchema } from './utils';
+import { ObjectWithStringIdSchema } from './objectWithStringId';
 
 const ManifestSchema = z.custom<Manifest>();
 const ContentResourceSchema = z.custom<ContentResource>();

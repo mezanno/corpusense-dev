@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { DataModel } from '@/data/models/DataModel';
+import { DataModel } from '@/data/models/dataModel/dataModel';
 import { useModels } from '@/hooks/data/models/useModels';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';

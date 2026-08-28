@@ -1,4 +1,4 @@
-import { Collection } from '@/data/models/Collection';
+import { Collection } from '@/data/models/collection';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import useDialog from '@/hooks/ui/useDialog';
 import { Copy } from 'lucide-react';

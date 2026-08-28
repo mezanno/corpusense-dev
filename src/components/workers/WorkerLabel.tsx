@@ -1,4 +1,4 @@
-import { Worker } from '@/data/models/Worker';
+import { Worker } from '@/data/models/worker/worker';
 import { useTranslation } from 'react-i18next';
 import ScopeLabel from '../ScopeLabel';
 import { getTaskStatusColor, getWorkerStatusIcon } from './workerUtils';

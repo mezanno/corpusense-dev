@@ -1,4 +1,4 @@
-import { ConvertedFile } from '@/data/models/ConvertedFile';
+import { ConvertedFile } from '@/data/models/convertedFile';
 import useSources from '@/hooks/data/sources/useSources';
 import useDialog from '@/hooks/ui/useDialog';
 import useAppNavigation from '@/hooks/useAppNavigation';

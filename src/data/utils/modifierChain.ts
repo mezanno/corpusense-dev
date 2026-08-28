@@ -1,12 +1,13 @@
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { modifierRegistry } from '@/data/models/modifiers/ModifierFactory';
-import { CanvasScope, CollectionScope, isCanvasScope } from '@/data/models/Scope';
+import { CanvasScope, CollectionScope } from '@/data/models/scope/scope';
 import {
   getAnnotationRepository,
   getCollectionRepository,
   getModifierChainRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { Annotation, ElementType } from '../models/annotations/annotation';
+import { isCanvasScope } from '../models/scope/scope.utils';
 
 export type ModifierChainData = {
   modifiers: AnyModifier[];

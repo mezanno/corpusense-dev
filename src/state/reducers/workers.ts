@@ -1,5 +1,5 @@
-import { Scope } from '@/data/models/Scope';
-import { Worker } from '@/data/models/Worker';
+import { Scope } from '@/data/models/scope/scope';
+import { Worker } from '@/data/models/worker/worker';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { WorkerConfigurationParams } from '../sagas/plugins/loader';
 export interface WorkerState {

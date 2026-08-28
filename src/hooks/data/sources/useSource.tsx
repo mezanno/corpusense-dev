@@ -1,4 +1,4 @@
-import { SourceWithContent } from '@/data/models/Sources';
+import { SourceWithContent } from '@/data/models/source/source';
 import { getSourceRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { useQuery } from '@tanstack/react-query';
 

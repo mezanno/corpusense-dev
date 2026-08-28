@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { Project } from '@/data/models/Project';
+import { Project } from '@/data/models/project';
 import useProjectsIO from '@/hooks/data/projects/useProjectsIO';
 import useDialog from '@/hooks/ui/useDialog';
 import { Plus } from 'lucide-react';

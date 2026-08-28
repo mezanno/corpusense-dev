@@ -8,7 +8,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Project } from '@/data/models/Project';
+import { Project } from '@/data/models/project';
 import useProjects from '@/hooks/data/projects/useProjects';
 import useProjectsIO from '@/hooks/data/projects/useProjectsIO';
 import { FormProps } from '@/hooks/ui/useDialog';

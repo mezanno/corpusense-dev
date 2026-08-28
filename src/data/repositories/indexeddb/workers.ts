@@ -1,5 +1,7 @@
-import { isCollectionScope, Scope } from '@/data/models/Scope';
-import { Worker, WorkerCreateDTO, WorkerStatus } from '@/data/models/Worker';
+import { Scope } from '@/data/models/scope/scope';
+import { isCollectionScope } from '@/data/models/scope/scope.utils';
+import { Worker, WorkerStatus } from '@/data/models/worker/worker';
+import { WorkerCreateDTO } from '@/data/models/worker/worker.dto';
 import { FunctionResult } from '@/utils/functionResult';
 import { EntityNotFoundError } from '../EntityNotFoundError';
 import { db } from './db';

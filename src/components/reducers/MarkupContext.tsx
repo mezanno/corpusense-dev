@@ -1,7 +1,7 @@
 import { Annotation } from '@/data/models/annotations/annotation';
 import { getAnnotationText } from '@/data/models/annotations/annotation.utils';
-import { DataField, DataModel } from '@/data/models/DataModel';
-import { NamedEntity } from '@/data/models/NamedEntity';
+import { DataField, DataModel } from '@/data/models/dataModel/dataModel';
+import { NamedEntity } from '@/data/models/namedEntity';
 import useNamedEntities from '@/hooks/data/namedEntities/useNamedEntities';
 import { IRect } from 'konva/lib/types';
 import { createContext, useContext, useEffect, useReducer } from 'react';

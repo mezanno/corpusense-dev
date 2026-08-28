@@ -1,6 +1,7 @@
-import { Result } from '@/data/models/Result';
-import { isAnnotationScope, isCanvasScope, Scope, toString } from '@/data/models/Scope';
-import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
+import { Result } from '@/data/models/result/result';
+import { Scope } from '@/data/models/scope/scope';
+import { isAnnotationScope, isCanvasScope, toString } from '@/data/models/scope/scope.utils';
+import { Task, WorkerResponse, WorkerStatus } from '@/data/models/worker/worker';
 import {
   getCollectionRepository,
   getModelRepository,

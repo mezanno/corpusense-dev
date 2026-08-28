@@ -1,4 +1,4 @@
-import { ConvertedFile } from '@/data/models/ConvertedFile';
+import { ConvertedFile } from '@/data/models/convertedFile';
 import { FunctionResult } from '@/utils/functionResult';
 import { EntityNotFoundError } from '../EntityNotFoundError';
 import { db } from './db';
@@ -13,10 +13,14 @@ export class IndexedDBConvertedFileRepository implements ConvertedFileRepository
     return FunctionResult.ok(file);
   }
 
-  async getByFolderName(folderName: string): Promise<FunctionResult<ConvertedFile, EntityNotFoundError>> {
+  async getByFolderName(
+    folderName: string,
+  ): Promise<FunctionResult<ConvertedFile, EntityNotFoundError>> {
     const file = await db.convertedFiles.where('folderName').equals(folderName).first();
     if (!file) {
-      return FunctionResult.err(new EntityNotFoundError({ entity: 'ConvertedFile', id: folderName }));
+      return FunctionResult.err(
+        new EntityNotFoundError({ entity: 'ConvertedFile', id: folderName }),
+      );
     }
     return FunctionResult.ok(file);
   }

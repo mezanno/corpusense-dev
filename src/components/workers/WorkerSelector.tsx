@@ -1,4 +1,4 @@
-import { WorkerStatus } from '@/data/models/Worker';
+import { WorkerStatus } from '@/data/models/worker/worker';
 import { useTranslation } from 'react-i18next';
 import { useWorkerContext } from '../reducers/WorkerContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';

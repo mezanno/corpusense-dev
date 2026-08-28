@@ -1,4 +1,4 @@
-import { WorkerStatus } from '@/data/models/Worker';
+import { WorkerStatus } from '@/data/models/worker/worker';
 import { CalendarClock, CircleAlert, CircleCheck, OctagonPause } from 'lucide-react';
 import React from 'react';
 import { GridLoader } from 'react-spinners';

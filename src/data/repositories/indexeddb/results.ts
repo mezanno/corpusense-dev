@@ -1,5 +1,6 @@
-import { Result, ResultCreateDTO } from '@/data/models/Result';
-import { Scope } from '@/data/models/Scope';
+import { Result } from '@/data/models/result/result';
+import { ResultCreateDTO } from '@/data/models/result/result.dto';
+import { Scope } from '@/data/models/scope/scope';
 import { FunctionResult } from '@/utils/functionResult';
 import { EntityNotFoundError } from '../EntityNotFoundError';
 import { db } from './db';
@@ -50,7 +51,10 @@ export class IndexedDBResultRepository implements ResultRepository {
       .first();
     if (result === undefined) {
       return FunctionResult.err(
-        new EntityNotFoundError({ entity: 'Result', id: `${computeScopeKey(scope)}_${workerName}` }),
+        new EntityNotFoundError({
+          entity: 'Result',
+          id: `${computeScopeKey(scope)}_${workerName}`,
+        }),
       );
     }
     return FunctionResult.ok(result);

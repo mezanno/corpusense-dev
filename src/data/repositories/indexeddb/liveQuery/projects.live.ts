@@ -1,4 +1,4 @@
-import { Project } from '@/data/models/Project';
+import { Project } from '@/data/models/project';
 import { db } from '../db';
 import { ProjectLiveRepository } from './types.live';
 

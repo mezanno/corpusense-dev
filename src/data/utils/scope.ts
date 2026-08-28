@@ -1,4 +1,4 @@
-import { Scope } from '../models/Scope';
+import { Scope } from '../models/scope/scope';
 import { getCollectionRepository } from '../repositories/indexeddb/dbFactory';
 
 const contains = async (scope: Scope, value: string) => {

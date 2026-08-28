@@ -1,4 +1,4 @@
-import { SourceWithContent } from '@/data/models/Sources';
+import { SourceWithContent } from '@/data/models/source/source';
 import { EntityNotFoundError } from '@/data/repositories/EntityNotFoundError';
 import { getSourceRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { getThumbnailBlob } from '@/data/utils/manifest';

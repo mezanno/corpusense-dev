@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { Worker } from '@/data/models/Worker';
+import { Worker } from '@/data/models/worker/worker';
 import useWorkers from '@/hooks/data/workers/useWorkers';
 import { useAppSelector } from '@/hooks/hooks';
 import { FormProps } from '@/hooks/ui/useDialog';

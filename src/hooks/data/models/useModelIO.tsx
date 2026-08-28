@@ -1,4 +1,4 @@
-import { DataModel, DataModelSchema } from '@/data/models/DataModel';
+import { DataModel, DataModelSchema } from '@/data/models/dataModel/dataModel';
 import { getModelRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { useAppDispatch } from '@/hooks/hooks';
 import i18n from '@/i18n';

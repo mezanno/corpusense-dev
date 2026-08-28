@@ -28,7 +28,7 @@ export type Source = z.infer<typeof SourceSchema>;
 
 export const ManifestSchema = z.custom<Manifest>();
 
-const LocalFileSchema = z
+export const LocalFileSchema = z
   .object({
     outputDirectoryHandle: z.instanceof(FileSystemDirectoryHandle),
     timestamp: z.number(),
@@ -60,24 +60,3 @@ export const SourceWithContentSchema = SourceSchema.extend({
 });
 
 export type SourceWithContent = z.infer<typeof SourceWithContentSchema>;
-
-export const AddSourceDTOSchema = z.discriminatedUnion('type', [
-  z.object({
-    type: z.literal('remote'),
-    name: z.string(),
-    pageCount: z.number().int().nonnegative(),
-    thumbnailBlob: z.instanceof(Blob),
-    manifest: ManifestSchema,
-  }),
-
-  z.object({
-    type: z.literal('local'),
-    name: z.string(),
-    pageCount: z.number().int().nonnegative(),
-    thumbnailBlob: z.instanceof(Blob),
-    manifest: ManifestSchema,
-    localFile: LocalFileSchema,
-  }),
-]);
-
-export type AddSourceDTO = z.infer<typeof AddSourceDTOSchema>;

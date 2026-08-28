@@ -1,4 +1,4 @@
-import { DataModel } from '@/data/models/DataModel';
+import { DataModel } from '@/data/models/dataModel/dataModel';
 import { generateSchema } from '@/data/utils/model';
 import ReactJsonView from '@microlink/react-json-view';
 

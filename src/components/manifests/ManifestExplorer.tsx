@@ -1,4 +1,4 @@
-import { SourceWithContent } from '@/data/models/Sources';
+import { SourceWithContent } from '@/data/models/source/source';
 import { Manifest } from '@iiif/presentation-3';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../ui/resizable';
 import ManifestDetails from './ManifestDetails';

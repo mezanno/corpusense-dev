@@ -1,4 +1,5 @@
-import { AddSourceDTO, Source, SourceContent } from '@/data/models/Sources';
+import { Source, SourceContent } from '@/data/models/source/source';
+import { AddSourceDTO } from '@/data/models/source/source.dto';
 import { extractCanvasById, getThumbnailBlob } from '@/data/utils/manifest';
 import { FunctionResult } from '@/utils/functionResult';
 import {
@@ -70,7 +71,9 @@ export class IndexedDBSourceRepository implements SourceRepository {
     return FunctionResult.ok(source);
   }
 
-  async getContentById(sourceId: string): Promise<FunctionResult<SourceContent, EntityNotFoundError>> {
+  async getContentById(
+    sourceId: string,
+  ): Promise<FunctionResult<SourceContent, EntityNotFoundError>> {
     const content = await db.sourceContents.get(sourceId);
     if (!content) {
       return FunctionResult.err(new EntityNotFoundError({ entity: 'SourceContent', id: sourceId }));

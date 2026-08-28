@@ -1,4 +1,4 @@
-import { Collection, CollectionDetails } from '@/data/models/Collection';
+import { Collection, CollectionDetails } from '@/data/models/collection';
 import { Canvas } from '@iiif/presentation-3';
 import { db } from '../db';
 import { getSourceRepository } from '../dbFactory';
@@ -46,7 +46,10 @@ export class IndexedDBCollectionLiveRepository implements CollectionLiveReposito
       );
 
       const canvases = canvasesWithResults
-        .filter((item): item is { canvasResult: { ok: true; value: Canvas }; sourceId: string } => item.canvasResult.ok)
+        .filter(
+          (item): item is { canvasResult: { ok: true; value: Canvas }; sourceId: string } =>
+            item.canvasResult.ok,
+        )
         .map((item) => ({ canvas: item.canvasResult.value, sourceId: item.sourceId }));
 
       console.log('canvases ', canvases);

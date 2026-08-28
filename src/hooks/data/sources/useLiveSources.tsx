@@ -1,4 +1,4 @@
-import { Source } from '@/data/models/Sources';
+import { Source } from '@/data/models/source/source';
 import {
   getCollectionRepository,
   getProjectRepository,

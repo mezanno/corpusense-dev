@@ -1,4 +1,4 @@
-import { Source } from '@/data/models/Sources';
+import { Source } from '@/data/models/source/source';
 import useBlob from '@/hooks/data/sources/useBlob';
 import useSource from '@/hooks/data/sources/useSource';
 import useSources from '@/hooks/data/sources/useSources';

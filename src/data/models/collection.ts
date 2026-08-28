@@ -1,11 +1,11 @@
 import z from 'zod';
 import { AnnotationDTO } from './annotations/annotation.dto';
-import { CollectionElementSchema, LegacyCollectionElementSchema } from './CollectionElement';
-import { DataModelSchema } from './DataModel';
-import { ResultSchema } from './Result';
-import { TagSchema } from './Tag';
-import { ObjectWithStringIdSchema } from './utils';
-import { WorkerSchema } from './Worker';
+import { CollectionElementSchema, LegacyCollectionElementSchema } from './collectionElement';
+import { DataModelSchema } from './dataModel/dataModel';
+import { ObjectWithStringIdSchema } from './objectWithStringId';
+import { ResultSchema } from './result/result';
+import { TagSchema } from './tag';
+import { WorkerSchema } from './worker/worker';
 
 export const CollectionDetailsSchema = ObjectWithStringIdSchema.extend({
   id: z.string(),

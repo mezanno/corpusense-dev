@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import WorkerDataTable from '@/components/workers/WorkerDataTable';
 import { getWorkerStatusIcon } from '@/components/workers/workerUtils';
-import { Worker, WorkerStatus } from '@/data/models/Worker';
+import { Worker, WorkerStatus } from '@/data/models/worker/worker';
 import useWorkers from '@/hooks/data/workers/useWorkers';
 import { getWorkerCategory } from '@/utils/workers';
 import { ColumnDef } from '@tanstack/react-table';

@@ -1,4 +1,5 @@
-import { DataField, DataModelCreateDTO } from '@/data/models/DataModel';
+import { DataField } from '@/data/models/dataModel/dataModel';
+import { DataModelCreateDTO } from '@/data/models/dataModel/dataModel.dto';
 import {
   getModelLiveRepository,
   getModelRepository,

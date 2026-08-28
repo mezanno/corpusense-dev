@@ -1,4 +1,4 @@
-import { CanvasScope } from '@/data/models/Scope';
+import { CanvasScope } from '@/data/models/scope/scope';
 import { generateTextWithAnnotationIdFromCanvas, TextWithAnnotationId } from '@/data/utils/export';
 import { useHover } from '@annotorious/react';
 import { Magnet } from 'lucide-react';

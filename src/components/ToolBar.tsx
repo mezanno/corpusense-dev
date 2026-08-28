@@ -1,4 +1,4 @@
-import { Scope } from '@/data/models/Scope';
+import { Scope } from '@/data/models/scope/scope';
 import DangerousMenu from './menu/DangerousMenu';
 import WorkersMenu from './menu/WorkersMenu';
 

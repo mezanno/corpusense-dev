@@ -1,14 +1,15 @@
 import { getAnnotationText, isAnnotationArray } from '@/data/models/annotations/annotation.utils';
-import { Result, ResultCreateDTO } from '@/data/models/Result';
-import { isAnnotationScope, isCanvasScope, isCollectionScope, toString } from '@/data/models/Scope';
+import { Result } from '@/data/models/result/result';
+import { ResultCreateDTO } from '@/data/models/result/result.dto';
 import {
-  isWorker,
-  Task,
-  Worker,
-  WorkerCreateDTO,
-  WorkerResponse,
-  WorkerStatus,
-} from '@/data/models/Worker';
+  isAnnotationScope,
+  isCanvasScope,
+  isCollectionScope,
+  toString,
+} from '@/data/models/scope/scope.utils';
+import { Task, Worker, WorkerResponse, WorkerStatus } from '@/data/models/worker/worker';
+import { WorkerCreateDTO } from '@/data/models/worker/worker.dto';
+import { isWorker } from '@/data/models/worker/worker.utils';
 import {
   getCollectionRepository,
   getResultRepository,

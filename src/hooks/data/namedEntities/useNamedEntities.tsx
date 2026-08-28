@@ -1,8 +1,8 @@
 import { WordRect } from '@/components/reducers/MarkupContext';
 import { Annotation } from '@/data/models/annotations/annotation';
-import { DataField } from '@/data/models/DataModel';
-import { NamedEntity } from '@/data/models/NamedEntity';
-import { CanvasScope } from '@/data/models/Scope';
+import { DataField } from '@/data/models/dataModel/dataModel';
+import { NamedEntity } from '@/data/models/namedEntity';
+import { CanvasScope } from '@/data/models/scope/scope';
 import {
   getAnnotationRepository,
   getCollectionRepository,

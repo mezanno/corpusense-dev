@@ -1,4 +1,4 @@
-import { DataModel } from '@/data/models/DataModel';
+import { DataModel } from '@/data/models/dataModel/dataModel';
 import { useModelIO } from '@/hooks/data/models/useModelIO';
 import { Download, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';

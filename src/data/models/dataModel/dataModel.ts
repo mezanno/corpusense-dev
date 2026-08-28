@@ -26,9 +26,3 @@ export const DataModelSchema = z
   .strict();
 
 export type DataModel = z.infer<typeof DataModelSchema>;
-
-export interface DataModelCreateDTO {
-  name: string;
-  description?: string;
-  fromModelId?: string;
-}

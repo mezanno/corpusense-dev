@@ -1,5 +1,5 @@
 import { renderWithProviders } from '@/__tests__/utils';
-import { CollectionDetails } from '@/data/models/Collection';
+import { CollectionDetails } from '@/data/models/collection';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useTags } from '@/hooks/data/tags/useTags';
 import useDialog from '@/hooks/ui/useDialog';

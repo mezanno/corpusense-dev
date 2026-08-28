@@ -1,6 +1,6 @@
 import { ElementType } from '@/data/models/annotations/annotation';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
-import { CanvasScope } from '@/data/models/Scope';
+import { CanvasScope } from '@/data/models/scope/scope';
 import useAnnotationModifierActions from '@/hooks/data/annotations/useAnnotationModifierActions';
 import { debounce } from 'lodash';
 import { Eye, Play } from 'lucide-react';

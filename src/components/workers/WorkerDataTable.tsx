@@ -1,4 +1,4 @@
-import { Worker } from '@/data/models/Worker';
+import { Worker } from '@/data/models/worker/worker';
 import { contains } from '@/data/utils/scope';
 import {
   ColumnDef,

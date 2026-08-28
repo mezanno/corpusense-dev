@@ -1,4 +1,4 @@
-import { CollectionDetails } from '@/data/models/Collection';
+import { CollectionDetails } from '@/data/models/collection';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import useDialog from '@/hooks/ui/useDialog';
 import { CheckedState } from '@radix-ui/react-checkbox';

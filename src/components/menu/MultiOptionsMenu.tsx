@@ -1,4 +1,4 @@
-import { Scope } from '@/data/models/Scope';
+import { Scope } from '@/data/models/scope/scope';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ClockLoader } from 'react-spinners';

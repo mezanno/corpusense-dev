@@ -1,6 +1,7 @@
-import { Result } from '@/data/models/Result';
-import { isCollectionScope, isSameScope, Scope } from '@/data/models/Scope';
-import { Task, Worker, WorkerStatus } from '@/data/models/Worker';
+import { Result } from '@/data/models/result/result';
+import { Scope } from '@/data/models/scope/scope';
+import { isCollectionScope, isSameScope } from '@/data/models/scope/scope.utils';
+import { Task, Worker, WorkerStatus } from '@/data/models/worker/worker';
 import {
   getResultLiveRepository,
   getWorkerLiveRepository,

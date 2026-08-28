@@ -1,6 +1,6 @@
 import { Combine, MessageSquareOff, OctagonXIcon } from 'lucide-react';
 
-import { Scope } from '@/data/models/Scope';
+import { Scope } from '@/data/models/scope/scope';
 import { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import MultiOptionsMenu from './MultiOptionsMenu';

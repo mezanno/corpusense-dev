@@ -1,5 +1,5 @@
-import { toString } from '@/data/models/Scope';
-import { Task, WorkerResponse } from '@/data/models/Worker';
+import { toString } from '@/data/models/scope/scope.utils';
+import { Task, WorkerResponse } from '@/data/models/worker/worker';
 import { PluginParams } from '@/state/reducers/workers';
 import { suryaRun } from './suryaCommon';
 import { WorkerCategory } from './WorkerCategory';

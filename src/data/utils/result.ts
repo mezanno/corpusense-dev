@@ -3,8 +3,8 @@ import z from 'zod';
 import { Annotation, ElementType } from '../models/annotations/annotation';
 import { changeValue, createAnnotation } from '../models/annotations/annotation.factory';
 import { convertW3CAnnotationsToIIIF } from '../models/converters/iiif';
-import { Result } from '../models/Result';
-import { isCanvasScope } from '../models/Scope';
+import { Result } from '../models/result/result';
+import { isCanvasScope } from '../models/scope/scope.utils';
 import {
   getAnnotationRepository,
   getCollectionRepository,

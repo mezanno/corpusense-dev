@@ -1,5 +1,6 @@
 import z from 'zod';
-import { ScopeSchema } from './Scope';
+import { ScopeSchema } from '../scope/scope';
+import { WorkerCreateDTOSChema } from './worker.dto';
 
 export enum WorkerStatus {
   ALL = 'all', // Special status to represent all workers
@@ -33,17 +34,6 @@ export const TaskSchema = z
 
 export type Task = z.infer<typeof TaskSchema>;
 
-export const WorkerCreateDTOSChema = z
-  .object({
-    id: z.string(),
-    name: z.string(),
-    scope: ScopeSchema,
-    params: z.unknown(),
-  })
-  .strict();
-
-export type WorkerCreateDTO = z.infer<typeof WorkerCreateDTOSChema>;
-
 export const WorkerSchema = WorkerCreateDTOSChema.extend({
   scopeKey: z.string(),
   status: WorkerStatusSchema,
@@ -64,11 +54,3 @@ export const WorkerResponseSchema = z
   .strict();
 
 export type WorkerResponse = z.infer<typeof WorkerResponseSchema>;
-
-/*
- * Type guard to check if an object is a Worker.
- * This is used to differentiate between Worker and WorkerCreateDTO. A worker has an id, scopeKey, status, and createdAt properties.
- */
-export function isWorker(obj: Worker | WorkerCreateDTO): obj is Worker {
-  return 'id' in obj && 'scopeKey' in obj && 'status' in obj && 'createdAt' in obj;
-}

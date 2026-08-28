@@ -1,4 +1,4 @@
-import { ItemMetadataAttribute } from '@/data/models/Metadata';
+import { ItemMetadataAttribute } from '@/data/models/metadata';
 import { CirclePlus, CircleX } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';

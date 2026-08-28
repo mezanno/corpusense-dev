@@ -1,4 +1,4 @@
-import { StoredManifestDetails } from '@/data/models/StoredManifest';
+import { StoredManifestDetails } from '@/data/models/storedManifest';
 import {
   extractCanvasById,
   extractCanvasesByIds,

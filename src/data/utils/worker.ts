@@ -1,4 +1,4 @@
-import { Task, WorkerStatus } from '../models/Worker';
+import { Task, WorkerStatus } from '../models/worker/worker';
 
 function updateTaskStatus(
   queue: Task[],

@@ -2,9 +2,9 @@ import { ElementType } from '@/data/models/annotations/annotation';
 import { getAnnotationType } from '@/data/models/annotations/annotation.utils';
 import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
 import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
-import { Result } from '@/data/models/Result';
-import { isAnnotationScope, isCanvasScope, toString } from '@/data/models/Scope';
-import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
+import { Result } from '@/data/models/result/result';
+import { isAnnotationScope, isCanvasScope, toString } from '@/data/models/scope/scope.utils';
+import { Task, WorkerResponse, WorkerStatus } from '@/data/models/worker/worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,

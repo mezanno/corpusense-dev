@@ -1,4 +1,4 @@
-import { ManifestSchema } from '@/data/models/Sources';
+import { ManifestSchema } from '@/data/models/source/source';
 import { Manifest } from '@iiif/presentation-3';
 import i18n from 'i18next';
 

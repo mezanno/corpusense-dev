@@ -1,4 +1,4 @@
-import { Project } from '@/data/models/Project';
+import { Project } from '@/data/models/project';
 import { FunctionResult } from '@/utils/functionResult';
 import { EntityNotFoundError } from '../EntityNotFoundError';
 import { db } from './db';

@@ -7,8 +7,8 @@ import {
   duplicateAnnotation,
 } from '@/data/models/annotations/annotation.factory';
 import { getAnnotationType } from '@/data/models/annotations/annotation.utils';
-import { CollectionElement } from '@/data/models/CollectionElement';
-import { CanvasScope, Scope } from '@/data/models/Scope';
+import { CollectionElement } from '@/data/models/collectionElement';
+import { CanvasScope, Scope } from '@/data/models/scope/scope';
 import {
   getAnnotationRepository,
   getCollectionRepository,

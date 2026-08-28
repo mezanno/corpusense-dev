@@ -1,4 +1,4 @@
-import { DataModel } from '@/data/models/DataModel';
+import { DataModel } from '@/data/models/dataModel/dataModel';
 import { FunctionResult } from '@/utils/functionResult';
 import { EntityNotFoundError } from '../EntityNotFoundError';
 import { db } from './db';

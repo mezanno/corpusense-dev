@@ -11,8 +11,8 @@ import {
   suryaOcrResultSchema,
   suryaTableResultSchema,
 } from '@/data/models/converters/suryaSchema';
-import { isAnnotationScope, isCanvasScope } from '@/data/models/Scope';
-import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
+import { isAnnotationScope, isCanvasScope } from '@/data/models/scope/scope.utils';
+import { Task, WorkerResponse, WorkerStatus } from '@/data/models/worker/worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,

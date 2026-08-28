@@ -1,7 +1,7 @@
 import { ElementType } from '@/data/models/annotations/annotation';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { modifierRegistry } from '@/data/models/modifiers/ModifierFactory';
-import { CanvasScope } from '@/data/models/Scope';
+import { CanvasScope } from '@/data/models/scope/scope';
 import useModifierChainIO from '@/hooks/data/modifiers/useModifierChainIO';
 import useDialog from '@/hooks/ui/useDialog';
 import {

@@ -1,4 +1,4 @@
-import { DataField, DataModel } from '@/data/models/DataModel';
+import { DataField, DataModel } from '@/data/models/dataModel/dataModel';
 import { useModelIO } from '@/hooks/data/models/useModelIO';
 import { useModels } from '@/hooks/data/models/useModels';
 import useDialog from '@/hooks/ui/useDialog';

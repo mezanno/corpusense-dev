@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Annotation, ElementType } from '../../models/annotations/annotation';
-import { DataField } from '../../models/DataModel';
+import { DataField } from '../../models/dataModel/dataModel';
 import { computeSelector, generateNamedEntity } from '../namedEntity';
 
 vi.mock('uuid', () => ({

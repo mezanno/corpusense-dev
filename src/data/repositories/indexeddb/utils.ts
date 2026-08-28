@@ -1,4 +1,5 @@
-import { isAnnotationScope, isCanvasScope, Scope } from '@/data/models/Scope';
+import { Scope } from '@/data/models/scope/scope';
+import { isAnnotationScope, isCanvasScope } from '@/data/models/scope/scope.utils';
 
 export function computeScopeKey(scope: Scope): string {
   if (isAnnotationScope(scope)) {

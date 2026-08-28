@@ -1,4 +1,4 @@
-import { SourceWithContent } from '@/data/models/Sources';
+import { SourceWithContent } from '@/data/models/source/source';
 import { getSourceRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { getErrorMessage } from '@/utils/utils';
 import { Octokit } from '@octokit/rest';

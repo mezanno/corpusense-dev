@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { ElementType } from '@/data/models/annotations/annotation';
-import { Scope } from '@/data/models/Scope';
+import { Scope } from '@/data/models/scope/scope';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import { FormProps } from '@/hooks/ui/useDialog';
 import { zodResolver } from '@hookform/resolvers/zod';

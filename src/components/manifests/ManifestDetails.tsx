@@ -1,4 +1,4 @@
-import { SourceWithContent } from '@/data/models/Sources';
+import { SourceWithContent } from '@/data/models/source/source';
 import { QUERY_KEY_CURRENT_SOURCE } from '@/hooks/data/sources/useSource';
 import useDialog from '@/hooks/ui/useDialog';
 import { InternationalString, Manifest } from '@iiif/presentation-3';

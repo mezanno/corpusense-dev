@@ -1,6 +1,6 @@
 import { workerPlugins } from '@/App';
 import { useWorkerContext } from '@/components/reducers/WorkerContext';
-import { Worker, WorkerStatus } from '@/data/models/Worker';
+import { Worker, WorkerStatus } from '@/data/models/worker/worker';
 import { getWorkerRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { updateTaskStatus } from '@/data/utils/worker';
 import { JobRow, supabase } from '@/utils/config';

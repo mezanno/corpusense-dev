@@ -1,4 +1,4 @@
-import { DataField } from '@/data/models/DataModel';
+import { DataField } from '@/data/models/dataModel/dataModel';
 import useNamedEntities from '@/hooks/data/namedEntities/useNamedEntities';
 import { useTranslation } from 'react-i18next';
 import { useMarkupContext } from '../reducers/MarkupContext';

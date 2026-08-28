@@ -1,4 +1,4 @@
-import { SourceWithContent } from '@/data/models/Sources';
+import { SourceWithContent } from '@/data/models/source/source';
 import useSources from '@/hooks/data/sources/useSources';
 import { FormProps } from '@/hooks/ui/useDialog';
 import i18n from '@/i18n';

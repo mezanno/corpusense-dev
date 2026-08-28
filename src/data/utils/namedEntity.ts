@@ -2,8 +2,8 @@ import { words } from 'lodash';
 import { v4 as uuid } from 'uuid';
 import { Annotation } from '../models/annotations/annotation';
 import { getAnnotationText } from '../models/annotations/annotation.utils';
-import { DataField } from '../models/DataModel';
-import { NamedEntity, NamedEntitySelector } from '../models/NamedEntity';
+import { DataField } from '../models/dataModel/dataModel';
+import { NamedEntity, NamedEntitySelector } from '../models/namedEntity';
 
 const computeSelector = (
   namedEntityValue: string,

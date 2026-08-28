@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import VersionDisplay from '@/components/VersionDisplay';
 import WorkerLabel from '@/components/workers/WorkerLabel';
-import { WorkerStatus } from '@/data/models/Worker';
+import { WorkerStatus } from '@/data/models/worker/worker';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import useDialog from '@/hooks/ui/useDialog';
 import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';

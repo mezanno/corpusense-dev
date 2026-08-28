@@ -1,4 +1,4 @@
-import { ItemMetadata } from '@/data/models/Metadata';
+import { ItemMetadata } from '@/data/models/metadata';
 import { db } from './db';
 import { ItemMetadataRepository } from './types';
 

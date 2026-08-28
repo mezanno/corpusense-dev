@@ -1,4 +1,4 @@
-import { Event, EventType } from '@/data/models/Event';
+import { Event, EventType } from '@/data/models/event';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface EventsState {

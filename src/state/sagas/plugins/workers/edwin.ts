@@ -1,6 +1,6 @@
 import { convertEdwinResult, EdwinBox } from '@/data/models/converters/edwinMagic';
-import { isCanvasScope } from '@/data/models/Scope';
-import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
+import { isCanvasScope } from '@/data/models/scope/scope.utils';
+import { Task, WorkerResponse, WorkerStatus } from '@/data/models/worker/worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,

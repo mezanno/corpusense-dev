@@ -1,12 +1,12 @@
-import { CollectionElement } from '@/data/models/CollectionElement';
-import { AnnotationScope, CanvasScope } from '@/data/models/Scope';
-import { Tag } from '@/data/models/Tag';
+import { CollectionElement } from '@/data/models/collectionElement';
+import { AnnotationScope, CanvasScope } from '@/data/models/scope/scope';
+import { Tag } from '@/data/models/tag';
 import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import { FunctionResult } from '@/utils/functionResult';
 import { Canvas } from '@iiif/presentation-3';
 import { groupBy, mapValues } from 'lodash';
 import { v4 as uuid } from 'uuid';
-import { Collection, CollectionDetails } from '../../models/Collection';
+import { Collection, CollectionDetails } from '../../models/collection';
 import { EntityNotFoundError } from '../EntityNotFoundError';
 import { db } from './db';
 import {

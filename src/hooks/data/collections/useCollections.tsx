@@ -1,4 +1,4 @@
-import { Collection, CollectionDetails } from '@/data/models/Collection';
+import { Collection, CollectionDetails } from '@/data/models/collection';
 import {
   getAnnotationRepository,
   getCollectionRepository,

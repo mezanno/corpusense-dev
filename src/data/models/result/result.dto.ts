@@ -1,5 +1,5 @@
 import z from 'zod';
-import { ScopeSchema } from './Scope';
+import { ScopeSchema } from '../scope/scope';
 
 export const ResultCreateDTOSchema = z
   .object({
@@ -14,10 +14,3 @@ export const ResultCreateDTOSchema = z
   .strict();
 
 export type ResultCreateDTO = z.infer<typeof ResultCreateDTOSchema>;
-
-export const ResultSchema = ResultCreateDTOSchema.extend({
-  id: z.number(),
-  scopeKey: z.string(),
-}).strict();
-
-export type Result = z.infer<typeof ResultSchema>;

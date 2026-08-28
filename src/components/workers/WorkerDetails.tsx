@@ -1,4 +1,4 @@
-import { WorkerStatus } from '@/data/models/Worker';
+import { WorkerStatus } from '@/data/models/worker/worker';
 import useWorkers from '@/hooks/data/workers/useWorkers';
 import { useAppDispatch } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';

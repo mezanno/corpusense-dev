@@ -1,5 +1,5 @@
-import { Scope } from '@/data/models/Scope';
-import { Worker } from '@/data/models/Worker';
+import { Scope } from '@/data/models/scope/scope';
+import { Worker } from '@/data/models/worker/worker';
 import useDialog from '@/hooks/ui/useDialog';
 import { Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';

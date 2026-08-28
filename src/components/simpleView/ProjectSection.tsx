@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Project } from '@/data/models/Project';
+import { Project } from '@/data/models/project';
 import useProjects from '@/hooks/data/projects/useProjects';
 import useDialog from '@/hooks/ui/useDialog';
 import { Plus } from 'lucide-react';

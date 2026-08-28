@@ -1,7 +1,8 @@
 import { LLMProfile } from '@/data/models/LLMProfile';
-import { Result } from '@/data/models/Result';
-import { isAnnotationScope, isCanvasScope, Scope, toString } from '@/data/models/Scope';
-import { Task, Worker, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
+import { Result } from '@/data/models/result/result';
+import { Scope } from '@/data/models/scope/scope';
+import { isAnnotationScope, isCanvasScope, toString } from '@/data/models/scope/scope.utils';
+import { Task, Worker, WorkerResponse, WorkerStatus } from '@/data/models/worker/worker';
 import {
   getCollectionRepository,
   getModelRepository,
@@ -19,8 +20,8 @@ import { getErrorMessage } from '@/utils/utils';
 import FileSaver from 'file-saver';
 import { json2csv } from 'json-2-csv';
 import * as XLSX from 'xlsx';
-import { WorkerCategory } from './WorkerCategory';
 import { OpenAICompatibleClient } from './openai/OpenAICompatibleClient';
+import { WorkerCategory } from './WorkerCategory';
 
 export const pluginName = 'openai';
 export const pluginDisplayName = 'Extraction de données OpenAI API';

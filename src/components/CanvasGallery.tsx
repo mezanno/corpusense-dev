@@ -1,4 +1,4 @@
-import { SourceWithContent } from '@/data/models/Sources';
+import { SourceWithContent } from '@/data/models/source/source';
 import { useCanvasSelection } from '@/hooks/useCanvasSelection';
 import { Canvas } from '@iiif/presentation-3';
 import { useVirtualizer } from '@tanstack/react-virtual';

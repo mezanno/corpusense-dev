@@ -1,5 +1,5 @@
 import { Annotation } from '@/data/models/annotations/annotation';
-import { CanvasScope } from '@/data/models/Scope';
+import { CanvasScope } from '@/data/models/scope/scope';
 import {
   generateTextForAnnotation,
   generateTextForCollection,

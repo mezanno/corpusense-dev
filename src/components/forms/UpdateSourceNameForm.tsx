@@ -1,4 +1,4 @@
-import { Source } from '@/data/models/Sources';
+import { Source } from '@/data/models/source/source';
 import useSources from '@/hooks/data/sources/useSources';
 import { FormProps } from '@/hooks/ui/useDialog';
 import { zodResolver } from '@hookform/resolvers/zod';

@@ -1,4 +1,5 @@
-import { isAnnotationScope, isCanvasScope, Scope } from '@/data/models/Scope';
+import { Scope } from '@/data/models/scope/scope';
+import { isAnnotationScope, isCanvasScope } from '@/data/models/scope/scope.utils';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { CorpusenseRoutes } from '@/hooks/useAppNavigation';
 import { useTranslation } from 'react-i18next';

@@ -1,4 +1,4 @@
-import { DataModel } from '@/data/models/DataModel';
+import { DataModel } from '@/data/models/dataModel/dataModel';
 import i18n from '@/i18n';
 import { db } from '../db';
 import { ModelLiveRepository } from './types.live';

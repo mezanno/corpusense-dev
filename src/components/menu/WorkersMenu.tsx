@@ -1,5 +1,5 @@
 import { workerPlugins } from '@/App';
-import { Scope } from '@/data/models/Scope';
+import { Scope } from '@/data/models/scope/scope';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
 import { startWorkerProcessRequest } from '@/state/reducers/workers';

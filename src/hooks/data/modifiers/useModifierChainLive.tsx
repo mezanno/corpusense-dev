@@ -1,6 +1,6 @@
 import { ElementType } from '@/data/models/annotations/annotation';
 import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
-import { CollectionScope } from '@/data/models/Scope';
+import { CollectionScope } from '@/data/models/scope/scope';
 import { getModifierChainLiveRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { applyModifiersToScope, getModifiersAndValues } from '@/data/utils/modifierChain';
 import { useLiveQuery } from 'dexie-react-hooks';

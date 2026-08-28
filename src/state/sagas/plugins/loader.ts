@@ -1,5 +1,5 @@
-import { Result } from '@/data/models/Result';
-import { Task, Worker, WorkerResponse } from '@/data/models/Worker';
+import { Result } from '@/data/models/result/result';
+import { Task, Worker, WorkerResponse } from '@/data/models/worker/worker';
 import { getIsExperimentalFeaturesActivated } from '@/hooks/useExperimental';
 import { Manifest } from '@iiif/presentation-3';
 import z from 'zod';

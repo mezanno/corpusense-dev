@@ -1,5 +1,5 @@
-import { CanvasScope, CollectionScope } from '@/data/models/Scope';
-import { Worker } from '@/data/models/Worker';
+import { CanvasScope, CollectionScope } from '@/data/models/scope/scope';
+import { Worker } from '@/data/models/worker/worker';
 import { db } from '../db';
 import { computeScopeKey } from '../utils';
 import { WorkerLiveRepository } from './types.live';
