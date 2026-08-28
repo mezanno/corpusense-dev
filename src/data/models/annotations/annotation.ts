@@ -140,27 +140,6 @@ export function createAnnotation<T extends AnnotationCreateDTO | AnnotationWithI
   } as AnnotationDTO;
 }
 
-// export const createAnnotationFromExistingAnnotation = ({
-//   annotation,
-//   type,
-//   value,
-//   collectionId,
-//   canvasId,
-// }: {
-//   annotation: Annotation;
-//   canvasId?: string;
-//   collectionId?: string;
-//   type: ElementType;
-//   value: string;
-// }): AnnotationDTO => {
-//   return {
-//     ...annotation,
-//     collectionId: collectionId ?? annotation.collectionId,
-//     canvasId: canvasId ?? annotation.canvasId,
-//     bodies: createBodies(type, value, annotation.id),
-//   };
-// };
-
 export const createAnnotationFromAnnotorious = ({
   annotation,
   type,
