@@ -1,6 +1,7 @@
 import { words } from 'lodash';
 import { v4 as uuid } from 'uuid';
-import { Annotation, getAnnotationText } from '../models/annotations/annotation';
+import { Annotation } from '../models/annotations/annotation';
+import { getAnnotationText } from '../models/annotations/annotation.utils';
 import { DataField } from '../models/DataModel';
 import { NamedEntity, NamedEntitySelector } from '../models/NamedEntity';
 

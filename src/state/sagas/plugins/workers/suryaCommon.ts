@@ -1,5 +1,6 @@
-import { ElementType, getAnnotationType } from '@/data/models/annotations/annotation';
+import { ElementType } from '@/data/models/annotations/annotation';
 import { AnnotationDTO } from '@/data/models/annotations/annotation.dto';
+import { getAnnotationType } from '@/data/models/annotations/annotation.utils';
 import {
   convertSuryaLayoutPredictionsToAnnotations,
   convertSuryaOcrPredictionsToAnnotations,

@@ -7,8 +7,9 @@ import {
   W3CMotivation,
 } from '@iiif/presentation-3';
 import { uniq } from 'lodash';
-import { Annotation, convertToElementTypeEnum } from '../annotations/annotation';
+import { Annotation } from '../annotations/annotation';
 import { createAnnotation } from '../annotations/annotation.factory';
+import { convertToElementTypeEnum } from '../annotations/annotation.utils';
 
 export const IIIF_CONTEXT = 'http://iiif.io/api/presentation/3/context.json';
 export const URL_ANNOTATIONPAGE = 'annotationpage/corpusense';

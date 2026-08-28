@@ -3,13 +3,9 @@ import { ImageAnnotation, ShapeType } from '@annotorious/annotorious';
 import { AnnotationPage, Canvas } from '@iiif/presentation-3';
 import { Rect } from 'openseadragon';
 import { v4 as uuid } from 'uuid';
-import {
-  Annotation,
-  ElementType,
-  getAnnotationType,
-  getAnnotationValue,
-} from '../models/annotations/annotation';
+import { Annotation, ElementType } from '../models/annotations/annotation';
 import { createAnnotation, createBodies } from '../models/annotations/annotation.factory';
+import { getAnnotationType, getAnnotationValue } from '../models/annotations/annotation.utils';
 import { convertAnnotationPageToW3CAnnotations } from '../models/converters/iiif';
 import { getAnnotationRepository } from '../repositories/indexeddb/dbFactory';
 import { getImage } from './canvas';

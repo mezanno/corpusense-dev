@@ -1,4 +1,5 @@
-import { ElementType, getAnnotationType } from '@/data/models/annotations/annotation';
+import { ElementType } from '@/data/models/annotations/annotation';
+import { getAnnotationType } from '@/data/models/annotations/annotation.utils';
 import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
 import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
 import { Result } from '@/data/models/Result';

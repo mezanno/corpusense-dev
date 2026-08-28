@@ -1,4 +1,4 @@
-import { Annotation, ElementType, getAnnotationType } from '@/data/models/annotations/annotation';
+import { Annotation, ElementType } from '@/data/models/annotations/annotation';
 import { AnnotationDTO } from '@/data/models/annotations/annotation.dto';
 import {
   createAnnotation,
@@ -6,6 +6,7 @@ import {
   createBodies,
   duplicateAnnotation,
 } from '@/data/models/annotations/annotation.factory';
+import { getAnnotationType } from '@/data/models/annotations/annotation.utils';
 import { CollectionElement } from '@/data/models/CollectionElement';
 import { CanvasScope, Scope } from '@/data/models/Scope';
 import {

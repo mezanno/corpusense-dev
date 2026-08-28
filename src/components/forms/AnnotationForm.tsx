@@ -1,10 +1,9 @@
+import { Annotation, ElementType } from '@/data/models/annotations/annotation';
 import {
-  Annotation,
-  ElementType,
   getAnnotationText,
   getAnnotationType,
   getBodies,
-} from '@/data/models/annotations/annotation';
+} from '@/data/models/annotations/annotation.utils';
 import { getDimensions } from '@/data/utils/annotations';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import { FunctionResult } from '@/utils/functionResult';

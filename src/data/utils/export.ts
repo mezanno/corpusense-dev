@@ -1,12 +1,8 @@
 import { BaseError } from '@/utils/BaseError';
 import { FunctionResult } from '@/utils/functionResult';
 import { AnnotationPage, Canvas, Manifest } from '@iiif/presentation-3';
-import {
-  Annotation,
-  ElementType,
-  getAnnotationText,
-  getAnnotationType,
-} from '../models/annotations/annotation';
+import { Annotation, ElementType } from '../models/annotations/annotation';
+import { getAnnotationText, getAnnotationType } from '../models/annotations/annotation.utils';
 import { IIIF_CONTEXT } from '../models/converters/iiif';
 import { EntityNotFoundError } from '../repositories/EntityNotFoundError';
 import {

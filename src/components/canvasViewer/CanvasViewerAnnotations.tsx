@@ -1,4 +1,5 @@
-import { Annotation, getAnnotationType, isAnnotation } from '@/data/models/annotations/annotation';
+import { Annotation } from '@/data/models/annotations/annotation';
+import { getAnnotationType, isAnnotation } from '@/data/models/annotations/annotation.utils';
 import { scale, scaleAnnotation } from '@/data/utils/annotations';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import {

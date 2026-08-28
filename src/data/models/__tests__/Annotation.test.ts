@@ -2,14 +2,9 @@ import annotationCreateFromDTOWithId from '@/__tests__/annotationCreateFromDTOWi
 import annotationFromEdwin from '@/__tests__/annotationFromEdwin.json';
 import annotationWitoutTypeAndText from '@/__tests__/annotationWithoutTypeAndValue.json';
 import { describe, expect, it, vi } from 'vitest';
-import {
-  Annotation,
-  ElementType,
-  getAnnotationText,
-  getAnnotationType,
-  getBodies,
-} from '../annotations/annotation';
+import { Annotation, ElementType } from '../annotations/annotation';
 import { createAnnotation } from '../annotations/annotation.factory';
+import { getAnnotationText, getAnnotationType, getBodies } from '../annotations/annotation.utils';
 
 vi.mock('uuid', () => {
   return {

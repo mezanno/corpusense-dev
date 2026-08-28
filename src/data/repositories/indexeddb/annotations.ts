@@ -1,10 +1,11 @@
 import { AnnotationDTO } from '@/data/models/annotations/annotation.dto';
+import { getAnnotationType } from '@/data/models/annotations/annotation.utils';
 import { isAnnotationScope, isCanvasScope, Scope } from '@/data/models/Scope';
 import { containsAtLeast2Corners, getSurface } from '@/data/utils/annotations';
 import i18n from '@/i18n';
 import { FunctionResult } from '@/utils/functionResult';
 import { ShapeType } from '@annotorious/annotorious';
-import { Annotation, ElementType, getAnnotationType } from '../../models/annotations/annotation';
+import { Annotation, ElementType } from '../../models/annotations/annotation';
 import { EntityNotFoundError } from '../EntityNotFoundError';
 import { db } from './db';
 import { AnnotationRepository } from './types';
