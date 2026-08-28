@@ -1,5 +1,5 @@
 import { WordRect } from '@/components/reducers/MarkupContext';
-import { Annotation } from '@/data/models/Annotation';
+import { Annotation } from '@/data/models/annotations/annotation';
 import { DataField } from '@/data/models/DataModel';
 import { NamedEntity } from '@/data/models/NamedEntity';
 import { CanvasScope } from '@/data/models/Scope';

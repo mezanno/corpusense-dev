@@ -9,7 +9,7 @@ import {
   getAnnotationText,
   getAnnotationType,
   getBodies,
-} from '../Annotation';
+} from '../annotations/annotation';
 
 vi.mock('uuid', () => {
   return {

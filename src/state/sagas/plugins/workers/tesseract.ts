@@ -1,4 +1,8 @@
-import { createAnnotation, ElementType, getAnnotationType } from '@/data/models/Annotation';
+import {
+  createAnnotation,
+  ElementType,
+  getAnnotationType,
+} from '@/data/models/annotations/annotation';
 import { Result } from '@/data/models/Result';
 import { isAnnotationScope, isCanvasScope, toString } from '@/data/models/Scope';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';

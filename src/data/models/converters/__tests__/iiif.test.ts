@@ -2,7 +2,7 @@ import annotationPageFromW3C from '@/__tests__/annotationPageFromW3C.json';
 import w3cAnnotations from '@/__tests__/w3cAnnotations.json';
 import { AnnotationPage } from '@iiif/presentation-3';
 import { describe, expect, it, vi } from 'vitest';
-import { Annotation } from '../../Annotation';
+import { Annotation } from '../../annotations/annotation';
 import { convertAnnotationPageToW3CAnnotations, convertW3CAnnotationsToIIIF } from '../iiif';
 
 vi.mock('uuid', () => {

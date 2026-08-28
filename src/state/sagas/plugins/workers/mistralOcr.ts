@@ -1,11 +1,11 @@
 // // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // // @ts-nocheck
 import {
-  AnnotationDTO,
   createAnnotation,
   ElementType,
   getAnnotationType,
-} from '@/data/models/Annotation';
+} from '@/data/models/annotations/annotation';
+import { AnnotationDTO } from '@/data/models/annotations/annotation.dto';
 import { Result } from '@/data/models/Result';
 import { isAnnotationScope, isCanvasScope, toString } from '@/data/models/Scope';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';

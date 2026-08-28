@@ -1,4 +1,4 @@
-import { ElementType } from '@/data/models/Annotation';
+import { ElementType } from '@/data/models/annotations/annotation';
 import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
 import { CollectionScope } from '@/data/models/Scope';
 import { getModifierChainLiveRepository } from '@/data/repositories/indexeddb/dbFactory';

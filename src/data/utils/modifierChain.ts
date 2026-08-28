@@ -6,7 +6,7 @@ import {
   getCollectionRepository,
   getModifierChainRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
-import { Annotation, ElementType } from '../models/Annotation';
+import { Annotation, ElementType } from '../models/annotations/annotation';
 
 export type ModifierChainData = {
   modifiers: AnyModifier[];

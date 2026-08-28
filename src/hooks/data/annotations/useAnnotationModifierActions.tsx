@@ -1,4 +1,9 @@
-import { Annotation, changeType, duplicateAnnotation, ElementType } from '@/data/models/Annotation';
+import {
+  Annotation,
+  changeType,
+  duplicateAnnotation,
+  ElementType,
+} from '@/data/models/annotations/annotation';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { CanvasScope } from '@/data/models/Scope';
 import {

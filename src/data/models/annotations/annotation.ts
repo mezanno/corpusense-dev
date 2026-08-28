@@ -1,6 +1,7 @@
 import { ImageAnnotation, ShapeType } from '@annotorious/annotorious';
 import { v4 as uuid } from 'uuid';
 import { z } from 'zod';
+import { AnnotationCreateDTO, AnnotationDTO, AnnotationWithIdCreateDTO } from './annotation.dto';
 
 export enum W3CMotivationEnum {
   Assessing = 'assessing',
@@ -40,27 +41,6 @@ export const AnnotationSchema = z.object({
 });
 
 export type Annotation = ImageAnnotation & z.infer<typeof AnnotationSchema>;
-
-export interface AnnotationDTO extends ImageAnnotation {
-  canvasId: string;
-  collectionId: string;
-  type: ElementType;
-}
-
-export interface AnnotationCreateDTO {
-  canvasId: string;
-  collectionId: string;
-  minX: number;
-  minY: number;
-  maxX: number;
-  maxY: number;
-  type: ElementType;
-  value: string | undefined;
-}
-
-export interface AnnotationWithIdCreateDTO extends AnnotationCreateDTO {
-  id: string;
-}
 
 // Type guard to check if an object is of type Annotation
 // export function isAnnotation(annotation: ImageAnnotation): annotation is Annotation {

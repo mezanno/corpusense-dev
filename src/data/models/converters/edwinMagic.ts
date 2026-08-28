@@ -1,4 +1,5 @@
-import { AnnotationDTO, convertToElementTypeEnum, createAnnotation } from '../Annotation';
+import { convertToElementTypeEnum, createAnnotation } from '../annotations/annotation';
+import { AnnotationDTO } from '../annotations/annotation.dto';
 
 export interface EdwinBox {
   id: number;

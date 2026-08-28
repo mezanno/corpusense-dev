@@ -1,4 +1,4 @@
-import { Annotation } from '@/data/models/Annotation';
+import { Annotation } from '@/data/models/annotations/annotation';
 import useNamedEntities from '@/hooks/data/namedEntities/useNamedEntities';
 import { useTranslation } from 'react-i18next';
 import EntityViewer from './EntityViewer';

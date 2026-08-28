@@ -1,4 +1,4 @@
-import { Annotation, ElementType } from '@/data/models/Annotation';
+import { Annotation, ElementType } from '@/data/models/annotations/annotation';
 import {
   getDistanceBetweenAnnotationCenters,
   getDistanceBetweenAnnotations,

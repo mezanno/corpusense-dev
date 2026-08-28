@@ -1,4 +1,4 @@
-import { ElementType } from '@/data/models/Annotation';
+import { ElementType } from '@/data/models/annotations/annotation';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { CanvasScope } from '@/data/models/Scope';
 import useAnnotationModifierActions from '@/hooks/data/annotations/useAnnotationModifierActions';

@@ -1,4 +1,4 @@
-import { Annotation } from '@/data/models/Annotation';
+import { Annotation } from '@/data/models/annotations/annotation';
 import { isAnnotationScope, isCanvasScope, Scope } from '@/data/models/Scope';
 import { db } from '../db';
 import { AnnotationTempLiveRepository } from './types.live';

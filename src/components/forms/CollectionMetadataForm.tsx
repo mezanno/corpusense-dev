@@ -1,4 +1,4 @@
-import { ElementType } from '@/data/models/Annotation';
+import { ElementType } from '@/data/models/annotations/annotation';
 import { Collection } from '@/data/models/Collection';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useModels } from '@/hooks/data/models/useModels';

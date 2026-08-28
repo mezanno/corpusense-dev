@@ -1,4 +1,4 @@
-import { ElementType } from '@/data/models/Annotation';
+import { ElementType } from '@/data/models/annotations/annotation';
 import useDialog from '@/hooks/ui/useDialog';
 import { Canvas } from '@iiif/presentation-3';
 import { Book, BookOpenText, Eye, EyeOff, Layout, NotebookPen, Wrench } from 'lucide-react';

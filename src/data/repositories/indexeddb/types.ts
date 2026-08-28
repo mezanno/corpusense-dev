@@ -1,4 +1,5 @@
-import { Annotation, AnnotationDTO, ElementType } from '@/data/models/Annotation';
+import { Annotation, ElementType } from '@/data/models/annotations/annotation';
+import { AnnotationDTO } from '@/data/models/annotations/annotation.dto';
 import { Collection, CollectionDetails } from '@/data/models/Collection';
 import { CollectionElement } from '@/data/models/CollectionElement';
 import { ConvertedFile } from '@/data/models/ConvertedFile';
@@ -90,8 +91,14 @@ export interface ItemMetadataRepository {
 }
 
 export interface ManifestRepository {
-  getCanvasById(manifestId: string, canvasId: string): Promise<FunctionResult<Canvas, EntityNotFoundError>>;
-  getCanvasesByIds(manifestId: string, canvasId: string[]): Promise<FunctionResult<Canvas[], EntityNotFoundError>>;
+  getCanvasById(
+    manifestId: string,
+    canvasId: string,
+  ): Promise<FunctionResult<Canvas, EntityNotFoundError>>;
+  getCanvasesByIds(
+    manifestId: string,
+    canvasId: string[],
+  ): Promise<FunctionResult<Canvas[], EntityNotFoundError>>;
   getById(manifestId: string): Promise<FunctionResult<Manifest, EntityNotFoundError>>;
   getDetailsByManifestIds(manifestIds: string[]): Promise<StoredManifestDetails[]>;
   getMetadata(manifestId: string): Promise<ItemMetadataAttribute[]>;
@@ -103,8 +110,13 @@ export interface SourceRepository {
   getBlob(blobId: string): Promise<FunctionResult<Blob, EntityNotFoundError>>;
   getById(sourceId: string): Promise<FunctionResult<Source, EntityNotFoundError>>;
   getContentById(sourceId: string): Promise<FunctionResult<SourceContent, EntityNotFoundError>>;
-  getContentByManifestUrl(manifestUrl: string): Promise<FunctionResult<SourceContent, EntityNotFoundError>>;
-  getCanvasById(sourceId: string, canvasId: string): Promise<FunctionResult<Canvas, EntityNotFoundError>>;
+  getContentByManifestUrl(
+    manifestUrl: string,
+  ): Promise<FunctionResult<SourceContent, EntityNotFoundError>>;
+  getCanvasById(
+    sourceId: string,
+    canvasId: string,
+  ): Promise<FunctionResult<Canvas, EntityNotFoundError>>;
 
   updateName(sourceId: string, name: string): Promise<void>;
   update(
@@ -153,8 +165,14 @@ export interface NamedEntityRepository {
 export interface ResultRepository {
   getAll(): Promise<Result[]>;
   getAllByWorkerId(workerId: string): Promise<Result[]>;
-  getByScopeAndWorkerName(scope: Scope, workerName: string): Promise<FunctionResult<Result, EntityNotFoundError>>;
-  getResultByWorkerIdAndTaskId(workerId: string, taskId: number): Promise<FunctionResult<Result, EntityNotFoundError>>;
+  getByScopeAndWorkerName(
+    scope: Scope,
+    workerName: string,
+  ): Promise<FunctionResult<Result, EntityNotFoundError>>;
+  getResultByWorkerIdAndTaskId(
+    workerId: string,
+    taskId: number,
+  ): Promise<FunctionResult<Result, EntityNotFoundError>>;
 
   add(result: ResultCreateDTO): Promise<Result>;
   addAll(results: Result[]): Promise<void>;

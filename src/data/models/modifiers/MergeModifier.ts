@@ -9,7 +9,7 @@ import i18n from '@/i18n';
 import { Bounds } from '@annotorious/annotorious';
 import { v4 as uuid } from 'uuid';
 import z from 'zod';
-import { Annotation } from '../Annotation';
+import { Annotation } from '../annotations/annotation';
 import { Modifier } from './Modifier';
 
 const mergeSchema = z.object({

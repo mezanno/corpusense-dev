@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { ElementType } from '@/data/models/Annotation';
+import { ElementType } from '@/data/models/annotations/annotation';
 import { Scope } from '@/data/models/Scope';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import { FormProps } from '@/hooks/ui/useDialog';

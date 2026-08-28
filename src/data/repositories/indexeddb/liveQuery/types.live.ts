@@ -1,4 +1,4 @@
-import { Annotation, ElementType } from '@/data/models/Annotation';
+import { Annotation, ElementType } from '@/data/models/annotations/annotation';
 import { Collection, CollectionDetails } from '@/data/models/Collection';
 import { DataModel } from '@/data/models/DataModel';
 import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';

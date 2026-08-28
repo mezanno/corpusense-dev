@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { AnnotationDTO, createAnnotation, ElementType } from '../Annotation';
+import { createAnnotation, ElementType } from '../annotations/annotation';
+import { AnnotationDTO } from '../annotations/annotation.dto';
 import {
   suryaLayoutBboxSchema,
   suryaLayoutResultSchema,

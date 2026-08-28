@@ -2,7 +2,7 @@ import { getDimensions } from '@/data/utils/annotations';
 import i18n from '@/i18n';
 import { v4 as uuid } from 'uuid';
 import z from 'zod';
-import { Annotation } from '../Annotation';
+import { Annotation } from '../annotations/annotation';
 import { Modifier } from './Modifier';
 
 const hpSchema = z.object({

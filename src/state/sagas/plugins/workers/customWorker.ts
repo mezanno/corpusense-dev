@@ -1,4 +1,5 @@
-import { AnnotationDTO, createAnnotation, ElementType } from '@/data/models/Annotation';
+import { createAnnotation, ElementType } from '@/data/models/annotations/annotation';
+import { AnnotationDTO } from '@/data/models/annotations/annotation.dto';
 import { Result } from '@/data/models/Result';
 import { isCanvasScope, toString } from '@/data/models/Scope';
 import { Task, Worker, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
@@ -239,10 +240,7 @@ async function processLayoutResult(result: LayoutResult, task: Task): Promise<Wo
     ? collectionResult.value.postLayoutModifierChainId
     : undefined;
   let savedAnnotations;
-  if (
-    postLayoutModifierChainId !== undefined &&
-    postLayoutModifierChainId.trim() !== ''
-  ) {
+  if (postLayoutModifierChainId !== undefined && postLayoutModifierChainId.trim() !== '') {
     const updatedAnnotations = await applyModifierChainToAnnotations(
       postLayoutModifierChainId,
       newAnnotations.map((a) => ({ ...a, order: 0 })), //we have to set the order to transofrm AnnotationDTO into Annotation for the modifier chain function, but it will be reset when saving the annotations

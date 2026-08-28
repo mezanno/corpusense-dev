@@ -1,4 +1,4 @@
-import { Annotation, getAnnotationType } from '@/data/models/Annotation';
+import { Annotation, getAnnotationType } from '@/data/models/annotations/annotation';
 import { Scope } from '@/data/models/Scope';
 import {
   getAnnotationLiveRepository,

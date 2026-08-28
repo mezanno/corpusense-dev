@@ -1,4 +1,4 @@
-import { getAnnotationText, isAnnotationArray } from '@/data/models/Annotation';
+import { getAnnotationText, isAnnotationArray } from '@/data/models/annotations/annotation';
 import { Result, ResultCreateDTO } from '@/data/models/Result';
 import { isAnnotationScope, isCanvasScope, isCollectionScope, toString } from '@/data/models/Scope';
 import {

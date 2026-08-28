@@ -1,4 +1,4 @@
-import { ElementType } from '@/data/models/Annotation';
+import { ElementType } from '@/data/models/annotations/annotation';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { modifierRegistry } from '@/data/models/modifiers/ModifierFactory';
 import { CanvasScope } from '@/data/models/Scope';

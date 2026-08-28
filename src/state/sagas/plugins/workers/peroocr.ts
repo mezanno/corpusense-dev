@@ -1,4 +1,4 @@
-import { ElementType, getAnnotationType } from '@/data/models/Annotation';
+import { ElementType, getAnnotationType } from '@/data/models/annotations/annotation';
 import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
 import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
 import { Result } from '@/data/models/Result';
@@ -125,10 +125,7 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
         ? collectionResult.value.postOcrModifierChainId
         : undefined;
       let savedAnnotations;
-      if (
-        postOcrModifierChainId !== undefined &&
-        postOcrModifierChainId.trim() !== ''
-      ) {
+      if (postOcrModifierChainId !== undefined && postOcrModifierChainId.trim() !== '') {
         const updatedAnnotations = await applyModifierChainToAnnotations(
           postOcrModifierChainId,
           newAnnotations.map((a) => ({ ...a, order: 0 })), //we have to set the order to transofrm AnnotationDTO into Annotation for the modifier chain function, but it will be reset when saving the annotations

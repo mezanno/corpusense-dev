@@ -11,7 +11,7 @@ import {
   convertToElementTypeEnum,
   createAnnotation,
   W3CMotivationEnum,
-} from '../Annotation';
+} from '../annotations/annotation';
 
 export const IIIF_CONTEXT = 'http://iiif.io/api/presentation/3/context.json';
 export const URL_ANNOTATIONPAGE = 'annotationpage/corpusense';

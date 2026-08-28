@@ -1,4 +1,4 @@
-import { Annotation, getAnnotationType, isAnnotation } from '@/data/models/Annotation';
+import { Annotation, getAnnotationType, isAnnotation } from '@/data/models/annotations/annotation';
 import { scale, scaleAnnotation } from '@/data/utils/annotations';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import {
@@ -142,9 +142,8 @@ const CanvasViewerAnnotations = ({
     if (anno === null || anno === undefined || annotationsInStore === undefined) return;
 
     if (isNewCanvas.current || annotationScale !== prevScale.current) {
-      const scaledAnnotations = annotationScale !== 1
-        ? scale(annotationsInStore, annotationScale)
-        : annotationsInStore;
+      const scaledAnnotations =
+        annotationScale !== 1 ? scale(annotationsInStore, annotationScale) : annotationsInStore;
       anno.setAnnotations(scaledAnnotations);
       isNewCanvas.current = false;
       prevScale.current = annotationScale;

@@ -22,7 +22,7 @@ vi.mock('i18next', () => ({
 }));
 
 // 2. Import everything else AFTER mocks
-import { Annotation } from '../../models/Annotation';
+import { Annotation } from '../../models/annotations/annotation';
 import { getAnnotationRepository } from '../../repositories/indexeddb/dbFactory';
 import { generateTextFromCanvas, generateTextWithAnnotationIdFromCanvas } from '../export';
 

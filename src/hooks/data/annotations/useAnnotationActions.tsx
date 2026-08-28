@@ -1,13 +1,13 @@
 import {
   Annotation,
-  AnnotationDTO,
   createAnnotation,
   createAnnotationFromAnnotorious,
   createBodies,
   duplicateAnnotation,
   ElementType,
   getAnnotationType,
-} from '@/data/models/Annotation';
+} from '@/data/models/annotations/annotation';
+import { AnnotationDTO } from '@/data/models/annotations/annotation.dto';
 import { CollectionElement } from '@/data/models/CollectionElement';
 import { CanvasScope, Scope } from '@/data/models/Scope';
 import {
@@ -95,7 +95,10 @@ export const useAnnotationActions = () => {
     try {
       const existingAnnotationResult = await annotationRepository.getById(annotationToSave.id);
       //save only if annotations are different to avoid unnecessary writes and call to saveAnnotationSuccess
-      if (!existingAnnotationResult.ok || !isEqual(existingAnnotationResult.value, annotationToSave)) {
+      if (
+        !existingAnnotationResult.ok ||
+        !isEqual(existingAnnotationResult.value, annotationToSave)
+      ) {
         await annotationRepository.update(annotationToSave);
         appDispatch(pushInfo(i18n.t('toast_annotation_saved')));
       }

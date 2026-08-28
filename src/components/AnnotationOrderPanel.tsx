@@ -1,4 +1,4 @@
-import { Annotation } from '@/data/models/Annotation';
+import { Annotation } from '@/data/models/annotations/annotation';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { Button } from './ui/button';

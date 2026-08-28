@@ -1,4 +1,4 @@
-import { Annotation } from '@/data/models/Annotation';
+import { Annotation } from '@/data/models/annotations/annotation';
 import { CollectionContent, CollectionDetails } from '@/data/models/Collection';
 import { ConvertedFile } from '@/data/models/ConvertedFile';
 import { DataModel } from '@/data/models/DataModel';

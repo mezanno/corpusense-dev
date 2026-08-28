@@ -1,4 +1,4 @@
-import { Annotation, getAnnotationText } from '@/data/models/Annotation';
+import { Annotation, getAnnotationText } from '@/data/models/annotations/annotation';
 import { DataField, DataModel } from '@/data/models/DataModel';
 import { NamedEntity } from '@/data/models/NamedEntity';
 import useNamedEntities from '@/hooks/data/namedEntities/useNamedEntities';

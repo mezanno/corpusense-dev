@@ -1,5 +1,5 @@
 import z from 'zod';
-import { AnnotationDTO } from './Annotation';
+import { AnnotationDTO } from './annotations/annotation.dto';
 import { CollectionElementSchema, LegacyCollectionElementSchema } from './CollectionElement';
 import { DataModelSchema } from './DataModel';
 import { ResultSchema } from './Result';

@@ -10,7 +10,7 @@ import {
   ElementType,
   getAnnotationType,
   getAnnotationValue,
-} from '../models/Annotation';
+} from '../models/annotations/annotation';
 import { convertAnnotationPageToW3CAnnotations } from '../models/converters/iiif';
 import { getAnnotationRepository } from '../repositories/indexeddb/dbFactory';
 import { getImage } from './canvas';

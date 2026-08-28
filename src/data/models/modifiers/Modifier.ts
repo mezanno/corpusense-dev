@@ -1,5 +1,5 @@
 import z from 'zod';
-import { Annotation } from '../Annotation';
+import { Annotation } from '../annotations/annotation';
 
 type MaybePromise<T> = T | Promise<T>;
 

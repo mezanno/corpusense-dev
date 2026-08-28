@@ -1,11 +1,12 @@
 import { BaseError } from '@/utils/BaseError';
+import { FunctionResult } from '@/utils/functionResult';
 import { AnnotationPage, Canvas, Manifest } from '@iiif/presentation-3';
 import {
   Annotation,
   ElementType,
   getAnnotationText,
   getAnnotationType,
-} from '../models/Annotation';
+} from '../models/annotations/annotation';
 import { IIIF_CONTEXT } from '../models/converters/iiif';
 import { EntityNotFoundError } from '../repositories/EntityNotFoundError';
 import {
@@ -17,7 +18,6 @@ import {
 import { contains } from './annotations';
 import { EmptyCollectionError } from './errors';
 import { convertResultToIIIFAnnotation } from './result';
-import { FunctionResult } from '@/utils/functionResult';
 
 export interface ManifestExport {
   name: string;
@@ -35,7 +35,9 @@ const generateManifestFromCollection = async (
   const collection = result.value;
 
   if (collection.content.length === 0) {
-    return FunctionResult.err(new EmptyCollectionError({ id: collection.id, name: collection.name }));
+    return FunctionResult.err(
+      new EmptyCollectionError({ id: collection.id, name: collection.name }),
+    );
   }
 
   const manifestId = 'https://1.rp.mezanno.xyz/toto.json'; //TODO: to be changed
