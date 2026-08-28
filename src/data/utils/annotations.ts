@@ -5,12 +5,11 @@ import { Rect } from 'openseadragon';
 import { v4 as uuid } from 'uuid';
 import {
   Annotation,
-  createAnnotation,
-  createBodies,
   ElementType,
   getAnnotationType,
   getAnnotationValue,
 } from '../models/annotations/annotation';
+import { createAnnotation, createBodies } from '../models/annotations/annotation.factory';
 import { convertAnnotationPageToW3CAnnotations } from '../models/converters/iiif';
 import { getAnnotationRepository } from '../repositories/indexeddb/dbFactory';
 import { getImage } from './canvas';

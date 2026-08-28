@@ -1,11 +1,7 @@
 import { AnnotationPage } from '@iiif/presentation-3';
 import z from 'zod';
-import {
-  Annotation,
-  changeValue,
-  createAnnotation,
-  ElementType,
-} from '../models/annotations/annotation';
+import { Annotation, ElementType } from '../models/annotations/annotation';
+import { changeValue, createAnnotation } from '../models/annotations/annotation.factory';
 import { convertW3CAnnotationsToIIIF } from '../models/converters/iiif';
 import { Result } from '../models/Result';
 import { isCanvasScope } from '../models/Scope';

@@ -4,12 +4,12 @@ import annotationWitoutTypeAndText from '@/__tests__/annotationWithoutTypeAndVal
 import { describe, expect, it, vi } from 'vitest';
 import {
   Annotation,
-  createAnnotation,
   ElementType,
   getAnnotationText,
   getAnnotationType,
   getBodies,
 } from '../annotations/annotation';
+import { createAnnotation } from '../annotations/annotation.factory';
 
 vi.mock('uuid', () => {
   return {

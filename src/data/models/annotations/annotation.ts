@@ -1,25 +1,7 @@
-import { ImageAnnotation, ShapeType } from '@annotorious/annotorious';
-import { v4 as uuid } from 'uuid';
+import { ImageAnnotation } from '@annotorious/annotorious';
+import { W3CMotivation } from '@iiif/presentation-3';
 import { z } from 'zod';
-import { AnnotationCreateDTO, AnnotationDTO, AnnotationWithIdCreateDTO } from './annotation.dto';
-
-export enum W3CMotivationEnum {
-  Assessing = 'assessing',
-  Bookmarking = 'bookmarking',
-  Classifying = 'classifying',
-  Commenting = 'commenting',
-  Describing = 'describing',
-  Editing = 'editing',
-  Highlighting = 'highlighting',
-  Identifying = 'identifying',
-  Linking = 'linking',
-  Moderating = 'moderating',
-  Questioning = 'questioning',
-  Replying = 'replying',
-  Tagging = 'tagging',
-}
-
-export const W3CMotivationSchema = z.enum(W3CMotivationEnum);
+import { AnnotationDTO } from './annotation.dto';
 
 export enum ElementType {
   UNKNOWN = 'UNKNOWN',
@@ -92,119 +74,15 @@ export function getAnnotationText(annotation: Annotation) {
 }
 
 export function getAnnotationType(annotation: Annotation | AnnotationDTO) {
-  const type = getValueForMotivation(annotation, W3CMotivationEnum.Classifying);
+  const type = getValueForMotivation(annotation, 'classifying');
   return type === undefined ? ElementType.UNKNOWN : convertToElementTypeEnum(type);
 }
 
 export function getAnnotationValue(annotation: Annotation) {
-  const value = getValueForMotivation(annotation, W3CMotivationEnum.Tagging);
-  return value === undefined ? '' : getValueForMotivation(annotation, W3CMotivationEnum.Tagging);
+  const value = getValueForMotivation(annotation, 'tagging');
+  return value === undefined ? '' : getValueForMotivation(annotation, 'tagging');
 }
 
-function getValueForMotivation(
-  annotation: Annotation | AnnotationDTO,
-  motivation: W3CMotivationEnum,
-) {
+function getValueForMotivation(annotation: Annotation | AnnotationDTO, motivation: W3CMotivation) {
   return annotation.bodies.find((b) => b.purpose === motivation)?.value;
 }
-
-export const URL_CLASSIFYING = '/class';
-export const URL_TAGGING = '/tag';
-
-export function createAnnotation<T extends AnnotationCreateDTO | AnnotationWithIdCreateDTO>(
-  params: T,
-): AnnotationDTO {
-  const annotationId = (params as AnnotationWithIdCreateDTO).id ?? uuid();
-  const { canvasId, collectionId, minX, minY, maxX, maxY, type, value } = params;
-  const bounds = { minX, minY, maxX, maxY };
-
-  return {
-    id: annotationId,
-    canvasId,
-    collectionId,
-    type,
-    target: {
-      annotation: annotationId,
-      selector: {
-        type: ShapeType.RECTANGLE,
-        geometry: {
-          bounds,
-          x: bounds.minX,
-          y: bounds.minY,
-          w: bounds.maxX - bounds.minX,
-          h: bounds.maxY - bounds.minY,
-        },
-      },
-    },
-    bodies: createBodies(type, value ?? '', annotationId),
-  } as AnnotationDTO;
-}
-
-export const createAnnotationFromAnnotorious = ({
-  annotation,
-  type,
-  value,
-  collectionId,
-  canvasId,
-}: {
-  annotation: ImageAnnotation;
-  type: ElementType;
-  value: string;
-  collectionId: string;
-  canvasId: string;
-}): AnnotationDTO => {
-  return {
-    ...annotation,
-    collectionId,
-    canvasId,
-    type,
-    bodies: createBodies(type, value, annotation.id),
-  };
-};
-
-//TODO : revoir l'order
-export const duplicateAnnotation = (annotation: Annotation, canvasId?: string): Annotation => {
-  const newId = uuid();
-  return {
-    ...annotation,
-    id: newId,
-    canvasId: canvasId ?? annotation.canvasId,
-    bodies: createBodies(
-      getAnnotationType(annotation),
-      getAnnotationValue(annotation) ?? '',
-      newId,
-    ),
-  };
-};
-
-export const changeType = (annotation: Annotation, newType: ElementType): Annotation => {
-  return {
-    ...annotation,
-    type: newType,
-    bodies: createBodies(newType, getAnnotationValue(annotation) ?? '', annotation.id),
-  };
-};
-
-export const changeValue = (annotation: Annotation, newValue: string): Annotation => {
-  return {
-    ...annotation,
-    bodies: createBodies(getAnnotationType(annotation), newValue, annotation.id),
-  };
-};
-
-export const createBodies = (type: ElementType, value: string, annotationId: string) => {
-  return [
-    {
-      purpose: W3CMotivationEnum.Classifying,
-      value: type,
-      annotation: annotationId,
-      id: annotationId + URL_CLASSIFYING,
-    },
-    {
-      purpose: W3CMotivationEnum.Tagging,
-      value: value,
-      annotation: annotationId,
-      id: annotationId + URL_TAGGING,
-    },
-  ];
-};

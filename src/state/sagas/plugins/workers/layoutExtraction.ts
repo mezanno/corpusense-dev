@@ -1,5 +1,6 @@
-import { createAnnotation, ElementType } from '@/data/models/annotations/annotation';
+import { ElementType } from '@/data/models/annotations/annotation';
 import { AnnotationDTO } from '@/data/models/annotations/annotation.dto';
+import { createAnnotation } from '@/data/models/annotations/annotation.factory';
 import { Result } from '@/data/models/Result';
 import { isCanvasScope, toString } from '@/data/models/Scope';
 import { Task, Worker, WorkerResponse, WorkerStatus } from '@/data/models/Worker';

@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import { createAnnotation, ElementType } from '../annotations/annotation';
+import { ElementType } from '../annotations/annotation';
 import { AnnotationDTO } from '../annotations/annotation.dto';
+import { createAnnotation } from '../annotations/annotation.factory';
 import { peroLineSchema, peroResultSchema } from './peroSchema';
 
 export type PeroResult = z.infer<typeof peroResultSchema>;
