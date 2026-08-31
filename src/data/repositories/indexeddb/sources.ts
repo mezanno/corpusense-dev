@@ -84,9 +84,7 @@ export class IndexedDBSourceRepository implements SourceRepository {
   async getContentByManifestUrl(
     manifestUrl: string,
   ): Promise<FunctionResult<SourceContent, EntityNotFoundError>> {
-    const content = (await db.sourceContents.toArray()).find(
-      (content) => content.manifest.id === manifestUrl,
-    );
+    const content = (await db.sourceContents.toArray()).find((c) => c.manifest.id === manifestUrl);
     if (!content) {
       return FunctionResult.err(
         new EntityNotFoundError({ entity: 'SourceContent', id: manifestUrl }),
