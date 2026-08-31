@@ -8,7 +8,6 @@ import {
   getAnnotationRepository,
   getCollectionRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
-import { getImage } from '@/data/utils/canvas';
 import { applyModifierChainToAnnotations } from '@/data/utils/modifierChain';
 import i18n from '@/i18n';
 import { supabase } from '@/utils/config';
@@ -77,20 +76,10 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
       };
     }
     const canvasWithSourceId = canvasWithSourceIdResult.value;
-    const image = getImage(canvasWithSourceId.canvas);
-    if (image.id === undefined) {
-      return {
-        status: WorkerStatus.ERROR,
-        statusMessage: 'Image ID is undefined',
-      };
-    }
-
-    // const regions: Region[] = await computeRegionsForTask(task, canvas);
-
     try {
       const user = (await supabase.auth.getUser()).data.user;
       if (user !== null) {
-        const imageUrl = await uploadCanvasImage(image);
+        const imageUrl = await uploadCanvasImage(canvasWithSourceId);
 
         const { data, error: supabaseError } = await supabase
           .from('cs_jobs')
