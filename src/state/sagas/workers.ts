@@ -10,6 +10,7 @@ import {
 import { Task, Worker, WorkerResponse, WorkerStatus } from '@/data/models/worker/worker';
 import { WorkerCreateDTO } from '@/data/models/worker/worker.dto';
 import { isWorker } from '@/data/models/worker/worker.utils';
+import { EntityNotFoundError } from '@/data/repositories/EntityNotFoundError';
 import {
   getCollectionRepository,
   getResultRepository,
@@ -17,6 +18,7 @@ import {
 } from '@/data/repositories/indexeddb/dbFactory';
 import { updateTaskStatus } from '@/data/utils/worker';
 import i18n from '@/i18n';
+import { FunctionResult } from '@/utils/functionResult';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
@@ -110,7 +112,11 @@ function* forkStartWorker(worker: Worker | WorkerCreateDTO): Generator<Effect, v
  */
 function* startWorker(
   worker: Worker | WorkerCreateDTO,
-): Generator<Effect, void, WorkerResponse | Worker | undefined | Canvas[] | Result> {
+): Generator<
+  Effect,
+  void,
+  WorkerResponse | Worker | undefined | FunctionResult<Canvas[], EntityNotFoundError> | Result
+> {
   const workerRepository = getWorkerRepository();
   let currentWorker: Worker | undefined = undefined;
   let task: Task | undefined = undefined;
@@ -152,12 +158,12 @@ function* startWorker(
         });
       } else if (isCollectionScope(worker.scope)) {
         const collectionId = worker.scope.collectionId;
-        const canvases = (yield call(
+        const canvasesResult = (yield call(
           [collectionRepository, collectionRepository.getCanvasesByCollectionId],
           collectionId,
-        )) as Canvas[];
+        )) as FunctionResult<Canvas[], EntityNotFoundError>;
         //if the collection has no canvases, we set the worker status to ERROR and stop the saga
-        if (canvases === undefined || canvases.length === 0) {
+        if (!canvasesResult.ok || canvasesResult.value.length === 0) {
           currentWorker.status = WorkerStatus.ERROR;
           yield call([workerRepository, workerRepository.patch], currentWorker.id, {
             status: WorkerStatus.ERROR,
@@ -166,7 +172,7 @@ function* startWorker(
           return;
         }
         //else, we add the canvases to the worker queue
-        currentWorker.queue = canvases.map((canvas, index) => ({
+        currentWorker.queue = canvasesResult.value.map((canvas, index) => ({
           id: index,
           scope: { collectionId: collectionId, canvasId: canvas.id },
           status: WorkerStatus.WAITING,
