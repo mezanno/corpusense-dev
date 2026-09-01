@@ -106,26 +106,9 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
-      // proxy: {
-      //   '/gallica': {
-      //     //url vers laquelle les requêtes sont envoyées
-      //     target: 'http://localhost/', //cible de la redirection
-      //     changeOrigin: true,
-      //     // secure: false,
-      //     rewrite(url) {
-      //       console.log('url', url);
-      //       return url.replace('native', 'default');
-      //     },
-      //   },
-      // },
-      proxy: {
-        '/gradio': {
-          target: 'https://api.mezanno.xyz/ocr/gradio_api', // cible de la redirection
-          changeOrigin: true,
-          rewrite: (url) => url.replace(/^\/gradio/, ''), // réécrit l'URL pour supprimer le préfixe /gradio
-          selfHandleResponse: false, // permet de gérer la réponse nous-même
-          ws: true,
-        },
+      https: {
+        key: readFileSync('./certs/localhost+2-key.pem'),
+        cert: readFileSync('./certs/localhost+2.pem'),
       },
     },
   };
