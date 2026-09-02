@@ -2,6 +2,9 @@ import { SourceWithContent } from '@/data/models/source/source';
 import useSources from '@/hooks/data/sources/useSources';
 import { FormProps } from '@/hooks/ui/useDialog';
 import i18n from '@/i18n';
+import { FunctionResult } from '@/utils/functionResult';
+import { containsArkIdentifier, isManifestUrl } from '@/utils/manifest';
+import { getErrorMessage } from '@/utils/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
@@ -12,14 +15,11 @@ import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import Loading from '../Loading';
+import { Button } from '../ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from '../ui/form';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
-
-const loadManifestFormSchema = z.object({
-  manifestInput: z.string().nonempty({ message: i18n.t('form_error_required') }),
-});
 
 const addManifestFormSchema = z.object({
   manifestName: z.string().optional(),
@@ -33,11 +33,24 @@ const OpenManifestForm = ({ closeDialog, onResult, existingSource }: OpenManifes
   const { t } = useTranslation();
   const { fetchManifest, addManifestToLibrary } = useSources();
   const [loadedManifest, setLoadedManifest] = useState(existingSource?.content.manifest);
+  const [errorDisplayed, setErrorDisplayed] = useState('');
 
   const parsedManifest = loadedManifest ? Cozy.parse(loadedManifest) : null;
-
-  const error = '';
   const isLoading = false;
+
+  const loadManifestFormSchema = z
+    .object({
+      manifestInput: z.string().nonempty({ message: i18n.t('form_error_required') }),
+    })
+    .superRefine((data, ctx) => {
+      if (!isManifestUrl(data.manifestInput) && !containsArkIdentifier(data.manifestInput)) {
+        ctx.addIssue({
+          path: ['manifestInput'],
+          code: 'custom',
+          message: i18n.t('error_invalid_manifest_input'),
+        });
+      }
+    });
 
   const loadManifestForm = useForm<z.infer<typeof loadManifestFormSchema>>({
     resolver: zodResolver(loadManifestFormSchema),
@@ -127,7 +140,7 @@ const OpenManifestForm = ({ closeDialog, onResult, existingSource }: OpenManifes
                           autoFocus
                         />
                       </FormControl>
-                      {/* <FormMessage>{error}</FormMessage> */}
+                      {/* <FormMessage>{errorDisplayed}</FormMessage> */}
                     </FormItem>
                   )}
                 />
@@ -148,11 +161,17 @@ const OpenManifestForm = ({ closeDialog, onResult, existingSource }: OpenManifes
 
   async function onLoadManifestSubmit(values: z.infer<typeof loadManifestFormSchema>) {
     setLoadedManifest(undefined);
-    const newManifest = await fetchManifest(values.manifestInput);
+    setErrorDisplayed('');
+    const newManifestResult = await fetchManifest(values.manifestInput);
 
-    if (newManifest) {
-      setLoadedManifest(newManifest);
-    }
+    FunctionResult.match(newManifestResult, {
+      ok: (newManifest) => {
+        setLoadedManifest(newManifest);
+      },
+      err: (error) => {
+        setErrorDisplayed(getErrorMessage(error));
+      },
+    });
   }
 
   return (
@@ -186,13 +205,17 @@ const OpenManifestForm = ({ closeDialog, onResult, existingSource }: OpenManifes
                         autoFocus
                       />
                     </FormControl>
-                    <FormMessage>{error}</FormMessage>
+                    <FormMessage>{errorDisplayed}</FormMessage>
                   </FormItem>
                 )}
               />
-              <button type='submit' className='soft-button w-full'>
+              <Button
+                type='submit'
+                className='soft-button w-full'
+                disabled={!loadManifestForm.formState.isValid}
+              >
                 {t('btn_open_manifest')}
-              </button>
+              </Button>
             </form>
           </Form>
         </CardContent>

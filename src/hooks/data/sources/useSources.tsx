@@ -2,10 +2,17 @@ import { SourceWithContent } from '@/data/models/source/source';
 import { EntityNotFoundError } from '@/data/repositories/EntityNotFoundError';
 import { getSourceRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { getThumbnailBlob } from '@/data/utils/manifest';
+import { BaseError } from '@/utils/BaseError';
 import { FunctionResult } from '@/utils/functionResult';
 import { containsArkIdentifier, fetchManifestFromURL, isManifestUrl } from '@/utils/manifest';
 import { Manifest } from '@iiif/presentation-3';
 import { useCallback } from 'react';
+
+export class ManifestInputError extends BaseError {
+  constructor(context: { input: string }) {
+    super(`Manifest input is not valid: ${context.input}`);
+  }
+}
 
 const useSources = () => {
   const removeSourceFromLibrary = async (sourceId: string) => {
@@ -13,25 +20,21 @@ const useSources = () => {
     await sourceRepository.deleteById(sourceId);
   };
 
-  const fetchManifest = useCallback(async (manifestInput: string) => {
-    if (isManifestUrl(manifestInput) || containsArkIdentifier(manifestInput)) {
-      let manifest: Manifest;
+  const fetchManifest = useCallback(
+    async (manifestInput: string): Promise<FunctionResult<Manifest, BaseError>> => {
       if (isManifestUrl(manifestInput)) {
-        manifest = await fetchManifestFromURL(manifestInput);
-      } else {
+        return await fetchManifestFromURL(manifestInput);
+      }
+      if (containsArkIdentifier(manifestInput)) {
         //build the URL based on old Gallica API
         //TODO: il faudrait pouvoir s'adapter à d'autres ark que ceux de Gallica. Infos : https://arks.org/ark:/12148 https://n2t-dev.n2t.net/e/n2t_apidoc.html
         const url = `https://gallica.bnf.fr/iiif/${manifestInput}/manifest.json`;
-        manifest = await fetchManifestFromURL(url);
+        return await fetchManifestFromURL(url);
       }
-
-      //load the metadata
-      // const manifestRepository = getManifestRepository();
-      //   const result = yield call([manifestRepository, manifestRepository.getMetadata], manifest.id);
-      //   const metadata: ItemMetadataAttribute[] = Array.isArray(result) ? result : [];
-      return manifest;
-    }
-  }, []);
+      return FunctionResult.err(new ManifestInputError({ input: manifestInput }));
+    },
+    [],
+  );
 
   const addManifestToLibrary = useCallback(async (manifest: Manifest, name: string) => {
     const thumbnailBlob = await getThumbnailBlob(manifest);

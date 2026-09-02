@@ -4,7 +4,15 @@ import { getSourceRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { convertPresentation2 } from '@iiif/parser/presentation-2';
 import { Manifest } from '@iiif/presentation-3';
 import i18n from 'i18next';
+import { BaseError } from './BaseError';
+import { FunctionResult } from './functionResult';
 import { getErrorMessage } from './utils';
+
+export class ManifestFetchError extends BaseError {
+  constructor(context: { url: string; cause: string }) {
+    super(`Manifest with url ${context.url} could not be fetched (cause: ${context.cause})`);
+  }
+}
 
 export function isManifestUrl(str: string): boolean {
   const regex = /^https?:\/\/[^/\s]+(?:\/\S*)?$/i;
@@ -109,34 +117,34 @@ export const generateManifest = ({
  * from the URL.
  * @param action The action containing the URL of the manifest to fetch.
  */
-export async function fetchManifestFromURL(url: string): Promise<Manifest> {
+export async function fetchManifestFromURL(
+  url: string,
+): Promise<FunctionResult<Manifest, ManifestFetchError>> {
   console.log('handleFetchManifestFromURL ', url);
   const keys = Object.keys(importerPlugins);
 
-  //check if the manifest is already stored in IndexedDB
+  //check if the manifest is already stored in IndexedDB, if so, use the stored manifest
   const sourceRepository = getSourceRepository();
   const contentResult = await sourceRepository.getContentByManifestUrl(url);
   if (contentResult.ok) {
-    return contentResult.value.manifest;
+    return FunctionResult.ok(contentResult.value.manifest);
   }
-  console.log('Manifest not found in IndexedDB: ', getErrorMessage(contentResult.error));
+
   // If the manifest is not found in IndexedDB, we try to fetch it from the URL
   const importerKey = keys.find((key) => url.includes(key));
   const importer =
     importerKey !== undefined ? importerPlugins[importerKey] : importerPlugins['default'];
-  if (importer !== undefined && importer !== null) {
-    try {
-      const manifest = await fetchManifestWithPlugin({
-        fetchFunction: () => importer.import(url),
-      });
-      return manifest;
-    } catch (err) {
-      console.error('Error fetching manifest with plugin: ', err);
-      const msg = i18n.t('error_loading_manifest', { error: getErrorMessage(err) });
-      throw new Error(msg);
-    }
+
+  try {
+    const manifest = await fetchManifestWithPlugin({
+      fetchFunction: () => importer.import(url),
+    });
+    return FunctionResult.ok(manifest);
+  } catch (err) {
+    console.error('Error fetching manifest with plugin: ', err);
+    const msg = i18n.t('error_loading_manifest', { error: getErrorMessage(err) });
+    return FunctionResult.err(new ManifestFetchError({ url, cause: msg }));
   }
-  throw new Error(getErrorMessage('oups'));
 }
 
 /**
