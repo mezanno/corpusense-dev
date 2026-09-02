@@ -46,11 +46,12 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
       //load all the manifests in parallel
       const manifests = await Promise.all(
         manifestIds.map(async (id) => {
-          const loadedManifest = await fetchManifest(id);
-          if (!loadedManifest) {
+          const loadedManifestResult = await fetchManifest(id);
+
+          if (!loadedManifestResult.ok) {
             throw new Error(`Manifest ${id} not found`);
           }
-          return { id, loadedManifest };
+          return { id, loadedManifest: loadedManifestResult.value };
         }),
       );
       //then add the manifests to the library and create a new sourceId for each manifestId
