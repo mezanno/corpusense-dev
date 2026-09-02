@@ -13,7 +13,7 @@ import LoginForm from '@/components/forms/LoginForm';
 import NewCollectionForm, { NewCollectionFormParams } from '@/components/forms/NewCollectionForm';
 import NewModelForm from '@/components/forms/NewModelForm';
 import NewProjectForm from '@/components/forms/NewProjectForm';
-import OpenManifestForm from '@/components/forms/OpenManifestForm';
+import OpenManifestForm from '@/components/forms/openManifestForm/OpenManifestForm';
 import RemoveAnnotationsForm from '@/components/forms/RemoveAnnotationsForm';
 import SaveModifierChainForm from '@/components/forms/SaveModifierChainForm';
 import SelectLlmForm from '@/components/forms/SelectLlmForm';
