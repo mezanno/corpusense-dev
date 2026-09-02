@@ -53,8 +53,6 @@ const uploadFile = async (blob: Blob): Promise<UploadFileResult> => {
 
 const deleteFile = async (filePath: string) => {
   const { error } = await supabase.storage.from('corpusense').remove([filePath]);
-  console.log('deleteFile ', error);
-
   if (error) {
     throw new Error(getErrorMessage(error));
   }
