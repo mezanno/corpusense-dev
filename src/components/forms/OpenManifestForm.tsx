@@ -38,6 +38,11 @@ const OpenManifestForm = ({ closeDialog, onResult, existingSource }: OpenManifes
   const parsedManifest = loadedManifest ? Cozy.parse(loadedManifest) : null;
   const isLoading = false;
 
+  const customManifestName =
+    parsedManifest?.type === 'manifest' && loadedManifest
+      ? parsedManifest.resource.getSummary()
+      : t('manifest_untitled', { date: new Date().toLocaleString() });
+
   const loadManifestFormSchema = z
     .object({
       manifestInput: z.string().nonempty({ message: i18n.t('form_error_required') }),
@@ -134,7 +139,7 @@ const OpenManifestForm = ({ closeDialog, onResult, existingSource }: OpenManifes
                         <Input
                           {...field}
                           className='w-full'
-                          placeholder={t('form_placeholder_manifest_name')}
+                          placeholder={customManifestName ?? t('form_placeholder_manifest_name')}
                           onChange={field.onChange}
                           onInput={field.onChange}
                           autoFocus
@@ -144,9 +149,13 @@ const OpenManifestForm = ({ closeDialog, onResult, existingSource }: OpenManifes
                     </FormItem>
                   )}
                 />
-                <button type='submit' className='soft-button w-full'>
+                <Button
+                  type='submit'
+                  className='soft-button w-full'
+                  disabled={!addManifestForm.formState.isValid}
+                >
                   {t('btn_add_manifest_to_library')}
-                </button>
+                </Button>
               </form>
             </Form>
           </CardFooter>
