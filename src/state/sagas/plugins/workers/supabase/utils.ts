@@ -4,6 +4,11 @@ import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionConten
 import { supabase } from '@/utils/config';
 import { getErrorMessage } from '@/utils/utils';
 
+export type UploadFileResult = {
+  path: string;
+  publicUrl: string;
+};
+
 const uploadCanvasImage = async (canvasWithSourceId: CanvasWithSourceId): Promise<string> => {
   const image = getImage(canvasWithSourceId.canvas);
   if (image.id === undefined) {
@@ -19,16 +24,18 @@ const uploadCanvasImage = async (canvasWithSourceId: CanvasWithSourceId): Promis
   if (sourceContent.type === 'local') {
     const fileHandle = sourceContent.localFile.outputDirectoryHandle;
     const imageToProcess = await getFile(image.id, fileHandle);
-    return await uploadFile(imageToProcess);
+    const { publicUrl } = await uploadFile(imageToProcess);
+    return publicUrl;
   } else {
     const res = await fetch(image.id);
     if (!res.ok) throw new Error('Failed to fetch image');
     const blob = await res.blob();
-    return await uploadFile(blob);
+    const { publicUrl } = await uploadFile(blob);
+    return publicUrl;
   }
 };
 
-const uploadFile = async (blob: Blob) => {
+const uploadFile = async (blob: Blob): Promise<UploadFileResult> => {
   const filePath = `uploads/${crypto.randomUUID()}`;
   const { data: uploadData, error } = await supabase.storage
     .from('corpusense')
@@ -36,11 +43,21 @@ const uploadFile = async (blob: Blob) => {
       cacheControl: '3600',
       upsert: true,
     });
+
   if (error) {
     throw new Error(getErrorMessage(error));
   }
   const { data } = supabase.storage.from('corpusense').getPublicUrl(uploadData.path);
-  return data.publicUrl;
+  return { path: uploadData.path, publicUrl: data.publicUrl };
 };
 
-export { uploadCanvasImage };
+const deleteFile = async (filePath: string) => {
+  const { error } = await supabase.storage.from('corpusense').remove([filePath]);
+  console.log('deleteFile ', error);
+
+  if (error) {
+    throw new Error(getErrorMessage(error));
+  }
+};
+
+export { deleteFile, uploadCanvasImage, uploadFile };
