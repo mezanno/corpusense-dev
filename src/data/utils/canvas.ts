@@ -54,8 +54,6 @@ const getImageForThumbnail = (canvas: Canvas, maxWidth: number = 150): IIIFExter
 };
 
 const getFile = async (filepath: string, handle: FileSystemDirectoryHandle) => {
-  console.log('getFile ', filepath);
-
   const pathParts = filepath.split('/');
   if (pathParts.length < 2) {
     throw new Error(i18n.t('error_malformed_filepath', { path: filepath }));
@@ -76,7 +74,10 @@ const getFile = async (filepath: string, handle: FileSystemDirectoryHandle) => {
 };
 
 const getFileFromHandle = async (filename: string, handle: FileSystemDirectoryHandle) => {
-  const perm = await handle.queryPermission({ mode: 'read' });
+  let perm = await handle.queryPermission({ mode: 'read' }); //check if we have permission to read the directory
+  if (perm !== 'granted') {
+    perm = await handle.requestPermission({ mode: 'read' }); //request permission if we don't have it
+  }
   if (perm !== 'granted') {
     throw new Error('No permission to read the manifest directory');
   }
