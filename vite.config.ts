@@ -105,12 +105,15 @@ export default defineConfig(({ mode }) => {
         reporter: ['text', 'json', 'html', 'lcov'],
       },
     },
-    server: {
-      https: {
-        key: readFileSync('./certs/localhost+2-key.pem'),
-        cert: readFileSync('./certs/localhost+2.pem'),
-      },
-    },
+    server:
+      process.env.NODE_ENV === 'development'
+        ? {
+            https: {
+              key: readFileSync('./certs/localhost+2-key.pem'),
+              cert: readFileSync('./certs/localhost+2.pem'),
+            },
+          }
+        : undefined,
   };
 });
 
