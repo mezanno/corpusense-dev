@@ -14,6 +14,21 @@ const MarkupContextMenu = () => {
     return null; // No model available, do not render the context menu
   }
 
+  const handleSetField = (field: DataField | undefined) => {
+    dispatch({ type: 'SET_FIELD_TO_SELECTED', payload: field });
+
+    if (field === undefined) {
+      //TODO : remove NamedEntity from store
+    } else {
+      const selectedWordRects = state.wordRects.filter((_, index) =>
+        state.selected.includes(index),
+      );
+      void (async () => {
+        await addEntity({ rects: selectedWordRects, type: field });
+      })();
+    }
+  };
+
   const fieldButtons = model.fields
     .filter((field) => field.generated !== true)
     .map((field, index) => (
@@ -38,21 +53,6 @@ const MarkupContextMenu = () => {
         {t('btn_field_clear')}
       </button>,
     );
-
-  const handleSetField = (field: DataField | undefined) => {
-    dispatch({ type: 'SET_FIELD_TO_SELECTED', payload: field });
-
-    if (field === undefined) {
-      //TODO : remove NamedEntity from store
-    } else {
-      const selectedWordRects = state.wordRects.filter((_, index) =>
-        state.selected.includes(index),
-      );
-      void (async () => {
-        await addEntity({ rects: selectedWordRects, type: field });
-      })();
-    }
-  };
 
   return (
     <div className='panel shadow'>

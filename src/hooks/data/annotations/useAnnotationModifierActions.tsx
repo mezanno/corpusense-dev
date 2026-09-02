@@ -37,18 +37,6 @@ const useAnnotationModifierActions = ({
     [],
   );
 
-  // const biggestSurface = useMemo(() => {
-  //   let maxSurface = 0;
-  //   for (const annotation of scopeAnnotations) {
-  //     const dimensions = getDimensions(annotation);
-  //     const surface = dimensions.width * dimensions.height;
-  //     if (surface > maxSurface) {
-  //       maxSurface = surface;
-  //     }
-  //   }
-  //   return maxSurface;
-  // }, [scopeAnnotations]);
-
   useEffect(() => {
     void (async () => {
       await annotationTempRepository.deleteByCollection(scope.collectionId);

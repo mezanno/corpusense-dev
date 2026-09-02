@@ -36,8 +36,6 @@ export class IndexedDBCollectionLiveRepository implements CollectionLiveReposito
         return [];
       }
 
-      console.log('content ', content);
-
       const canvasesWithResults = await Promise.all(
         content.map(async ({ sourceId, canvasId }) => ({
           canvasResult: await sourceRepository.getCanvasById(sourceId, canvasId),
@@ -51,9 +49,6 @@ export class IndexedDBCollectionLiveRepository implements CollectionLiveReposito
             item.canvasResult.ok,
         )
         .map((item) => ({ canvas: item.canvasResult.value, sourceId: item.sourceId }));
-
-      console.log('canvases ', canvases);
-
       return canvases;
     };
   }

@@ -142,12 +142,6 @@ const ModifierChainFlow = ({
     });
   };
 
-  const setModifierActive = (modifierId: string, isActive: boolean) => {
-    console.log(modifierId, isActive);
-    const modifier = modifiers.find((m) => m.id === modifierId);
-    console.log(modifier);
-  };
-
   const saveChain = () => {
     openSaveModifierChainDialog(modifiers, modifierValues, currentChainName);
   };
@@ -221,7 +215,6 @@ const ModifierChainFlow = ({
         onTypeChange: changeModifierType,
         onInsertAfter: insertModifierAfter,
         onInsertBefore: insertModifierBefore,
-        setModifierActive: setModifierActive,
       },
     }));
 

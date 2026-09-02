@@ -32,8 +32,6 @@ const reducer: Reducer<CanvasSelectionState, CanvasSelectionAction> = (
 ) => {
   switch (action.type) {
     case CANVAS_SELECTION_ACTIONS.SET_SELECTION:
-      console.log('CanvasSelectionContext - SET_SELECTION', action.payload);
-
       return {
         ...state,
         indexStart: Math.min(...action.payload),

@@ -11,7 +11,6 @@ export default function DocsSidebar() {
       try {
         const response = await fetch('./doc/index.json');
         const data = (await response.json()) as DocIndex;
-        console.log('Loaded doc index:', data);
 
         setPages(data);
       } catch (error) {

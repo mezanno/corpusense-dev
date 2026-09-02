@@ -10,23 +10,8 @@ const gallicaImporter = async (url: string): Promise<Manifest> => {
     const urlV3 = url.replace('gallica.bnf.fr/iiif', 'openapi.bnf.fr/iiif/presentation/v3');
     return await fetchUrl(urlV3);
   } catch (error) {
-    // try {
     return await fetchUrl(url);
-    // } catch (err) {
-    // throw err;
-    // }
   }
-
-  // if (!response.ok) {
-  //   if (response.status === 404) {
-  //     console.log(i18n.t('error_404_manifest'));
-
-  //     throw new Error(i18n.t('error_404_manifest'));
-  //   } else if (response.status === 403) {
-  //     throw new Error(i18n.t('error_403_manifest'));
-  //   } else {
-  //     throw new Error(`Failed to fetch manifest ${response.statusText}`);
-  //   }
 };
 
 const fetchUrl = async (url: string): Promise<Manifest> => {

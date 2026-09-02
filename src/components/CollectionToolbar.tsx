@@ -8,7 +8,7 @@ import { IconButtonWithTooltip } from './IconButtonWithTooltip';
 import { useWorkerContext } from './reducers/WorkerContext';
 import Toolbar from './ToolBar';
 
-const CollectionToolbar = memo(function CollectionToolbar({
+const CollectionToolbar = memo(function CollectionToolbarFunc({
   collection,
 }: {
   collection: Collection;
@@ -18,7 +18,6 @@ const CollectionToolbar = memo(function CollectionToolbar({
   const isWorkerRunning = useWorkerContext().isWorkerOrTaskRunning({ collectionId: collection.id });
 
   const { recomputeRegions } = useAnnotationActions();
-  // const [analysisDialogOpen, setAnalysisDialogOpen] = useState(false);
 
   if (isWorkerRunning) {
     return (

@@ -47,7 +47,6 @@ export const useModelIO = () => {
         throw new Error('Invalid model structure');
       }
       const model = validation.data;
-      console.log(model);
 
       const existingModelResult = await modelRepository.getByName(model.name);
       if (existingModelResult.ok) {

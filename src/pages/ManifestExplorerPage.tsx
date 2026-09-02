@@ -17,7 +17,6 @@ const ManifestExplorerPage = () => {
     isLoading,
     manifest,
     sourceWithContent,
-    // setSearchParams,
     canvasToDisplay,
     setCanvasToDisplay,
     handleNext,

@@ -45,7 +45,6 @@ export class FilterModifier extends Modifier<typeof hpSchema> {
   }
 
   apply = (data: Annotation[], values: z.infer<typeof hpSchema>) => {
-    console.log('Applying FilterModifier with values: ', values, ' on data: ', data);
     if (data.length > 1) {
       const sizeThreshold = values.threshold ?? 0;
       const criterion = values.dimension ?? hpSchema.shape.dimension.def.defaultValue;

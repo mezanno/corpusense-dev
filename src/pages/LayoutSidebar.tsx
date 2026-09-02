@@ -92,7 +92,6 @@ const CollectionsSideBarGroup = () => {
   const { openedCollections, removeFromOpenedCollections } = useCollectionContext();
 
   const { pathname } = useLocation();
-  console.log('pathname: ', pathname);
 
   if (openedCollections.length === 0) {
     return null; // No collections opened, nothing to display

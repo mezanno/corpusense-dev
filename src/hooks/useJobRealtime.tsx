@@ -128,8 +128,6 @@ const useJobRealtime = () => {
     const fetchJobUpdates = async () => {
       const postedWorkers = workersPostedRef.current;
       for (const worker of postedWorkers) {
-        console.log('fetchJobUpdates ', worker.id);
-
         const { data, error } = await supabase
           .from('cs_jobs')
           .select('*')
@@ -159,8 +157,6 @@ const useJobRealtime = () => {
     const handleJobRowUpdate = async (payload: RealtimePostgresUpdatePayload<JobRow>) => {
       const job = payload.new;
       const workerRepository = getWorkerRepository();
-      console.log('handleJobRowUpdate ', job);
-
       try {
         const workerResult = await workerRepository.getById(job.worker_id);
         if (workerResult.ok) {

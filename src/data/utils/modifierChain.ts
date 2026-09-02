@@ -106,12 +106,6 @@ const applyChainToAnnotations = async (
       const parsedValues = modifier.schema.parse(rawValues);
       updatedAnnotations = await modifier.apply(updatedAnnotations, parsedValues);
     }
-
-    // const rawValues = modifierValues[modifier.id];
-    // if (rawValues !== undefined) {
-    //   const parsedValues = modifier.schema.parse(rawValues);
-    //   updatedAnnotations = await modifier.apply(updatedAnnotations, parsedValues);
-    // }
   }
   return updatedAnnotations;
 };

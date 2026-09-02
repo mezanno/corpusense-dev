@@ -6,7 +6,6 @@ const contains = async (scope: Scope, value: string) => {
 
   const collectionResult = await collectionRepository.getById(scope.collectionId);
   if (!collectionResult.ok) {
-    console.error(`Collection with id ${scope.collectionId} not found`);
     return false;
   }
   return collectionResult.value.name.toLowerCase().includes(value.toLowerCase());

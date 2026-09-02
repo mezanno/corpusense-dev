@@ -43,8 +43,6 @@ const CollectionInspectorContent = ({
   const { setScope } = useAnnotationContext();
   const canvas = defaultCanvasId !== null ? getCanvasById(defaultCanvasId) : null;
 
-  // const [activeTab, setActiveTab] = useState('document');
-
   const [colCount, setColCount] = useState(5);
   const containerRef = useRef<HTMLDivElement | null>(null);
 

@@ -35,16 +35,6 @@ const ImportCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
     mode: 'onChange',
   });
 
-  // // Notify dialog about validity
-  // form.watch('file') => {
-  //   console.log('watch', form.formState.isValid, form.formState.isDirty);
-
-  //   if (setCanSubmit) {
-  //     setCanSubmit(form.formState.isValid && form.formState.isDirty);
-  //   }
-  //   return name;
-  // });
-
   useEffect(() => {
     setCanSubmit(form.formState.isDirty && form.formState.isValid);
   }, [form.formState.isDirty, form.formState.isValid, setCanSubmit]);

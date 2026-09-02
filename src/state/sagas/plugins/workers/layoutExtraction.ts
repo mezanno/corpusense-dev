@@ -28,13 +28,6 @@ export const pluginRuntimeParameters = z.object({
 });
 export const experimental = true;
 
-// interface Region {
-//   xtl: number;
-//   ytl: number;
-//   xbr: number;
-//   ybr: number;
-// }
-
 const responseSchema = z.object({
   regions: z.array(
     z.object({
@@ -88,12 +81,6 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
             worker_category: pluginCategory,
             payload: {
               url: imageUrl,
-              // regions: regions.map((r) => ({
-              //   xtl: r.xtl,
-              //   ytl: r.ytl,
-              //   xbr: r.xbr,
-              //   ybr: r.ybr,
-              // })),
             },
             user_id: user.id,
             status: 'pending',
@@ -130,43 +117,6 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
     };
   }
 }
-
-// async function computeRegionsForTask(task: Task, canvas: Canvas) {
-//   const annotationRepository = getAnnotationRepository();
-//   let regions: Region[] = [];
-//   if (isAnnotationScope(task.scope)) {
-//     const annotation = await annotationRepository.getById(task.scope.annotationId);
-//     regions = [
-//       {
-//         xtl: annotation.target.selector.geometry.bounds.minX,
-//         ytl: annotation.target.selector.geometry.bounds.minY,
-//         xbr: annotation.target.selector.geometry.bounds.maxX,
-//         ybr: annotation.target.selector.geometry.bounds.maxY,
-//       },
-//     ];
-//   } else {
-//     const annotations = await annotationRepository.getByScope({
-//       canvasId: canvas.id,
-//       collectionId: task.scope.collectionId,
-//     });
-//     const annotationRegions = annotations.filter(
-//       (a) => getAnnotationType(a) === ElementType.TEXT_REGION,
-//     );
-//     if (annotationRegions.length > 0) {
-//       regions = annotationRegions
-//         .sort((a1, a2) => (a1.order ?? 0) - (a2.order ?? 0))
-//         .map((annotation) => {
-//           return {
-//             xtl: annotation.target.selector.geometry.bounds.minX,
-//             ytl: annotation.target.selector.geometry.bounds.minY,
-//             xbr: annotation.target.selector.geometry.bounds.maxX,
-//             ybr: annotation.target.selector.geometry.bounds.maxY,
-//           };
-//         });
-//     }
-//   }
-//   return regions;
-// }
 
 /*
  * The scope must be a CanvasScope

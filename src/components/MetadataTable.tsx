@@ -5,9 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { Input } from './ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 
-const MetadataTable = ({ manifestId }: { manifestId: string }) => {
+const MetadataTable = () => {
   const { t } = useTranslation();
-  console.log(manifestId);
 
   const [formMetadata, setFormMetadata] = useState<ItemMetadataAttribute[]>([]);
   // const [formMetadata, setFormMetadata] = useState<ItemMetadataAttribute[]>(metadata ?? []);

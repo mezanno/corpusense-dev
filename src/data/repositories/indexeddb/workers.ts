@@ -60,10 +60,6 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
     await db.workers.bulkAdd(workers);
   }
 
-  // async update(worker: Worker): Promise<void> {
-  //   await db.workers.put(worker);
-  // }
-
   async patch(id: string, changes: Partial<Worker>): Promise<void> {
     await db.workers.update(id, changes);
   }

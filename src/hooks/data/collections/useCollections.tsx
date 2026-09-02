@@ -176,7 +176,6 @@ export const useCollections = () => {
     } = collection;
     try {
       if (id === undefined) {
-        // yield put(setError(i18next.t('error_collection_not_found')));
         return;
       }
       await collectionRepository.update(id, {

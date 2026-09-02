@@ -55,6 +55,7 @@ async function getText(scope: Scope) {
  * and returns the response.
  */
 export default async function run(task: Task, worker: Worker): Promise<WorkerResponse> {
+  //TODO add a logger system to display logs in the UI
   console.log(`Processing task for scope ${toString(task.scope)}`);
 
   if (
@@ -120,7 +121,6 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
 
   const text = await getText(task.scope);
   if (text === undefined || text.length === 0) {
-    console.log('No text found for this canvas');
     return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_export_no_text') };
   }
 
@@ -142,10 +142,8 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
       }
     }
   }
-  console.log('previousResult: ', lastValue);
 
   const prompt = model.prompt.replace('{{schema}}', generateSchema(model, lastValue));
-  console.log('prompt: ', prompt);
 
   try {
     const client = new OpenAICompatibleClient({

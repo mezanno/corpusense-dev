@@ -62,7 +62,6 @@ const CanvasViewerAnnotations = ({
         try {
           //if the annotation is already in annotorious, update it
           if (existing) {
-            console.log('updating ', annotation);
             if (annotationScale !== 1) {
               const scaledAnnotation = scaleAnnotation(annotation, annotationScale);
               anno.updateAnnotation(scaledAnnotation);

@@ -48,10 +48,6 @@ export function getCollectonLiveRepository() {
   return new IndexedDBCollectionLiveRepository();
 }
 
-// export function getManifestRepository() {
-//   return new IndexedDBManifestRepository();
-// }
-
 export function getSourceRepository() {
   return new IndexedDBSourceRepository();
 }

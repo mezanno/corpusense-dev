@@ -19,5 +19,3 @@ export const LegacyCollectionElementSchema = z.object({
   position: z.number(),
   manifestId: z.string().optional(),
 });
-
-// export type LegacyCollectionElement = z.infer<typeof LegacyCollectionElementSchema>;

@@ -159,7 +159,6 @@ const generateTextFromCanvas = async (canvasId: string, collectionId: string) =>
     collectionId,
   });
   if (annotations === undefined || annotations.length === 0) {
-    console.log(`No annotations found in canvas ${canvasId}`);
     return '';
   }
   let text = '';
@@ -180,7 +179,6 @@ const generateTextWithAnnotationIdFromCanvas = async (canvasId: string, collecti
     collectionId,
   });
   if (annotations === undefined || annotations.length === 0) {
-    console.log(`No annotations found in canvas ${canvasId}`);
     return [];
   }
   const text: TextWithAnnotationId = [];
@@ -200,15 +198,12 @@ const generateNumberedTextFromCanvas = async (
     collectionId,
   });
   if (annotations === undefined || annotations.length === 0) {
-    console.log(`No annotations found in canvas ${canvasId}`);
     return { text: '', numLines: 0 };
   }
   let text = '';
   let lineNumber = startTo !== undefined ? startTo : 0;
   for (let i = 0; i < annotations.length; i++) {
     const t = getAnnotationText(annotations[i]);
-    console.log(lineNumber, ' : ', t, annotations[i].order);
-
     if (t !== undefined && t.length > 0) {
       text = text.concat(`{{${lineNumber}}}`).concat(t).concat('\n');
       lineNumber++;

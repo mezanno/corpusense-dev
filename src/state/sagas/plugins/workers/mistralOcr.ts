@@ -159,20 +159,6 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       }
     }
 
-    // const client = new Mistral({
-    //   apiKey,
-    //   retryConfig: {
-    //     strategy: 'backoff',
-    //     backoff: {
-    //       initialInterval: 500, // intervalle initial en millisecondes
-    //       maxInterval: 10000, // intervalle maximal en millisecondes entre tentatives
-    //       exponent: 1.5, // facteur exponentiel
-    //       maxElapsedTime: 60000, // durée max (en millisecondes) totale pour toutes les tentatives
-    //     },
-    //     retryConnectionErrors: true, // réessayer en cas d'erreurs de connexion
-    //   },
-    // });
-
     const annotations: AnnotationDTO[] = [];
     for (const region of regions) {
       const cropSize = {
@@ -183,16 +169,8 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       };
       const croppedCanvas = await cropImage(imageToProcess, cropSize);
       const imageUrlBase64 = await canvasToBase64(croppedCanvas, 'image/jpeg', 0.7);
-      // const response = await client.ocr.process({
-      //   model: 'mistral-ocr-latest',
-      //   document: {
-      //     type: 'image_url',
-      //     imageUrl: imageUrlBase64,
-      //   },
-      //   //@ts-expect-error mistral types are not up to date with the latest API
-      //   includeBlocks: true,
-      //   // documentAnnotationFormat: responseFormatFromZodObject(DocumentSchemaZOD),
-      // });
+
+      //Here, mistral client is not used because it is not working properly with the OCR endpoint (probably not updated). So we use fetch instead.
       const response = await fetch('https://api.mistral.ai/v1/ocr', {
         method: 'POST',
         headers: {
@@ -215,7 +193,7 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
 
       const result = z.safeParse(MistralResponseSchema, await response.json());
       if (!result.success) {
-        console.log(z.treeifyError(result.error));
+        // console.log(z.treeifyError(result.error));
 
         throw new Error(
           `Mistral response validation failed: ${JSON.stringify(z.treeifyError(result.error))}`,

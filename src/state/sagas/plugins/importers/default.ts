@@ -5,8 +5,6 @@ import i18n from 'i18next';
 export const pluginName = 'default';
 
 const defaultImporter = async (url: string): Promise<Manifest> => {
-  console.log('defaultImporter: ', url);
-
   try {
     const response = await fetch(url, {
       headers: {

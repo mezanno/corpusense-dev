@@ -11,7 +11,7 @@ export type AppState = ReturnType<typeof appReducer>;
 
 export const rootReducer: Reducer<AppState, Action<string>> = (state, action) => {
   if (action.type === 'RESET_STORE') {
-    state = undefined as unknown as AppState;
+    state = undefined;
   }
   return appReducer(state, action);
 };
