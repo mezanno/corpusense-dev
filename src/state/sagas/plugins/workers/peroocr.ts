@@ -8,8 +8,9 @@ import { Task, WorkerResponse, WorkerStatus } from '@/data/models/worker/worker'
 import {
   getAnnotationRepository,
   getCollectionRepository,
+  getSourceRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
-import { getImage } from '@/data/utils/canvas';
+import { getFile, getImage } from '@/data/utils/canvas';
 import { applyModifierChainToAnnotations } from '@/data/utils/modifierChain';
 import { getValueForPluginParam } from '@/data/utils/plugins';
 import i18n from '@/i18n';
@@ -18,6 +19,7 @@ import { getErrorMessage } from '@/utils/utils';
 import { Client } from '@gradio/client';
 import FileSaver from 'file-saver';
 import { WorkerCategory } from './WorkerCategory';
+import { deleteFile, uploadFile, UploadFileResult } from './supabase/utils';
 
 export const pluginName = 'peroocr'; //name of the plugin, used to register the plugin inside Corpusense
 export const pluginDisplayName = 'Pero OCR'; //display name of the plugin, used in the UI
@@ -104,14 +106,38 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       };
     }
 
+    let localImageResult: UploadFileResult | undefined = undefined;
+    //if source is local, we need to upload the image to supabase storage first, and then use the public url for the image in the gradio request
+    const sourceRepository = getSourceRepository();
+    const sourceContentResult = await sourceRepository.getContentById(canvasWithSourceId.sourceId);
+    if (!sourceContentResult.ok) {
+      throw sourceContentResult.error;
+    }
+    const sourceContent = sourceContentResult.value;
+    if (sourceContent.type === 'local') {
+      const fileHandle = sourceContent.localFile.outputDirectoryHandle;
+      const imageToProcess = await getFile(image.id, fileHandle);
+      localImageResult = await uploadFile(imageToProcess);
+    }
+
+    const imageUrl = sourceContent.type === 'local' ? localImageResult?.publicUrl : image.id;
+    if (imageUrl === undefined) {
+      return {
+        status: WorkerStatus.ERROR,
+        statusMessage: 'Image URL is undefined',
+      };
+    }
     const client = await Client.connect(peroUrl);
+
     /* We change the image to size to match the maximum size. We do this to avoir lower sizes used in image ids.
      */
     const gradioResult = await client.predict('/transcribe', {
-      image_url: setIiifSize(image.id, image.width ?? 0, image.height ?? 0),
+      image_url: setIiifSize(imageUrl, image.width ?? 0, image.height ?? 0),
       regions,
     });
-    console.log(gradioResult.data);
+    if (sourceContent.type === 'local' && localImageResult?.path !== undefined) {
+      await deleteFile(localImageResult.path); //delete the uploaded image from supabase storage after processing
+    }
     try {
       const peroResult = peroResultSchema.parse(gradioResult.data);
       const newAnnotations = convertPeroTranscriptionsToAnnotations(
