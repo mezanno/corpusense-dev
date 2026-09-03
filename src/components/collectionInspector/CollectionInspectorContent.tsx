@@ -3,18 +3,16 @@ import { useAnnotationContext } from '@/components/reducers/AnnotationContext';
 import { useCollectionContext } from '@/components/reducers/CollectionContext';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import useKeyboard from '@/hooks/ui/useKeyboard';
-import { useVirtualizer } from '@tanstack/react-virtual';
 import 'gridstack/dist/gridstack.min.css';
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import AutoSizer from 'react-virtualized-auto-sizer';
 import LlmStatus from '../collectionPage/LlmStatus';
 import OcrStatus from '../collectionPage/OcrStatus';
 import { useCollectionInspectorContext } from '../reducers/CollectionInspectorContext';
 import ResultsAvailable from '../ResultsAvailable';
+import CollectionInspectorGallery from './CollectionInspectorGallery';
 import CollectionInspectorHeader from './CollectionInspectorHeader';
 import CollectionToolbar from './CollectionToolbar';
-import GridThumb from './GridThumb';
 
 const CollectionInspectorContent = ({
   collectionId,
@@ -37,9 +35,6 @@ const CollectionInspectorContent = ({
   const { setScope } = useAnnotationContext();
   const canvas = defaultCanvasId !== null ? getCanvasById(defaultCanvasId) : null;
 
-  const [colCount, setColCount] = useState(5);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-
   const onKeyPressed = (key: string) => {
     if (key === 'ArrowRight') {
       handleNext();
@@ -49,12 +44,6 @@ const CollectionInspectorContent = ({
   };
 
   useKeyboard({ onKeyPressed });
-
-  useEffect(() => {
-    return () => {
-      containerRef.current = null;
-    };
-  }, []);
 
   useEffect(() => {
     openCollection(collectionId);
@@ -69,29 +58,6 @@ const CollectionInspectorContent = ({
       setScope({ canvasId: canvasToDisplay.canvas.id, collectionId });
     }
   }, [canvasToDisplay]);
-
-  // calcule les lignes en fonction des colonnes
-  const rowCount = Math.ceil(collection?.contentSize ?? 0 / colCount);
-
-  /** Virtualizer vertical (pour les lignes) */
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const rowVirtualizer = useVirtualizer({
-    gap: 10,
-    count: rowCount,
-    getScrollElement: () => containerRef.current,
-    estimateSize: () => 165 + 10, // hauteur de ligne
-    overscan: 2,
-  });
-
-  /** Virtualizer horizontal (pour les colonnes) */
-  const colVirtualizer = useVirtualizer({
-    gap: 10,
-    horizontal: true,
-    count: colCount,
-    getScrollElement: () => containerRef.current,
-    estimateSize: () => 100, // largeur (sera mise à jour dynamiquement)
-    overscan: 2,
-  });
 
   const currentCollectionScope = useMemo(
     () => ({
@@ -119,71 +85,12 @@ const CollectionInspectorContent = ({
               )}
               <div className='panel h-full w-full overflow-hidden'>
                 {collection.contentSize > 0 ? (
-                  <AutoSizer
-                    onResize={(size) => {
-                      setColCount(Math.max(2, Math.floor(size.width / 115)));
-                    }}
-                  >
-                    {({ width, height }) => {
-                      return (
-                        <div
-                          ref={containerRef}
-                          style={{
-                            width,
-                            height,
-                            overflow: 'auto',
-                            position: 'relative',
-                          }}
-                        >
-                          <div
-                            className='m-2'
-                            style={{
-                              height: `${rowVirtualizer.getTotalSize()}px`,
-                              width: `${colVirtualizer.getTotalSize()}px`,
-                              position: 'relative',
-                            }}
-                          >
-                            {rowVirtualizer.getVirtualItems().map((virtualRow) => (
-                              <Fragment key={virtualRow.key}>
-                                {colVirtualizer.getVirtualItems().map((virtualColumn) => {
-                                  const index = virtualRow.index * colCount + virtualColumn.index;
-
-                                  if (index >= canvases.length) return null;
-                                  const gtCanvas = canvases[index];
-                                  if (gtCanvas === null || gtCanvas === undefined) return null;
-                                  // console.log('gtCanvas ', gtCanvas);
-
-                                  return (
-                                    <div
-                                      key={`${virtualRow.key}-${virtualColumn.key}`}
-                                      style={{
-                                        position: 'absolute',
-                                        top: 0,
-                                        left: 0,
-                                        width: `${virtualColumn.size}px`,
-                                        height: `${virtualRow.size}px`,
-                                        transform: `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`,
-                                      }}
-                                    >
-                                      <GridThumb
-                                        canvasWithSourceId={gtCanvas}
-                                        collectionId={collection.id}
-                                        collectionContentIndex={index}
-                                        thumbWidth={virtualColumn.size}
-                                        thumbHeight={virtualRow.size}
-                                        setCanvasToDisplay={setCanvasToDisplay}
-                                        canvasToDisplay={canvasToDisplay}
-                                      />
-                                    </div>
-                                  );
-                                })}
-                              </Fragment>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    }}
-                  </AutoSizer>
+                  <CollectionInspectorGallery
+                    collection={collection}
+                    canvases={canvases}
+                    canvasToDisplay={canvasToDisplay}
+                    setCanvasToDisplay={setCanvasToDisplay}
+                  />
                 ) : (
                   <div className='flex h-full w-full items-center justify-center text-muted-foreground'>
                     {t('info_empty_collection')}
