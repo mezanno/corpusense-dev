@@ -26,6 +26,7 @@
     "@annotorious/openseadragon": "^3.7.18",
     "@annotorious/react": "^3.7.18",
     "@emailjs/browser": "^4.4.1",
+    "@floating-ui/react": "^0.27.20",
     "@hello-pangea/dnd": "^18.0.1",
     "@hookform/resolvers": "^5.2.2",
     "@hyzyla/pdfium": "^2.1.9",
