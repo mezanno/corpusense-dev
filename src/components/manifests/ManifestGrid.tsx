@@ -10,7 +10,7 @@ import {
   useInteractions,
 } from '@floating-ui/react';
 import { Database } from 'lucide-react';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ManifestThumbnail from './ManifestThumbnail';
@@ -20,7 +20,7 @@ const ManifestGrid = ({ currendManifestId }: { currendManifestId: string }) => {
   const { t } = useTranslation();
   const { remoteSources, localSources } = useLiveSources();
 
-  const sources = [...localSources, ...remoteSources];
+  const sources = useMemo(() => [...localSources, ...remoteSources], [localSources, remoteSources]);
 
   const activeRef = useRef<HTMLLIElement | null>(null);
 
