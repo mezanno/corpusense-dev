@@ -1,13 +1,6 @@
 import CanvasViewer from '@/components/canvasViewer/CanvasViewer';
-import CollectionMetadataForm from '@/components/forms/CollectionMetadataForm';
 import { useAnnotationContext } from '@/components/reducers/AnnotationContext';
 import { useCollectionContext } from '@/components/reducers/CollectionContext';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import useKeyboard from '@/hooks/ui/useKeyboard';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -19,6 +12,7 @@ import LlmStatus from '../collectionPage/LlmStatus';
 import OcrStatus from '../collectionPage/OcrStatus';
 import { useCollectionInspectorContext } from '../reducers/CollectionInspectorContext';
 import ResultsAvailable from '../ResultsAvailable';
+import CollectionInspectorHeader from './CollectionInspectorHeader';
 import CollectionToolbar from './CollectionToolbar';
 import GridThumb from './GridThumb';
 
@@ -112,31 +106,7 @@ const CollectionInspectorContent = ({
         <ResizablePanel className='mr-1 flex min-h-0 min-w-0' minSize={30}>
           {collection ? (
             <div className='flex h-full max-h-full w-full max-w-full flex-col gap-2'>
-              <Accordion
-                asChild
-                className='panel flex-col'
-                type='single'
-                collapsible
-                defaultValue='metadata' //this open the metadata by default
-              >
-                <AccordionItem value='metadata'>
-                  <AccordionTrigger className='mx-2'>
-                    <div>
-                      <h2 className='flex items-center gap-2 text-lg'>
-                        {t('title_metadata_collection')}
-                        <span className='font-bold italic'>{collection.name}</span>
-                        <span>
-                          - {t('info_number_of_items', { number: collection.contentSize })}
-                        </span>
-                      </h2>
-                      <span className='text-sm font-thin'>({collection.id})</span>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <CollectionMetadataForm collection={collection} />
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
+              <CollectionInspectorHeader {...collection} />
               {collection.content.length > 0 && (
                 <div className='flex w-full items-center justify-between'>
                   <CollectionToolbar collection={collection} />
