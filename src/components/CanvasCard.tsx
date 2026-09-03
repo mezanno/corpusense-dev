@@ -47,6 +47,7 @@ const CanvasCard = ({
     isSelected,
     hasSelectedElements,
     getSelectedCanvases,
+    getSelectionCount,
     setSelectionEnd,
     setSelectionStart,
     setSelection,
@@ -195,14 +196,24 @@ const CanvasCard = ({
             {t('menu_define_start')}
           </ContextMenuItem>
           <ContextMenuItem onClick={handleSetSelectionEnd}>{t('menu_define_end')}</ContextMenuItem>
-          <ContextMenuSeparator />
-          <ContextMenuItem onClick={handleResetSelection}>
-            {t('menu_reset_selection')}
-          </ContextMenuItem>
-          <ContextMenuSeparator />
-          <ContextMenuItem onClick={handleCopyToClipboard}>
-            {t('menu_copy_clipboard')}
-          </ContextMenuItem>
+          {hasSelectedElements() && (
+            <>
+              <ContextMenuSeparator />
+
+              <ContextMenuItem onClick={handleResetSelection}>
+                {t('menu_reset_selection')}
+              </ContextMenuItem>
+            </>
+          )}
+          {getSelectionCount() <= 1 && (
+            <>
+              <ContextMenuSeparator />
+
+              <ContextMenuItem onClick={handleCopyToClipboard}>
+                {t('menu_copy_clipboard')}
+              </ContextMenuItem>
+            </>
+          )}
         </ContextMenuContent>
       </ContextMenu>
     </>
