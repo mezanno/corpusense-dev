@@ -11,7 +11,7 @@ import { CircleX, SpellCheck, SpellCheck2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import { useWorkerContext } from './reducers/WorkerContext';
+import { useWorkerContext } from '../reducers/WorkerContext';
 
 const GridThumb = ({
   canvasWithSourceId,

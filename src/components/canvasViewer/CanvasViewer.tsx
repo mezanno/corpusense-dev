@@ -3,7 +3,7 @@ import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { Annotorious } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
 import { useState } from 'react';
-import CollectionNavigation from '../collectionPage/CollectionNavigation';
+import CollectionNavigation from '../collectionInspector/CollectionNavigation';
 import ModifierChainFlow from '../modifiers/ModifierChainFlow';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../ui/resizable';
 import CanvasViewerAnnotations from './CanvasViewerAnnotations';

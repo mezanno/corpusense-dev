@@ -1,7 +1,5 @@
 import CanvasViewer from '@/components/canvasViewer/CanvasViewer';
-import CollectionToolbar from '@/components/CollectionToolbar';
 import CollectionMetadataForm from '@/components/forms/CollectionMetadataForm';
-import GridThumb from '@/components/GridThumb';
 import { useAnnotationContext } from '@/components/reducers/AnnotationContext';
 import { useCollectionContext } from '@/components/reducers/CollectionContext';
 import {
@@ -17,10 +15,12 @@ import 'gridstack/dist/gridstack.min.css';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import LlmStatus from './collectionPage/LlmStatus';
-import OcrStatus from './collectionPage/OcrStatus';
-import { useCollectionInspectorContext } from './reducers/CollectionInspectorContext';
-import ResultsAvailable from './ResultsAvailable';
+import LlmStatus from '../collectionPage/LlmStatus';
+import OcrStatus from '../collectionPage/OcrStatus';
+import { useCollectionInspectorContext } from '../reducers/CollectionInspectorContext';
+import ResultsAvailable from '../ResultsAvailable';
+import CollectionToolbar from './CollectionToolbar';
+import GridThumb from './GridThumb';
 
 const CollectionInspectorContent = ({
   collectionId,

@@ -4,9 +4,9 @@ import useDialog from '@/hooks/ui/useDialog';
 import { Copy } from 'lucide-react';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { IconButtonWithTooltip } from './IconButtonWithTooltip';
-import { useWorkerContext } from './reducers/WorkerContext';
-import Toolbar from './ToolBar';
+import { IconButtonWithTooltip } from '../IconButtonWithTooltip';
+import { useWorkerContext } from '../reducers/WorkerContext';
+import Toolbar from '../ToolBar';
 
 const CollectionToolbar = memo(function CollectionToolbarFunc({
   collection,
