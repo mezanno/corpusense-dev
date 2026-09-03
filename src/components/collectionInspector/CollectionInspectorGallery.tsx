@@ -4,7 +4,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import 'gridstack/dist/gridstack.min.css';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import GridThumb from './GridThumb';
+import CollectionInspectorGalleryItem from './CollectionInspectorGalleryItem';
 
 type Props = {
   collection: Collection;
@@ -93,7 +93,7 @@ const CollectionInspectorGallery = (props: Props) => {
                           transform: `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`,
                         }}
                       >
-                        <GridThumb
+                        <CollectionInspectorGalleryItem
                           canvasWithSourceId={gtCanvas}
                           collectionId={collection.id}
                           collectionContentIndex={index}

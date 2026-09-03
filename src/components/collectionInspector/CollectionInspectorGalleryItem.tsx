@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { useWorkerContext } from '../reducers/WorkerContext';
 
-const GridThumb = ({
+const CollectionInspectorGalleryItem = ({
   canvasWithSourceId,
   collectionId,
   collectionContentIndex,
@@ -119,4 +119,4 @@ const GridThumb = ({
   );
 };
 
-export default GridThumb;
+export default CollectionInspectorGalleryItem;
