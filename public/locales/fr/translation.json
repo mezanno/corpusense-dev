@@ -225,7 +225,7 @@
   "form_description_modifier_filter_dimension": "Critère de filtrage (surface, largeur ou hauteur)",
   "form_description_modifier_reorder": "Réorganisez les régions selon un ordre de lecture spécifique.",
   "form_description_modifier_reorder_order": "Ordre de lecture à appliquer pour réorganiser les régions (ex : TL2BR pour Top-Left to Bottom-Right).",
-  "form_description_manifest_rename": "Rendez votre manifest plus identifiable en lui donnant un nom explicite (ce nom n'affecte pas le manifest original, il est juste utilisé pour l'affichage dans Corpusense).",
+  "form_description_manifest_rename": "Action non obligatoire : rendez votre manifest plus identifiable en lui donnant un nom explicite (ce nom n'affecte pas le manifest original, il est juste utilisé pour l'affichage dans Corpusense). Si vous laissez ce champs vide, le nom utilisé sera celui qui lui a été attribué dans son dépôt.",
   "form_description_source_rename": "Donnez un nom explicite à cette source de données pour la rendre plus identifiable dans votre bibliothèque (ce nom n'affecte pas la source originale, il est juste utilisé pour l'affichage dans Corpusense).",
   "form_forcev3": "Si posible, utiliser la version 3 de Gallica",
   "form_label_mistral_api_key": "Clé API Mistral",

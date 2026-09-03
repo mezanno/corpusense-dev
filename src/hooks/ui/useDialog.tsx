@@ -169,7 +169,8 @@ const useDialog = () => {
 
   const openOpenManifestDialog = (options: OpenManifestDialogOptions) => {
     openFormDialog({
-      title: t('btn_open_manifest'),
+      title:
+        options.existingSource === undefined ? t('btn_open_manifest') : t('title_rename_source'),
       renderForm: (formRef) => (
         <OpenManifestForm
           formRef={formRef}

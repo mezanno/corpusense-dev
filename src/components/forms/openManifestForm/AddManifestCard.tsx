@@ -5,17 +5,22 @@ import { IIIFExternalWebResource, Manifest } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import { Cozy } from 'cozy-iiif';
 import { Layers } from 'lucide-react';
-import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import z from 'zod';
 import { Button } from '../../ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '../../ui/card';
-import { Form, FormControl, FormDescription, FormField, FormItem } from '../../ui/form';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '../../ui/form';
 import { Input } from '../../ui/input';
 
 interface AddManifestCardProps {
-  defaultName?: string;
   existingSource?: SourceWithContent;
   loadedManifest: Manifest | undefined;
   onResult?: (sourceId: string) => void;
@@ -23,18 +28,30 @@ interface AddManifestCardProps {
 }
 
 const AddManifestCard = ({
-  defaultName,
   existingSource,
   loadedManifest,
   onResult,
   closeDialog,
 }: AddManifestCardProps) => {
   const { t } = useTranslation();
+  const { addManifestToLibrary, updateSourceName } = useSources();
 
-  const { addManifestToLibrary } = useSources();
-  const addManifestFormSchema = z.object({
-    manifestName: z.string().optional(),
-  });
+  const addManifestFormSchema = z
+    .object({
+      manifestName: z.string().min(1).optional(),
+    })
+    .superRefine((data, ctx) => {
+      if (
+        existingSource !== undefined &&
+        (data.manifestName === undefined || data.manifestName.trim() === '')
+      ) {
+        ctx.addIssue({
+          path: ['manifestName'],
+          code: 'custom',
+          message: t('form_error_required'),
+        });
+      }
+    });
 
   const form = useForm<z.infer<typeof addManifestFormSchema>>({
     resolver: zodResolver(addManifestFormSchema),
@@ -42,9 +59,6 @@ const AddManifestCard = ({
       manifestName: existingSource?.name,
     },
   });
-  useEffect(() => {
-    form.setValue('manifestName', defaultName ?? '');
-  }, [defaultName, form]);
 
   const parsedManifest = Cozy.parse(loadedManifest);
 
@@ -52,14 +66,13 @@ const AddManifestCard = ({
     return <p>{t('error_invalid_manifest_input')}</p>;
   }
 
-  const customManifestName =
-    parsedManifest?.type === 'manifest' && loadedManifest
-      ? parsedManifest.resource.getSummary()
-      : t('manifest_untitled', { date: new Date().toLocaleString() });
+  const customManifestName = loadedManifest
+    ? parsedManifest.resource.getSummary()
+    : t('manifest_untitled', { date: new Date().toLocaleString() });
 
   async function onAddManifestSubmit(values: z.infer<typeof addManifestFormSchema>) {
-    if (existingSource) {
-      //dd+
+    if (existingSource && values.manifestName !== undefined) {
+      await updateSourceName(existingSource.id, values.manifestName);
     } else {
       if (parsedManifest?.type === 'manifest' && loadedManifest) {
         const name =
@@ -75,9 +88,11 @@ const AddManifestCard = ({
 
   return (
     <Card className='bg-white p-1 text-secondary-foreground'>
-      <CardHeader className='text-center font-semibold italic'>
-        {t('title_load_manifest_step_2')}
-      </CardHeader>
+      {!existingSource && (
+        <CardHeader className='text-center font-semibold italic'>
+          {t('title_load_manifest_step_2')}
+        </CardHeader>
+      )}
       <CardContent className='flex items-center gap-2'>
         {loadedManifest?.thumbnail !== undefined && (
           <Thumbnail
@@ -117,11 +132,12 @@ const AddManifestCard = ({
                       autoFocus
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
             <Button type='submit' className='soft-button w-full' disabled={!form.formState.isValid}>
-              {t('btn_add_manifest_to_library')}
+              {existingSource ? t('btn_rename') : t('btn_add_manifest_to_library')}
             </Button>
           </form>
         </Form>
