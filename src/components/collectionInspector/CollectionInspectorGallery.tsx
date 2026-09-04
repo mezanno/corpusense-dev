@@ -9,7 +9,7 @@ import { DragDropProvider, DragEndEvent } from '@dnd-kit/react';
 import 'gridstack/dist/gridstack.min.css';
 import { useState } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import CollectionInspectorGalleryItem from './CollectionInspectorGalleryItem';
+import CollectionInspectorGalleryItemMenu from './CollectionInspectorGalleryItemMenu';
 
 type Props = {
   collection: Collection;
@@ -64,13 +64,12 @@ const CollectionInspectorGallery = (props: Props) => {
                 }}
               >
                 {canvases.map((item, index) => (
-                  <CollectionInspectorGalleryItem
+                  <CollectionInspectorGalleryItemMenu
                     key={item.canvas.id}
                     canvasWithSourceId={item}
                     collectionId={collection.id}
                     collectionContentIndex={index}
-                    thumbWidth={colSize}
-                    thumbHeight={150}
+                    colSize={colSize}
                     setCanvasToDisplay={setCanvasToDisplay}
                     canvasToDisplay={canvasToDisplay}
                   />
