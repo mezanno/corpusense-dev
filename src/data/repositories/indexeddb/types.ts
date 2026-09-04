@@ -77,6 +77,11 @@ export interface CollectionRepository {
   ): Promise<void>;
   updateTags(id: string, tags: string[]): Promise<void>;
   updateOffline(id: string, offline: boolean): Promise<void>;
+  shiftCollectionElements(
+    collectionId: string,
+    sourcePositon: number,
+    targetPosition: number,
+  ): Promise<FunctionResult<void, EntityNotFoundError>>;
 
   delete(collectionToRemove: Collection): Promise<{ workersIds: string[]; collectionId: string }>;
   deleteMultiple(collectionsToRemoveIds: string[]): Promise<void>;
