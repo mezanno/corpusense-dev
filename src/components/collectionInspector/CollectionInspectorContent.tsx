@@ -83,20 +83,18 @@ const CollectionInspectorContent = ({
                   </div>
                 </div>
               )}
-              <div className='panel h-full w-full overflow-hidden'>
-                {collection.contentSize > 0 ? (
-                  <CollectionInspectorGallery
-                    collection={collection}
-                    canvases={canvases}
-                    canvasToDisplay={canvasToDisplay}
-                    setCanvasToDisplay={setCanvasToDisplay}
-                  />
-                ) : (
-                  <div className='flex h-full w-full items-center justify-center text-muted-foreground'>
-                    {t('info_empty_collection')}
-                  </div>
-                )}
-              </div>
+              {collection.contentSize > 0 ? (
+                <CollectionInspectorGallery
+                  collection={collection}
+                  canvases={canvases}
+                  canvasToDisplay={canvasToDisplay}
+                  setCanvasToDisplay={setCanvasToDisplay}
+                />
+              ) : (
+                <div className='flex h-full w-full items-center justify-center text-muted-foreground'>
+                  {t('info_empty_collection')}
+                </div>
+              )}
             </div>
           ) : (
             <div className='p-4 text-center text-muted-foreground'>

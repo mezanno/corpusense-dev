@@ -1,8 +1,13 @@
 import { Collection } from '@/data/models/collection';
+import useCollectionActions from '@/hooks/data/collections/useCollectionActions';
 import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
-import { useVirtualizer } from '@tanstack/react-virtual';
+import { useAppDispatch } from '@/hooks/hooks';
+import { pushError } from '@/state/reducers/events';
+import { getErrorMessage } from '@/utils/utils';
+import { isSortable } from '@dnd-kit/dom/sortable';
+import { DragDropProvider, DragEndEvent } from '@dnd-kit/react';
 import 'gridstack/dist/gridstack.min.css';
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import CollectionInspectorGalleryItem from './CollectionInspectorGalleryItem';
 
@@ -14,104 +19,68 @@ type Props = {
 };
 
 const CollectionInspectorGallery = (props: Props) => {
+  const appDispatch = useAppDispatch();
   const { collection, canvases, setCanvasToDisplay, canvasToDisplay } = props;
   const [colCount, setColCount] = useState(5);
+  const { swapCollectionElements } = useCollectionActions(collection.id);
 
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    return () => {
-      containerRef.current = null;
-    };
-  }, []);
-
-  // calcule les lignes en fonction des colonnes
-  const rowCount = Math.ceil(collection.contentSize ?? 0 / colCount);
-
-  /** Virtualizer vertical (pour les lignes) */
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const rowVirtualizer = useVirtualizer({
-    gap: 10,
-    count: rowCount,
-    getScrollElement: () => containerRef.current,
-    estimateSize: () => 165 + 10, // hauteur de ligne
-    overscan: 2,
-  });
-
-  /** Virtualizer horizontal (pour les colonnes) */
-  const colVirtualizer = useVirtualizer({
-    gap: 10,
-    horizontal: true,
-    count: colCount,
-    getScrollElement: () => containerRef.current,
-    estimateSize: () => 100, // largeur (sera mise à jour dynamiquement)
-    overscan: 2,
-  });
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { source } = event.operation;
+    if (isSortable(source)) {
+      const { initialIndex, index } = source;
+      void (async () => {
+        if (index !== initialIndex) {
+          const swapResult = await swapCollectionElements(initialIndex, index);
+          if (!swapResult.ok) {
+            appDispatch(pushError(getErrorMessage(swapResult.error)));
+          }
+        }
+      })();
+    }
+  };
 
   return (
-    <AutoSizer
-      onResize={(size) => {
-        setColCount(Math.max(2, Math.floor(size.width / 115)));
-      }}
-    >
-      {({ width, height }) => {
-        return (
-          <div
-            ref={containerRef}
-            style={{
-              width,
-              height,
-              overflow: 'auto',
-              position: 'relative',
-            }}
-          >
-            <div
-              className='m-2'
-              style={{
-                height: `${rowVirtualizer.getTotalSize()}px`,
-                width: `${colVirtualizer.getTotalSize()}px`,
-                position: 'relative',
-              }}
-            >
-              {rowVirtualizer.getVirtualItems().map((virtualRow) => (
-                <Fragment key={virtualRow.key}>
-                  {colVirtualizer.getVirtualItems().map((virtualColumn) => {
-                    const index = virtualRow.index * colCount + virtualColumn.index;
-
-                    if (index >= canvases.length) return null;
-                    const gtCanvas = canvases[index];
-                    if (gtCanvas === null || gtCanvas === undefined) return null;
-
-                    return (
-                      <div
-                        key={`${virtualRow.key}-${virtualColumn.key}`}
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: `${virtualColumn.size}px`,
-                          height: `${virtualRow.size}px`,
-                          transform: `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`,
-                        }}
-                      >
-                        <CollectionInspectorGalleryItem
-                          canvasWithSourceId={gtCanvas}
-                          collectionId={collection.id}
-                          collectionContentIndex={index}
-                          thumbWidth={virtualColumn.size}
-                          thumbHeight={virtualRow.size}
-                          setCanvasToDisplay={setCanvasToDisplay}
-                          canvasToDisplay={canvasToDisplay}
-                        />
-                      </div>
-                    );
-                  })}
-                </Fragment>
-              ))}
-            </div>
-          </div>
-        );
-      }}
-    </AutoSizer>
+    <div className='h-full min-h-0 overflow-y-auto'>
+      <AutoSizer
+        disableHeight
+        onResize={(size) => {
+          setColCount(Math.max(2, Math.floor(size.width / 115)));
+        }}
+      >
+        {({ width }) => {
+          const gap = 10;
+          const gridWidth = Math.min(width, 900) - 30;
+          const colSize = (gridWidth - gap * (colCount - 1)) / colCount;
+          return (
+            <DragDropProvider onDragEnd={handleDragEnd}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: `repeat(${colCount}, 1fr)`,
+                  gridAutoRows: 150,
+                  gap: 10,
+                  width: gridWidth,
+                  margin: '0 auto',
+                }}
+              >
+                {canvases.map((item) => (
+                  <CollectionInspectorGalleryItem
+                    key={item.canvas.id}
+                    canvasWithSourceId={item}
+                    collectionId={collection.id}
+                    collectionContentIndex={item.position}
+                    thumbWidth={colSize}
+                    thumbHeight={150}
+                    setCanvasToDisplay={setCanvasToDisplay}
+                    canvasToDisplay={canvasToDisplay}
+                  />
+                ))}
+              </div>
+            </DragDropProvider>
+          );
+        }}
+      </AutoSizer>
+    </div>
   );
 };
 
