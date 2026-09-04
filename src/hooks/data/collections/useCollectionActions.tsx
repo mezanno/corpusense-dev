@@ -12,7 +12,7 @@ const useCollectionActions = (collectionId: string) => {
         targetPosition,
       );
     },
-    [collectionRepository],
+    [collectionRepository, collectionId],
   );
 
   return {
