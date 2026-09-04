@@ -45,6 +45,8 @@ const CollectionInspectorGalleryItem = ({
 
   const { thumbnail, error } = useThumbnail(canvasWithSourceId);
 
+  const [deleting, setDeleting] = useState(false);
+
   const [element, setElement] = useState<HTMLDivElement | null>(null);
 
   const { isDragging } = useSortable({
@@ -53,12 +55,24 @@ const CollectionInspectorGalleryItem = ({
     element,
   });
 
+  if (deleting) {
+    return null;
+  }
+
   const handleDelete = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.stopPropagation();
+    setDeleting(true);
     void (async () => {
-      await removeElementFromCollection(collectionId, canvasWithSourceId.canvas.id);
-      if (canvasToDisplay?.canvas.id === canvasWithSourceId.canvas.id) {
-        setCanvasToDisplay(null);
+      const removeResult = await removeElementFromCollection(
+        collectionId,
+        canvasWithSourceId.canvas.id,
+      );
+      if (!removeResult.ok) {
+        setDeleting(false);
+      } else {
+        if (canvasToDisplay?.canvas.id === canvasWithSourceId.canvas.id) {
+          setCanvasToDisplay(null);
+        }
       }
     })();
   };

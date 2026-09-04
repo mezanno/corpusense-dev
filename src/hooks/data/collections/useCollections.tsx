@@ -196,12 +196,7 @@ export const useCollections = () => {
   };
 
   const removeElementFromCollection = async (collectionId: string, canvasId: string) => {
-    const result = await collectionRepository.deleteElement(collectionId, canvasId);
-    if (result.ok) {
-      appDispatch(pushInfo(i18n.t('toast_element_removed')));
-    } else {
-      appDispatch(pushError(getErrorMessage(result.error)));
-    }
+    return await collectionRepository.deleteElement(collectionId, canvasId);
   };
 
   const removeCollection = async (id: string) => {
