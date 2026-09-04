@@ -1,4 +1,5 @@
 import { Collection, CollectionDetails } from '@/data/models/collection';
+import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import { Canvas } from '@iiif/presentation-3';
 import { db } from '../db';
 import { getSourceRepository } from '../dbFactory';
@@ -25,9 +26,7 @@ export class IndexedDBCollectionLiveRepository implements CollectionLiveReposito
     };
   }
 
-  getCanvasesByCollectionId(
-    collectionId: string,
-  ): () => Promise<{ canvas: Canvas; sourceId: string }[]> {
+  getCanvasesByCollectionId(collectionId: string): () => Promise<CanvasWithSourceId[]> {
     const sourceRepository = getSourceRepository();
     return async () => {
       const collectionContent = await db.collectionContents.get(collectionId);
@@ -37,10 +36,12 @@ export class IndexedDBCollectionLiveRepository implements CollectionLiveReposito
       }
 
       const canvasesWithResults = await Promise.all(
-        content.map(async ({ sourceId, canvasId }) => ({
-          canvasResult: await sourceRepository.getCanvasById(sourceId, canvasId),
-          sourceId,
-        })),
+        content
+          .sort((a, b) => a.position - b.position)
+          .map(async ({ sourceId, canvasId }) => ({
+            canvasResult: await sourceRepository.getCanvasById(sourceId, canvasId),
+            sourceId,
+          })),
       );
 
       const canvases = canvasesWithResults
@@ -48,7 +49,11 @@ export class IndexedDBCollectionLiveRepository implements CollectionLiveReposito
           (item): item is { canvasResult: { ok: true; value: Canvas }; sourceId: string } =>
             item.canvasResult.ok,
         )
-        .map((item) => ({ canvas: item.canvasResult.value, sourceId: item.sourceId }));
+        .map((item, index) => ({
+          canvas: item.canvasResult.value,
+          sourceId: item.sourceId,
+          position: index,
+        }));
       return canvases;
     };
   }

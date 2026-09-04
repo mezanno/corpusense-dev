@@ -1,12 +1,11 @@
 import { useCollectionContext } from '@/components/reducers/CollectionContext';
 import { getImageForThumbnail } from '@/data/utils/canvas';
-import { IIIFExternalWebResource } from '@iiif/presentation-3';
+import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CanvasWithSourceId } from '../collections/useCollectionContent';
 import useSources from './useSources';
 
-const useThumbnail = ({ canvas, sourceId }: CanvasWithSourceId) => {
+const useThumbnail = ({ canvas, sourceId }: { canvas: Canvas; sourceId: string }) => {
   const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
   const [thumbnail, setThumbnail] = useState<IIIFExternalWebResource[] | null>(null);
