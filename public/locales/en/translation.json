@@ -354,6 +354,8 @@
   "info_ocr_available": "OCR results are available in this collection.",
   "info_lllm_available": "Structured data is available in this collection.",
   "info_no_results": "No results found",
+  "info_open_collection_metadata_panel": "Open the collection metadata panel",
+  "info_close_collection_metadata_panel": "Close the collection metadata panel",
   "description_select_model": "Choose a data model",
   "description_import_collection": "Import a collection (JSON file) or a set of collections (ZIP file)",
   "description_create_collection": "Create a collection by entering the collection name.",
