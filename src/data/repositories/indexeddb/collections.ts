@@ -346,26 +346,30 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
   }
 
   async deleteById(collectionId: string): Promise<{ workersIds: string[]; collectionId: string }> {
-    return await db.transaction(
-      'rw',
-      [db.collections, db.collectionContents, db.annotations, db.workers, db.results],
-      async () => {
-        //remove the annotations of the collection
-        const annotationRepository = getAnnotationRepository();
-        await annotationRepository.deleteByScope({
-          collectionId,
-        });
-        //remove the workers associated to the collection
-        const workerRepository = getWorkerRepository();
-        const workersIds = await workerRepository.deleteByScope({
-          collectionId,
-        });
-        //remove the collection
-        await db.collections.delete(collectionId);
-        await db.collectionContents.delete(collectionId);
-        return { workersIds, collectionId };
-      },
-    );
+    return await db
+      .transaction(
+        'rw',
+        [db.collections, db.collectionContents, db.annotations, db.workers, db.results],
+        async () => {
+          //remove the annotations of the collection
+          const annotationRepository = getAnnotationRepository();
+          await annotationRepository.deleteByScope({
+            collectionId,
+          });
+          //remove the workers associated to the collection
+          const workerRepository = getWorkerRepository();
+          const workersIds = await workerRepository.deleteByScope({
+            collectionId,
+          });
+          //remove the collection
+          await db.collections.delete(collectionId);
+          await db.collectionContents.delete(collectionId);
+          return { workersIds, collectionId };
+        },
+      )
+      .catch((error) => {
+        throw new Error(`Failed to delete collection with id ${collectionId}: ${error}`);
+      });
   }
 
   async deleteMultiple(collectionsToRemoveIds: string[]): Promise<void> {
