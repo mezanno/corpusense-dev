@@ -18,7 +18,7 @@ const CollectionInspectorHeader = (collection: Collection) => {
       className='panel flex-col'
       type='single'
       collapsible
-      defaultValue='metadata' //this open the metadata by default
+      // defaultValue='metadata' //this open the metadata by default
     >
       <AccordionItem value='metadata'>
         <AccordionTrigger className='mx-2'>
