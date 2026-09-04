@@ -1,10 +1,8 @@
-import { ElementType } from '@/data/models/annotations/annotation';
 import useDialog from '@/hooks/ui/useDialog';
 import { Canvas } from '@iiif/presentation-3';
-import { Book, BookOpenText, Eye, EyeOff, Layout, NotebookPen, Wrench } from 'lucide-react';
+import { Book, BookOpenText, Eye, EyeOff, NotebookPen, Wrench } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAnnotationContext } from '../reducers/AnnotationContext';
 import { useWorkerContext } from '../reducers/WorkerContext';
 import ResultsAvailable from '../ResultsAvailable';
 import Toolbar from '../ToolBar';
@@ -41,22 +39,11 @@ export const CanvasViewerToolbar = ({
   setAnnotationScale: (scale: number) => void;
 }) => {
   const { t } = useTranslation();
-  const { openDuplicateLayoutDialog, openRemoveAnnotationsDialog } = useDialog();
+  const { openRemoveAnnotationsDialog } = useDialog();
   const isWorkerRunning = useWorkerContext().isWorkerOrTaskRunning({ collectionId });
-
-  const { getAnnotationsByTypes } = useAnnotationContext();
-
-  const regionAnnotations = getAnnotationsByTypes([ElementType.TEXT_REGION]);
 
   const handleDeleteAllAnnotations = () => {
     openRemoveAnnotationsDialog({ canvasId: canvas.id, collectionId });
-  };
-
-  const handleDuplicateLayout = () => {
-    openDuplicateLayoutDialog({
-      canvasId: canvas.id,
-      collectionId,
-    });
   };
 
   const handleAddAnnotation = () => {
@@ -88,15 +75,6 @@ export const CanvasViewerToolbar = ({
             }}
           />
           <div className='flex h-full space-x-2'>
-            {regionAnnotations.length > 0 && (
-              <button
-                className='soft-button'
-                title={t('btn_duplicate_regions')}
-                onClick={handleDuplicateLayout}
-              >
-                <Layout />
-              </button>
-            )}
             <Toggle
               className='soft-button'
               size={null}
