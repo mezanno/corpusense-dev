@@ -44,7 +44,6 @@ const CollectionToolbar = memo(function CollectionToolbarFunc({
   return (
     <div className='flex gap-2'>
       <Toolbar
-        title={t('title_collection_actions')}
         handleDeleteAllAnnotations={handleDeleteAllAnnotations}
         handleRecomputeRegions={handleRecomputeRegions}
         scope={{ collectionId: collection.id }}
