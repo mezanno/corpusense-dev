@@ -80,7 +80,6 @@ export const useCollections = () => {
       offline: false,
     };
     const content = generateCollectionContent(
-      0,
       selection.map((c) => c.id),
       sourceId,
     );
@@ -137,7 +136,6 @@ export const useCollections = () => {
       const existingContent = collection.content ?? [];
       const existingCanvasIds = existingContent.map((elt) => elt.canvasId);
       const newContent = generateCollectionContent(
-        existingContent.length - 1,
         selection.map((canvas) => canvas.id),
         sourceId,
         existingCanvasIds,

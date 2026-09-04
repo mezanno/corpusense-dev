@@ -58,7 +58,7 @@ A single item inside a collection.
 
 - `id?`: optional persistent id
 - `canvasId`, `manifestId`, `collectionId`
-- `position`: ordering index within the collection
+- ordering within the collection is given by the element's index in `CollectionContent.content`, it is not stored on the element itself
 
 ---
 

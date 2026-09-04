@@ -36,12 +36,10 @@ export class IndexedDBCollectionLiveRepository implements CollectionLiveReposito
       }
 
       const canvasesWithResults = await Promise.all(
-        content
-          .sort((a, b) => a.position - b.position)
-          .map(async ({ sourceId, canvasId }) => ({
-            canvasResult: await sourceRepository.getCanvasById(sourceId, canvasId),
-            sourceId,
-          })),
+        content.map(async ({ sourceId, canvasId }) => ({
+          canvasResult: await sourceRepository.getCanvasById(sourceId, canvasId),
+          sourceId,
+        })),
       );
 
       const canvases = canvasesWithResults
@@ -49,10 +47,9 @@ export class IndexedDBCollectionLiveRepository implements CollectionLiveReposito
           (item): item is { canvasResult: { ok: true; value: Canvas }; sourceId: string } =>
             item.canvasResult.ok,
         )
-        .map((item, index) => ({
+        .map((item) => ({
           canvas: item.canvasResult.value,
           sourceId: item.sourceId,
-          position: index,
         }));
       return canvases;
     };

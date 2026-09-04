@@ -1,9 +1,9 @@
 import z from 'zod';
 
+// L'ordre des éléments est donné par leur position dans le tableau CollectionContent.content, il n'est plus stocké ici.
 export const CollectionElementSchema = z.object({
   canvasId: z.string(),
   sourceId: z.string(),
-  position: z.number(),
   manifestId: z.string().optional(),
 });
 

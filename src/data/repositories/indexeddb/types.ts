@@ -79,7 +79,7 @@ export interface CollectionRepository {
   updateOffline(id: string, offline: boolean): Promise<void>;
   shiftCollectionElements(
     collectionId: string,
-    sourcePositon: number,
+    sourcePosition: number,
     targetPosition: number,
   ): Promise<FunctionResult<void, EntityNotFoundError>>;
 

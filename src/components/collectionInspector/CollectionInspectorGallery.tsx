@@ -63,12 +63,12 @@ const CollectionInspectorGallery = (props: Props) => {
                   margin: '0 auto',
                 }}
               >
-                {canvases.map((item) => (
+                {canvases.map((item, index) => (
                   <CollectionInspectorGalleryItem
                     key={item.canvas.id}
                     canvasWithSourceId={item}
                     collectionId={collection.id}
-                    collectionContentIndex={item.position}
+                    collectionContentIndex={index}
                     thumbWidth={colSize}
                     thumbHeight={150}
                     setCanvasToDisplay={setCanvasToDisplay}

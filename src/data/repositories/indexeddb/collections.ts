@@ -63,20 +63,18 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
 
     const sourceRepository = getSourceRepository();
 
-    //get the list of canvases in the collection (with their manifestId)
+    //get the list of canvases in the collection (with their manifestId), in their collection order
     const canvaseIdsWithSourceIds = (
       await Promise.all(
-        content
-          .sort((a, b) => a.position - b.position)
-          .map(async (elt) => {
-            return FunctionResult.match(await sourceRepository.getContentById(elt.sourceId), {
-              ok: (source) => ({
-                canvasId: elt.canvasId,
-                sourceId: source.id,
-              }),
-              err: () => null,
-            });
-          }),
+        content.map(async (elt) => {
+          return FunctionResult.match(await sourceRepository.getContentById(elt.sourceId), {
+            ok: (source) => ({
+              canvasId: elt.canvasId,
+              sourceId: source.id,
+            }),
+            err: () => null,
+          });
+        }),
       )
     ).filter((c): c is { canvasId: string; sourceId: string } => c !== null);
 
@@ -154,7 +152,6 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     return FunctionResult.ok({
       canvas: canvasResult.value,
       sourceId: collectionElement.sourceId,
-      position: collectionElement.position,
     });
   }
 
@@ -266,7 +263,7 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
 
   async shiftCollectionElements(
     collectionId: string,
-    sourcePositon: number,
+    sourcePosition: number,
     targetPosition: number,
   ): Promise<FunctionResult<void, EntityNotFoundError>> {
     const collectionContent = await db.collectionContents.get(collectionId);
@@ -275,56 +272,27 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
         new EntityNotFoundError({ entity: 'Collection', id: collectionId }),
       );
     }
+    const { content } = collectionContent;
     if (
-      sourcePositon < 0 ||
+      sourcePosition < 0 ||
       targetPosition < 0 ||
-      sourcePositon >= collectionContent.content.length ||
-      targetPosition >= collectionContent.content.length
+      sourcePosition >= content.length ||
+      targetPosition >= content.length ||
+      sourcePosition === targetPosition
     ) {
       return FunctionResult.err(
         new EntityNotFoundError({
           entity: 'CollectionElement',
-          id: `${sourcePositon} or ${targetPosition}`,
+          id: `${sourcePosition} or ${targetPosition}`,
         }),
       );
     }
-    const from = sourcePositon + 1;
-    const to = targetPosition + 1;
 
-    const contentByPosition = new Map(
-      collectionContent.content.map((content) => [content.position, content]),
-    );
+    // L'ordre des éléments est porté par leur position dans le tableau, on la met à jour directement.
+    const [movedElement] = content.splice(sourcePosition, 1);
+    content.splice(targetPosition, 0, movedElement);
 
-    const sourceContent = contentByPosition.get(from);
-
-    if (!sourceContent || from === to) {
-      return FunctionResult.err(
-        new EntityNotFoundError({ entity: 'CollectionElement', id: `${from}` }),
-      );
-    }
-
-    if (to < from) {
-      for (let p = from - 1; p >= to; p--) {
-        const element = contentByPosition.get(p);
-
-        if (element) {
-          element.position = p + 1;
-        }
-      }
-    } else {
-      for (let p = from + 1; p <= to; p++) {
-        const element = contentByPosition.get(p);
-
-        if (element) {
-          element.position = p - 1;
-        }
-      }
-    }
-    sourceContent.position = to;
-
-    await db.collectionContents.update(collectionId, {
-      content: collectionContent.content,
-    });
+    await db.collectionContents.update(collectionId, { content });
     return FunctionResult.ok(undefined);
   }
 

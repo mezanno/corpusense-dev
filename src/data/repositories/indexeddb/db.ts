@@ -72,6 +72,46 @@ db.version(30)
     // Voir : IndexedDBSourceRepository.migrateAllSources()
   });
 
+db.version(31)
+  .stores({
+    collections: '&id, name, *tags.id',
+    collectionContents: '&id',
+    history: '&url',
+    storedManifests: '&id, name',
+    storedManifestContents: '&id',
+    typesList: '&label',
+    itemMetadata: '[id+attribute.label]',
+    tags: '&id',
+    models: '&id, name',
+    //TODO: il faudrait peut-être revoir le format et ne garder IIIF que pour l'export
+    annotations:
+      '&id, canvasId, collectionId, [canvasId+collectionId], order, [canvasId+collectionId+type], [collectionId+type]',
+    annotationsTemp:
+      '&id, canvasId, collectionId, [canvasId+collectionId], order, [canvasId+collectionId+type]',
+    namedEntities: '&id, *annotationIds, type.id',
+    results: '++id, workerName, workerId, [scopeKey+workerName], taskId, [workerId+taskId]',
+    workers: '&id, name, status, [scopeKey+name]',
+    handles: '&id',
+    convertedFiles: '&id, folderName',
+    modifierChains: '&id, name',
+    projects: '&id, name',
+    sources: '&id, name, type',
+    sourceContents: '&id',
+    storedBlobs: '&id',
+  })
+  .upgrade(async (tx) => {
+    // Le champ position de CollectionElement est supprimé : l'ordre est désormais donné par l'ordre dans le tableau content.
+    // On fige ici l'ordre existant en triant sur l'ancienne valeur (potentiellement trouée) puis on retire le champ.
+    await tx
+      .table('collectionContents')
+      .toCollection()
+      .modify((collectionContent: { content: ({ position?: number } & object)[] }) => {
+        collectionContent.content = [...collectionContent.content]
+          .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+          .map(({ position: _position, ...rest }) => rest);
+      });
+  });
+
 export const clearDatabase = async () => {
   await Dexie.delete('mezanno');
 };

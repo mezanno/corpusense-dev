@@ -124,32 +124,29 @@ export const useAnnotationActions = () => {
       return;
     }
     const collection = collectionResult.value;
-    //Element dans la collection qui sert de référence pour la duplication
-    const baseElement = collection.content.find(
+    //Index dans la collection de l'élément qui sert de référence pour la duplication
+    const baseIndex = collection.content.findIndex(
       (el: CollectionElement) => el.canvasId === scope.canvasId,
     );
-    if (!baseElement) {
+    if (baseIndex === -1) {
       appDispatch(pushError(i18n.t('error_collection_no_canvas')));
       return;
     }
 
     //filtrer by distribution
-    let filteredContent: CollectionElement[] = [];
-    if (distribution === DuplicateDistribution.ALL_PAGES) {
-      filteredContent = collection.content;
-    } else {
-      if (baseElement.position % 2 === 0) {
-        filteredContent = collection.content.filter((el) => el.position % 2 === 0);
-      } else {
-        filteredContent = collection.content.filter((el) => el.position % 2 !== 0);
-      }
+    let filteredEntries = collection.content.map((el, index) => ({ el, index }));
+    if (distribution !== DuplicateDistribution.ALL_PAGES) {
+      filteredEntries = filteredEntries.filter(({ index }) =>
+        baseIndex % 2 === 0 ? index % 2 === 0 : index % 2 !== 0,
+      );
     }
     //filtrer by limit
     if (limit === DuplicateLimit.BEFORE) {
-      filteredContent = filteredContent.filter((el) => el.position <= baseElement.position);
+      filteredEntries = filteredEntries.filter(({ index }) => index <= baseIndex);
     } else if (limit === DuplicateLimit.AFTER) {
-      filteredContent = filteredContent.filter((el) => el.position >= baseElement.position);
+      filteredEntries = filteredEntries.filter(({ index }) => index >= baseIndex);
     }
+    const filteredContent = filteredEntries.map(({ el }) => el);
 
     await duplicateAnnotationsToPages(
       scope,

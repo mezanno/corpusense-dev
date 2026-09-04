@@ -51,7 +51,7 @@ const CollectionInspectorGalleryItem = ({
 
   const { isDragging } = useSortable({
     id: canvasWithSourceId.canvas.id,
-    index: canvasWithSourceId.position,
+    index: collectionContentIndex,
     element,
   });
 

@@ -6,7 +6,6 @@ import { useCallback, useMemo } from 'react';
 export type CanvasWithSourceId = {
   canvas: Canvas;
   sourceId: string;
-  position: number;
 };
 
 export const useCollectionContent = (collectionId: string) => {
