@@ -1,6 +1,6 @@
 import { workerPlugins } from '@/App';
 import { useWorkerContext } from '@/components/reducers/WorkerContext';
-import { Worker, WorkerStatus } from '@/data/models/worker/worker';
+import { WorkerStatus } from '@/data/models/worker/worker';
 import { getWorkerRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { updateTaskStatus } from '@/data/utils/worker';
 import { JobRow, supabase } from '@/utils/config';
@@ -23,18 +23,36 @@ const useJobRealtime = () => {
   }, [workersPosted]);
 
   useEffect(() => {
+    // Serializes async work per worker id, so concurrent polling/realtime updates for the same worker never overlap
+    const workerLocks = new Map<string, Promise<unknown>>();
+    const withWorkerLock = <T,>(workerId: string, task: () => Promise<T>): Promise<T> => {
+      const previous = workerLocks.get(workerId) ?? Promise.resolve();
+      const run = previous.catch(() => undefined).then(task);
+      workerLocks.set(
+        workerId,
+        run.catch(() => undefined),
+      );
+      return run;
+    };
+
     /**
      * Processes a single task update from a Supabase JobRow.
-     * Updates the local IndexedDB and determines the overall worker status.
+     * Re-reads the worker from IndexedDB (must be called under withWorkerLock) to avoid acting on stale state.
      * Deletes completed jobs from Supabase.
      */
-    const processSingleTask = async (worker: Worker, job: JobRow) => {
+    const processSingleTask = async (workerId: string, job: JobRow) => {
       const workerRepository = getWorkerRepository();
+      const workerResult = await workerRepository.getById(workerId);
+      if (!workerResult.ok) {
+        console.warn(`Worker not found: ${workerId}`);
+        return;
+      }
+      const worker = workerResult.value;
       const task = worker.queue.find((t) => t.id === job.task_id);
 
       if (!task) {
         console.warn(`Task not found in worker ${worker.id} for task_id: ${job.task_id}`);
-        return worker;
+        return;
       }
 
       // Map Supabase job status to WorkerStatus
@@ -47,12 +65,12 @@ const useJobRealtime = () => {
       let taskStatus = statusMap[job.status] ?? WorkerStatus.ERROR;
       let statusMessage = '';
 
-      // Skip processing if task is already finished locally, but ensure completed jobs are deleted from Supabase
+      // Skip processing if task is already finished locally; only clean up Supabase if it was a success
       if (task.status === WorkerStatus.COMPLETED || task.status === WorkerStatus.ERROR) {
-        if (job.status === 'completed') {
+        if (task.status === WorkerStatus.COMPLETED && job.status === 'completed') {
           await supabase.from('cs_jobs').delete().eq('id', job.id);
         }
-        return worker;
+        return;
       }
 
       // Handle successful results
@@ -65,8 +83,6 @@ const useJobRealtime = () => {
             if (response.status === WorkerStatus.ERROR) {
               taskStatus = WorkerStatus.ERROR;
               statusMessage = response.statusMessage ?? 'Plugin processing error';
-            } else if (response.status === WorkerStatus.COMPLETED) {
-              await supabase.from('cs_jobs').delete().eq('id', job.id);
             }
           } catch (error) {
             console.error(`Error in processResult for plugin ${job.plugin_name}:`, error);
@@ -96,20 +112,14 @@ const useJobRealtime = () => {
         overallStatus = anyError ? WorkerStatus.INPROGRESS_WITH_ERRORS : WorkerStatus.INPROGRESS;
       }
 
-      const updatedWorker = {
-        ...worker,
+      // Persist changes to IndexedDB
+      await workerRepository.patch(worker.id, {
         status: overallStatus,
         queue: updatedQueue,
-      };
-
-      // Persist changes to IndexedDB
-      await workerRepository.patch(updatedWorker.id, {
-        status: updatedWorker.status,
-        queue: updatedWorker.queue,
       });
 
-      // Remove completed job from Supabase to signal completion
-      if (job.status === 'completed') {
+      // Only remove the job once it succeeded and its result was processed without error; keep it otherwise for troubleshooting
+      if (job.status === 'completed' && taskStatus === WorkerStatus.COMPLETED) {
         const { error } = await supabase
           .from('cs_jobs')
           .delete()
@@ -118,8 +128,6 @@ const useJobRealtime = () => {
 
         if (error) console.error('Error deleting processed job from Supabase:', error);
       }
-
-      return updatedWorker;
     };
 
     /**
@@ -138,15 +146,23 @@ const useJobRealtime = () => {
           continue;
         }
 
-        if (data?.length > 0) {
-          let currentWorkerState = worker;
+        if (data?.length) {
           for (const job of data) {
-            currentWorkerState = await processSingleTask(currentWorkerState, job);
+            await withWorkerLock(worker.id, () => processSingleTask(worker.id, job));
           }
         } else {
-          //delete worker if no jobs are found in supabase
-          const workerRepository = getWorkerRepository();
-          await workerRepository.deleteById(worker.id);
+          // No job left in Supabase for this worker: everything it posted succeeded, mark it completed (never delete)
+          await withWorkerLock(worker.id, () => {
+            // Mark all tasks as completed if they are still in progress, since Supabase has no record of them anymore
+            const currentQueue = worker.queue;
+            const updatedQueue = currentQueue.map((task) => {
+              return { ...task, status: WorkerStatus.COMPLETED };
+            });
+            return getWorkerRepository().patch(worker.id, {
+              status: WorkerStatus.COMPLETED,
+              queue: updatedQueue,
+            });
+          });
         }
       }
     };
@@ -156,12 +172,8 @@ const useJobRealtime = () => {
      */
     const handleJobRowUpdate = async (payload: RealtimePostgresUpdatePayload<JobRow>) => {
       const job = payload.new;
-      const workerRepository = getWorkerRepository();
       try {
-        const workerResult = await workerRepository.getById(job.worker_id);
-        if (workerResult.ok) {
-          await processSingleTask(workerResult.value, job);
-        }
+        await withWorkerLock(job.worker_id, () => processSingleTask(job.worker_id, job));
       } catch (error) {
         console.error('Error processing realtime job update:', error);
       }
