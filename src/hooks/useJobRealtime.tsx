@@ -3,6 +3,7 @@ import { useWorkerContext } from '@/components/reducers/WorkerContext';
 import { WorkerStatus } from '@/data/models/worker/worker';
 import { getWorkerRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { updateTaskStatus } from '@/data/utils/worker';
+import { deleteFile } from '@/state/sagas/plugins/workers/supabase/utils';
 import { JobRow, supabase } from '@/utils/config';
 import {
   REALTIME_SUBSCRIBE_STATES,
@@ -10,6 +11,11 @@ import {
   RealtimePostgresUpdatePayload,
 } from '@supabase/supabase-js';
 import { useEffect, useRef } from 'react';
+import z from 'zod';
+
+const payloadSchema = z.object({
+  url: z.string(),
+});
 
 const useJobRealtime = () => {
   const channelRef = useRef<RealtimeChannel | null>(null);
@@ -120,6 +126,21 @@ const useJobRealtime = () => {
 
       // Only remove the job once it succeeded and its result was processed without error; keep it otherwise for troubleshooting
       if (job.status === 'completed' && taskStatus === WorkerStatus.COMPLETED) {
+        const { data } = await supabase
+          .from('cs_jobs')
+          .select()
+          .eq('task_id', task.id)
+          .eq('worker_id', worker.id)
+          .single();
+        const payload = payloadSchema.safeParse(data?.payload);
+        if (payload.success) {
+          //id is the last part of the url after the last slash
+          const id = payload.data.url.split('/').pop();
+          if (id !== undefined) {
+            await deleteFile(`uploads/${id}`);
+          }
+        }
+
         const { error } = await supabase
           .from('cs_jobs')
           .delete()
@@ -151,15 +172,23 @@ const useJobRealtime = () => {
             await withWorkerLock(worker.id, () => processSingleTask(worker.id, job));
           }
         } else {
-          // No job left in Supabase for this worker: everything it posted succeeded, mark it completed (never delete)
-          await withWorkerLock(worker.id, () => {
-            // Mark all tasks as completed if they are still in progress, since Supabase has no record of them anymore
-            const currentQueue = worker.queue;
-            const updatedQueue = currentQueue.map((task) => {
-              return { ...task, status: WorkerStatus.COMPLETED };
-            });
-            return getWorkerRepository().patch(worker.id, {
-              status: WorkerStatus.COMPLETED,
+          // No job left in Supabase for this worker: mark any still-pending task as completed
+          await withWorkerLock(worker.id, async () => {
+            const workerRepository = getWorkerRepository();
+            // re-read the freshest state under the lock, since it may have changed while waiting
+            const currentWorkerResult = await workerRepository.getById(worker.id);
+            if (!currentWorkerResult.ok) return;
+
+            const currentWorker = currentWorkerResult.value;
+            const updatedQueue = currentWorker.queue.map((task) =>
+              task.status === WorkerStatus.COMPLETED || task.status === WorkerStatus.ERROR
+                ? task
+                : { ...task, status: WorkerStatus.COMPLETED },
+            );
+            const anyError = updatedQueue.some((t) => t.status === WorkerStatus.ERROR);
+
+            await workerRepository.patch(worker.id, {
+              status: anyError ? WorkerStatus.COMPLETED_WITH_ERRORS : WorkerStatus.COMPLETED,
               queue: updatedQueue,
             });
           });
