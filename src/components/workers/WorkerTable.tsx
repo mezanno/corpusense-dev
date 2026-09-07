@@ -11,8 +11,8 @@ import {
 import WorkerDataTable from '@/components/workers/WorkerDataTable';
 import { getWorkerStatusIcon } from '@/components/workers/workerUtils';
 import { Worker, WorkerStatus } from '@/data/models/worker/worker';
+import { getWorkerCategory } from '@/data/models/worker/worker.utils';
 import useWorkers from '@/hooks/data/workers/useWorkers';
-import { getWorkerCategory } from '@/utils/workers';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, MoreHorizontal, Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';

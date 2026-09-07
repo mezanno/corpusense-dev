@@ -1,3 +1,4 @@
+import { workerPlugins } from '@/App';
 import { Worker } from './worker';
 import { WorkerCreateDTO } from './worker.dto';
 
@@ -9,3 +10,8 @@ import { WorkerCreateDTO } from './worker.dto';
 export function isWorker(obj: Worker | WorkerCreateDTO): obj is Worker {
   return 'id' in obj && 'scopeKey' in obj && 'status' in obj && 'createdAt' in obj;
 }
+
+export const getWorkerCategory = (workerName: string): string | undefined => {
+  const worker = workerPlugins[workerName];
+  return worker?.info.category;
+};
