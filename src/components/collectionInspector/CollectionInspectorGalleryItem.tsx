@@ -5,7 +5,6 @@ import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionConten
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import useConvertedFileIO from '@/hooks/data/convertedFiles/useConvertedFileIO';
 import useThumbnail from '@/hooks/data/sources/useThumbnail';
-import { useSortable } from '@dnd-kit/react/sortable';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import 'gridstack/dist/gridstack.min.css';
 import { CircleX, SpellCheck, SpellCheck2 } from 'lucide-react';
@@ -23,6 +22,7 @@ const CollectionInspectorGalleryItem = ({
   thumbHeight,
   setCanvasToDisplay,
   canvasToDisplay,
+  isDragging,
 }: {
   canvasWithSourceId: CanvasWithSourceId;
   collectionId: string;
@@ -31,6 +31,7 @@ const CollectionInspectorGalleryItem = ({
   thumbHeight: number;
   canvasToDisplay: CanvasWithSourceId | null;
   setCanvasToDisplay: (canvas: CanvasWithSourceId | null) => void;
+  isDragging: boolean;
 }) => {
   const { t } = useTranslation();
   const scope = useMemo(
@@ -46,14 +47,6 @@ const CollectionInspectorGalleryItem = ({
   const { thumbnail, error } = useThumbnail(canvasWithSourceId);
 
   const [deleting, setDeleting] = useState(false);
-
-  const [element, setElement] = useState<HTMLDivElement | null>(null);
-
-  const { isDragging } = useSortable({
-    id: canvasWithSourceId.canvas.id,
-    index: collectionContentIndex,
-    element,
-  });
 
   if (deleting) {
     return null;
@@ -90,7 +83,6 @@ const CollectionInspectorGalleryItem = ({
 
   return (
     <div
-      ref={setElement}
       className={`group flex h-fit w-fit cursor-pointer flex-col items-center rounded-md p-1 shadow transition duration-200 hover:scale-105 ${idDisplayed ? 'bg-saffron-400' : 'bg-saffron-900'} `}
       style={{
         width: `${thumbWidth}px`,

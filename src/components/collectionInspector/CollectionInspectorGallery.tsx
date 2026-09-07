@@ -25,17 +25,20 @@ const CollectionInspectorGallery = (props: Props) => {
   const { swapCollectionElements } = useCollectionActions(collection.id);
 
   const handleDragEnd = (event: DragEndEvent) => {
-    const { source } = event.operation;
-    if (isSortable(source)) {
-      const { initialIndex, index } = source;
-      void (async () => {
-        if (index !== initialIndex) {
-          const swapResult = await swapCollectionElements(initialIndex, index);
-          if (!swapResult.ok) {
-            appDispatch(pushError(getErrorMessage(swapResult.error)));
+    console.log(event);
+    if (!event.canceled) {
+      const { source } = event.operation;
+      if (isSortable(source)) {
+        const { initialIndex, index } = source;
+        void (async () => {
+          if (index !== initialIndex) {
+            const swapResult = await swapCollectionElements(initialIndex, index);
+            if (!swapResult.ok) {
+              appDispatch(pushError(getErrorMessage(swapResult.error)));
+            }
           }
-        }
-      })();
+        })();
+      }
     }
   };
 

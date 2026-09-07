@@ -1,6 +1,8 @@
 import { ElementType } from '@/data/models/annotations/annotation';
 import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import useDialog from '@/hooks/ui/useDialog';
+import { useSortable } from '@dnd-kit/react/sortable';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAnnotationContext } from '../reducers/AnnotationContext';
 import {
@@ -32,6 +34,14 @@ const CollectionInspectorGalleryItemMenu = ({
 
   const regionAnnotations = getAnnotationsByTypes([ElementType.TEXT_REGION]);
 
+  const [element, setElement] = useState<HTMLSpanElement | null>(null);
+  // element must be the ContextMenuTrigger span, since it's the actual grid child dnd-kit reorders, not the nested item div
+  const { isDragging } = useSortable({
+    id: canvasWithSourceId.canvas.id,
+    index: collectionContentIndex,
+    element,
+  });
+
   const handleDuplicateLayout = () => {
     openDuplicateLayoutDialog({
       canvasId: canvasWithSourceId.canvas.id,
@@ -43,7 +53,7 @@ const CollectionInspectorGalleryItemMenu = ({
     <>
       {/* modal={false} : fix a bug with the Dialog+ContextMenu : https://github.com/radix-ui/primitives/issues/1836 */}
       <ContextMenu modal={false}>
-        <ContextMenuTrigger>
+        <ContextMenuTrigger ref={setElement}>
           <CollectionInspectorGalleryItem
             canvasWithSourceId={canvasWithSourceId}
             collectionId={collectionId}
@@ -52,6 +62,7 @@ const CollectionInspectorGalleryItemMenu = ({
             thumbHeight={150}
             setCanvasToDisplay={setCanvasToDisplay}
             canvasToDisplay={canvasToDisplay}
+            isDragging={isDragging}
           />
         </ContextMenuTrigger>
         <ContextMenuContent>
