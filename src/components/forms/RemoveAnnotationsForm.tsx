@@ -51,7 +51,7 @@ const RemoveAnnotationsForm = ({ scope, formRef }: RemoveAnnotationsFormProps) =
 
   return (
     <Form {...form}>
-      <FormDescription>{t('description_remove_annotations')}</FormDescription>
+      <FormDescription className='mb-2'>{t('description_remove_annotations')}</FormDescription>
       <form
         className='mb-4 flex flex-wrap gap-4'
         ref={formRef}
@@ -63,11 +63,11 @@ const RemoveAnnotationsForm = ({ scope, formRef }: RemoveAnnotationsFormProps) =
             name={type.type}
             key={type.type}
             render={({ field }) => (
-              <FormItem className='flex'>
+              <FormItem className='flex gap-1'>
                 <FormControl>
                   <Checkbox id={type.type} checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
-                <FormLabel>{type.type}</FormLabel>
+                <FormLabel>{t(`form_option_${type.type}`)}</FormLabel>
               </FormItem>
             )}
           />
