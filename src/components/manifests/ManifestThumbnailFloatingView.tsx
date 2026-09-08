@@ -1,7 +1,7 @@
 import useBlob from '@/hooks/data/sources/useBlob';
 import { FileImage } from 'lucide-react';
 
-const ManifestThumbnailLoop = ({ thumbnailBlobId }: { thumbnailBlobId: string }) => {
+function ManifestThumbnailLoop({ thumbnailBlobId }: { thumbnailBlobId: string }) {
   const { thumbUrl } = useBlob(thumbnailBlobId);
 
   if (thumbUrl === null) {
@@ -20,6 +20,6 @@ const ManifestThumbnailLoop = ({ thumbnailBlobId }: { thumbnailBlobId: string })
       className='h-full w-full'
     />
   );
-};
+}
 
 export default ManifestThumbnailLoop;

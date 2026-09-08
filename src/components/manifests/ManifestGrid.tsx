@@ -14,7 +14,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ManifestThumbnail from './ManifestThumbnail';
-import ManifestThumbnailLoop from './ManifestThumbnailLoop';
+import ManifestThumbnailLoop from './ManifestThumbnailFloatingView';
 
 const ManifestGrid = ({ currendManifestId }: { currendManifestId: string }) => {
   const { t } = useTranslation();
