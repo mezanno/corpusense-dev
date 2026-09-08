@@ -20,6 +20,9 @@ export async function initI18n() {
       // preferred locale here.
       fallbackLng: 'fr-FR',
       // supportedLngs: ['fr', 'en'],
+      // Namespaces loaded on init; other namespaces can still be lazy-loaded via useTranslation(ns).
+      ns: ['translation', 'welcome'],
+      defaultNS: 'translation',
 
       debug: true,
       // Normally, we want `escapeValue: true` as it
