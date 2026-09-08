@@ -8,6 +8,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, Copy, Eye, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { IconButtonWithTooltip } from '../IconButtonWithTooltip';
+import ResultsAvailable from '../ResultsAvailable';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
@@ -157,6 +158,7 @@ const CollectionTable = () => {
             >
               <Trash2 />
             </IconButtonWithTooltip>
+            <ResultsAvailable scope={{ collectionId }} />
           </div>
         );
       },
