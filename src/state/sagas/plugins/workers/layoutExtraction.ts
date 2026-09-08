@@ -22,9 +22,7 @@ export const pluginDisplayName = 'Pero / PaddlePaddle'; //display name of the pl
 export const pluginDescription = i18n.t('plugin_layout_description'); //description of the plugin, used in the UI
 export const pluginCategory = WorkerCategory.LAYOUT; //category of the plugin, used to group plugins in the UI
 export const pluginRuntimeParameters = z.object({
-  type: z
-    .enum(['perolayout', 'paddlelayout'])
-    .describe(i18n.t('plugin_layoutextraction_description')),
+  type: z.enum(['perolayout']).describe(i18n.t('plugin_layoutextraction_description')),
 });
 export const experimental = true;
 
