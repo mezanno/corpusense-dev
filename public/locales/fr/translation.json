@@ -135,7 +135,7 @@
   "form_placeholder_collection_name": "Ma collection",
   "form_placeholder_tags": "Étiquettes",
   "form_placeholder_about": "À propos",
-  "form_placeholder_manifest_content": "Coller le contenu du manifest ici",
+  "form_placeholder_manifest_content": "URL du manifest ou identifiant ARK (Gallica)",
   "form_placeholder_manifest_name": "Nom du manifest",
   "form_placeholder_contact_name": "Votre nom",
   "form_placeholder_contact_email": "Votre adresse e-mail",
