@@ -237,7 +237,6 @@
   "form_label_prompt_mistral": "Prompt Mistral (laissez vide pour utiliser le prompt par défaut - utilisez {{schema}} pour ajouter le schéma du modèle)",
   "form_error_required": "Ce champ est requis",
   "form_error_required_and_min": "Ce champ est requis et doit contenir au moins {{min}} caractères",
-
   "form_collection_name_already_exists": "Une collection avec ce nom existe déjà",
   "form_collection_modifierchain_already_exists": "Une chaîne avec ce nom existe déjà",
   "form_model_name_already_exists": "Un modèle avec ce nom existe déjà",
@@ -393,6 +392,7 @@
   "info_report_modifiers": "Chaînes de modificateurs",
   "info_open_collection_metadata_panel": "Ouvrir le panneau de métadonnées de la collection",
   "info_close_collection_metadata_panel": "Fermer le panneau de métadonnées de la collection",
+  "info_experimental_features_access": "Pas encore de compte et vous souhaitez accéder aux fonctionnalités expérimentales ? Contactez-nous pour en discuter. Nous accueillons actuellement un nombre limité de personnes afin de pouvoir les accompagner au mieux.",
   "description_select_model": "Choisissez un modèle de données",
   "description_import_collection": "Importer une collection (fichier JSON) ou un ensemble de collections (fichier ZIP)",
   "description_create_collection": "Créer une collection en saisissant le nom de la collection.",

@@ -1,6 +1,6 @@
-import { FormProps } from '@/hooks/ui/useDialog';
+import useDialog, { FormProps } from '@/hooks/ui/useDialog';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useRef } from 'react';
+import { MouseEvent, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -25,6 +25,7 @@ const LoginForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
   const { t } = useTranslation();
   const { status, login } = useConnectedUserContext();
   const newlyOpened = useRef(true);
+  const { openContactUsDialog } = useDialog();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,6 +47,12 @@ const LoginForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
     newlyOpened.current = false;
   }
 
+  const handleContactUs = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    closeDialog?.();
+    openContactUsDialog();
+  };
+
   return (
     <Form {...form}>
       <form
@@ -54,7 +61,15 @@ const LoginForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
         ref={formRef}
         className='space-y-4'
       >
-        <FormDescription>{t('description_login')}</FormDescription>
+        <FormDescription className='flex flex-col gap-2 pb-2'>
+          <p>{t('description_login')}</p>
+          <p className='flex items-center border-t border-b border-border py-2'>
+            <span>{t('info_experimental_features_access')}</span>
+            <button onClick={handleContactUs} className='soft-button'>
+              {t('btn_open_contact')}
+            </button>
+          </p>
+        </FormDescription>
         <FormField
           control={form.control}
           name='email'
