@@ -1,8 +1,8 @@
 import { toString } from '@/data/models/scope/scope.utils';
 import { Task, WorkerResponse } from '@/data/models/worker/worker';
 import { PluginParams } from '@/state/reducers/workers';
+import { WorkerCategory } from '../WorkerCategory';
 import { suryaRun } from './suryaCommon';
-import { WorkerCategory } from './WorkerCategory';
 
 export const pluginName = 'surya-layout';
 export const pluginDisplayName = 'Détection de layout Surya';
