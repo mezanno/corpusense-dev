@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 
-const ResultsAvailable = ({ scope }: { scope: Scope }) => {
+const ResultsAvailable = ({ scope, showTitle }: { scope: Scope; showTitle?: boolean }) => {
   const { t } = useTranslation();
   const { openSelectFormatDialog } = useDialog();
   const { getWorkersByScope, hasResult } = useWorkerContext();
@@ -32,7 +32,8 @@ const ResultsAvailable = ({ scope }: { scope: Scope }) => {
       <DropdownMenu>
         <DropdownMenuTrigger className='flex items-center gap-2'>
           <Download size={18} />
-          <span className='text-sm'>{t('info_results_available')}</span>
+          {showTitle === undefined ||
+            (showTitle && <span className='text-sm'>{t('info_results_available')}</span>)}
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           {workersWithResults
