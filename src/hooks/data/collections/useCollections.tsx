@@ -1,4 +1,4 @@
-import { Collection, CollectionDetails } from '@/data/models/collection';
+import { Collection, CollectionDetails } from '@/data/models/collection/collection';
 import {
   getAnnotationRepository,
   getCollectionRepository,
@@ -14,15 +14,7 @@ import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useMemo } from 'react';
-import { v4 as uuid } from 'uuid';
 import { useAppDispatch } from '../../hooks';
-
-export interface CreateCollectionWithSelectionPayload {
-  selection: Canvas[];
-  name: string;
-  id?: string;
-  sourceId: string;
-}
 
 export const useCollections = () => {
   const appDispatch = useAppDispatch();
@@ -54,12 +46,10 @@ export const useCollections = () => {
   const createCollection = async (name: string) => {
     try {
       await collectionRepository.create({
-        id: uuid(),
         name,
         tags: [],
-        contentSize: 0,
         content: [],
-        offline: false,
+        contentSize: 0,
       });
       appDispatch(pushInfo(i18n.t('toast_collection_created')));
     } catch (e) {
@@ -68,40 +58,33 @@ export const useCollections = () => {
   };
 
   const createCollectionWithSelection = async (
-    action: CreateCollectionWithSelectionPayload,
+    selection: Canvas[],
+    name: string,
+    sourceId: string,
   ): Promise<FunctionResult<CollectionDetails, BaseError>> => {
-    const { id, name, selection, sourceId } = action;
-    const collectionId = id ?? uuid();
-    const newCollection: CollectionDetails = {
-      id: collectionId,
+    const newCollection = {
       name,
       tags: [],
       contentSize: selection.length,
-      offline: false,
     };
     const content = generateCollectionContent(
       selection.map((c) => c.id),
       sourceId,
     );
 
-    try {
-      await collectionRepository.create({
-        ...newCollection,
-        content,
-      });
-      if (id === undefined) {
-        //if an id was provided, it means it is an import, so we don't need to create the first annotations
-        const firstAnnotations = generateFirstAnnotation(selection, collectionId);
-        const annotationRepository = getAnnotationRepository();
-        await annotationRepository.addAll(firstAnnotations);
-      }
+    const createResult = await collectionRepository.create({
+      ...newCollection,
+      content,
+    });
+    if (createResult.ok) {
       appDispatch(pushInfo(i18n.t('toast_collection_created')));
-      return FunctionResult.ok({ ...newCollection, content });
-    } catch (e) {
-      const errorMsg = getErrorMessage(e);
-      appDispatch(pushError(errorMsg));
-      return FunctionResult.err(new BaseError(errorMsg));
+      // const firstAnnotations = generateFirstAnnotation(selection, collection.id);
+      // const annotationRepository = getAnnotationRepository();
+      // await annotationRepository.addAll(firstAnnotations);
+    } else {
+      appDispatch(pushError(getErrorMessage(createResult.error)));
     }
+    return createResult;
   };
 
   const duplicateCollection = async (collectionId: string, newName: string) => {
@@ -168,7 +151,6 @@ export const useCollections = () => {
       tags,
       content,
       modelId,
-      offline,
       postLayoutModifierChainId,
       postOcrModifierChainId,
     } = collection;
@@ -182,7 +164,6 @@ export const useCollections = () => {
         tags,
         content,
         modelId,
-        offline,
         postLayoutModifierChainId,
         postOcrModifierChainId,
       });

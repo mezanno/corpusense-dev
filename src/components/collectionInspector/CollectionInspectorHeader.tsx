@@ -5,7 +5,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Collection } from '@/data/models/collection';
+import { Collection } from '@/data/models/collection/collection';
 import 'gridstack/dist/gridstack.min.css';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';

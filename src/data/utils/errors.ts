@@ -5,3 +5,9 @@ export class EmptyCollectionError extends BaseError {
     super(`Collection ${context.name} (${context.id}) is empty`);
   }
 }
+
+export class DBError extends BaseError {
+  constructor(context: { message: string }) {
+    super(`Database error: ${context.message}`);
+  }
+}

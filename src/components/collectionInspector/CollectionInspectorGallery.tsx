@@ -1,4 +1,4 @@
-import { Collection } from '@/data/models/collection';
+import { Collection } from '@/data/models/collection/collection';
 import useCollectionActions from '@/hooks/data/collections/useCollectionActions';
 import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import { useAppDispatch } from '@/hooks/hooks';

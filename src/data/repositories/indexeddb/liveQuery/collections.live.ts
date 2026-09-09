@@ -1,4 +1,4 @@
-import { Collection, CollectionDetails } from '@/data/models/collection';
+import { Collection, CollectionDetails } from '@/data/models/collection/collection';
 import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import { Canvas } from '@iiif/presentation-3';
 import { db } from '../db';

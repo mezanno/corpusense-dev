@@ -67,11 +67,7 @@ const NewCollectionForm = ({
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (selection && selection.length > 0 && sourceId !== undefined) {
-      await createCollectionWithSelection({
-        selection,
-        name: values.name,
-        sourceId,
-      });
+      await createCollectionWithSelection(selection, values.name, sourceId);
     } else {
       await createCollection(values.name);
     }

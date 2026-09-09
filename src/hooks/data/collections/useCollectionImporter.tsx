@@ -4,7 +4,7 @@ import {
   ExportedCollectionSchema,
   LegacyExportedCollection,
   LegacyExportedCollectionSchema,
-} from '@/data/models/collection';
+} from '@/data/models/collection/collection';
 import {
   getAnnotationRepository,
   getCollectionRepository,

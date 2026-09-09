@@ -1,20 +1,19 @@
 import z from 'zod';
-import { AnnotationDTO } from './annotations/annotation.dto';
-import { CollectionElementSchema, LegacyCollectionElementSchema } from './collectionElement';
-import { DataModelSchema } from './dataModel/dataModel';
-import { ObjectWithStringIdSchema } from './objectWithStringId';
-import { ResultSchema } from './result/result';
-import { TagSchema } from './tag';
-import { WorkerSchema } from './worker/worker';
+import { AnnotationDTO } from '../annotations/annotation.dto';
+import { CollectionElementSchema, LegacyCollectionElementSchema } from '../collectionElement';
+import { DataModelSchema } from '../dataModel/dataModel';
+import { ObjectWithStringIdSchema } from '../objectWithStringId';
+import { ResultSchema } from '../result/result';
+import { TagSchema } from '../tag';
+import { TimeStampSchema } from '../timeStampSchema';
+import { WorkerSchema } from '../worker/worker';
 
-export const CollectionDetailsSchema = ObjectWithStringIdSchema.extend({
-  id: z.string(),
+export const CollectionDetailsSchema = TimeStampSchema.extend({
   name: z.string(),
   about: z.string().optional(),
   tags: z.array(z.string()),
   modelId: z.string().optional(),
   contentSize: z.number(),
-  offline: z.boolean(),
   postLayoutModifierChainId: z.string().optional(),
   postOcrModifierChainId: z.string().optional(),
 });

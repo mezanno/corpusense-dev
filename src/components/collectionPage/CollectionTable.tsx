@@ -1,5 +1,5 @@
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
-import { CollectionDetails } from '@/data/models/collection';
+import { CollectionDetails } from '@/data/models/collection/collection';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useTags } from '@/hooks/data/tags/useTags';
 import useDialog from '@/hooks/ui/useDialog';
@@ -97,6 +97,57 @@ const CollectionTable = () => {
       cell: ({ row }) => {
         const id: string = row.getValue('id');
         return <div className='font-mono'>{id.substring(0, 8)}</div>;
+      },
+    },
+    {
+      accessorFn: (row: CollectionDetails) => row.createdAt,
+      accessorKey: 'createdAt',
+      header: ({ column }) => {
+        return (
+          <Button
+            className='w-full'
+            variant='ghost'
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            {t('table_col_title_collection_created_at')}
+            <ArrowUpDown className='ml-2 h-4 w-4' />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const createdAt: string = row.getValue('createdAt');
+        return (
+          <div className='flex flex-col items-center'>
+            <span>{createdAt ? new Date(createdAt).toLocaleDateString() : '-'}</span>
+            <span>{createdAt ? new Date(createdAt).toLocaleTimeString() : '-'}</span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorFn: (row: CollectionDetails) => row.updatedAt,
+      accessorKey: 'updatedAt',
+      header: ({ column }) => {
+        return (
+          <Button
+            className='w-full'
+            variant='ghost'
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            {t('table_col_title_collection_updated_at')}
+            <ArrowUpDown className='ml-2 h-4 w-4' />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const updatedAt: string = row.getValue('updatedAt');
+
+        return (
+          <div className='flex flex-col items-center'>
+            <span>{updatedAt ? new Date(updatedAt).toLocaleDateString() : '-'}</span>
+            <span>{updatedAt ? new Date(updatedAt).toLocaleTimeString() : '-'}</span>
+          </div>
+        );
       },
     },
     {

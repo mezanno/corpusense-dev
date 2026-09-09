@@ -1,5 +1,5 @@
 import { Annotation } from '@/data/models/annotations/annotation';
-import { CollectionContent, CollectionDetails } from '@/data/models/collection';
+import { CollectionContent, CollectionDetails } from '@/data/models/collection/collection';
 import { ConvertedFile } from '@/data/models/convertedFile';
 import { DataModel } from '@/data/models/dataModel/dataModel';
 import { FSHandle } from '@/data/models/fSHandle';

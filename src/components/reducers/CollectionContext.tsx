@@ -1,4 +1,4 @@
-import { CollectionDetails } from '@/data/models/collection';
+import { CollectionDetails } from '@/data/models/collection/collection';
 import { getCollectonLiveRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { getFile } from '@/data/utils/canvas';
 import { useLiveQuery } from 'dexie-react-hooks';

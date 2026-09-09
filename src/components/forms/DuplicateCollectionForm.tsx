@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { CollectionDetails } from '@/data/models/collection';
+import { CollectionDetails } from '@/data/models/collection/collection';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { FormProps } from '@/hooks/ui/useDialog';
 import i18n from '@/i18n';

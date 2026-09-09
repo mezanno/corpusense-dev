@@ -1,6 +1,6 @@
 import { Annotation, ElementType } from '@/data/models/annotations/annotation';
 import { AnnotationDTO } from '@/data/models/annotations/annotation.dto';
-import { Collection, CollectionDetails } from '@/data/models/collection';
+import { Collection, CollectionDetails } from '@/data/models/collection/collection';
 import { CollectionElement } from '@/data/models/collectionElement';
 import { ConvertedFile } from '@/data/models/convertedFile';
 import { DataModel } from '@/data/models/dataModel/dataModel';
@@ -17,6 +17,7 @@ import { AddSourceDTO } from '@/data/models/source/source.dto';
 import { StoredManifestDetails } from '@/data/models/storedManifest';
 import { Tag } from '@/data/models/tag';
 import { Worker } from '@/data/models/worker/worker';
+import { DBError } from '@/data/utils/errors';
 import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import { FunctionResult } from '@/utils/functionResult';
 import { Canvas, Manifest } from '@iiif/presentation-3';
@@ -60,11 +61,9 @@ export interface CollectionRepository {
   getSourceIdsByCollectionId(
     collectionId: string,
   ): Promise<FunctionResult<string[], EntityNotFoundError>>;
-  getOfflineCollections(): Promise<CollectionDetails[]>;
-  getOfflineCanvases(): Promise<Canvas[]>;
   exists(id: string): Promise<boolean>;
 
-  create(collection: Collection): Promise<void>;
+  create(collection: Collection): Promise<FunctionResult<Collection, DBError>>;
   addContentToCollection(collection: Collection): Promise<void>;
   duplicate(
     collectionId: string,
@@ -76,7 +75,6 @@ export interface CollectionRepository {
     { name, tags, content }: { name: string; tags: string[]; content: CollectionElement[] },
   ): Promise<void>;
   updateTags(id: string, tags: string[]): Promise<void>;
-  updateOffline(id: string, offline: boolean): Promise<void>;
   shiftCollectionElements(
     collectionId: string,
     sourcePosition: number,

@@ -1,5 +1,5 @@
 import { ElementType } from '@/data/models/annotations/annotation';
-import { Collection } from '@/data/models/collection';
+import { Collection } from '@/data/models/collection/collection';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useModels } from '@/hooks/data/models/useModels';
 import useModifierChainLive from '@/hooks/data/modifiers/useModifierChainLive';

@@ -1,5 +1,5 @@
 import { Annotation, ElementType } from '@/data/models/annotations/annotation';
-import { Collection, CollectionDetails } from '@/data/models/collection';
+import { Collection, CollectionDetails } from '@/data/models/collection/collection';
 import { DataModel } from '@/data/models/dataModel/dataModel';
 import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
 import { NamedEntity } from '@/data/models/namedEntity';

@@ -274,6 +274,8 @@
   "table_col_title_collection_name": "Collection name",
   "table_col_title_collection_info": "Information",
   "table_col_title_collection_id": "id",
+  "table_col_title_collection_created_at": "Created on",
+  "table_col_title_collection_updated_at": "Updated on",
   "table_col_title_name": "Name",
   "table_col_title_type": "Type",
   "table_col_title_isArray": "[array]",

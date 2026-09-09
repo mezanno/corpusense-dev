@@ -22,7 +22,7 @@ import UpdateSourceNameForm from '@/components/forms/UpdateSourceNameForm';
 import UploadSourceForm, { UploadSourceFormParams } from '@/components/forms/UploadSourceForm';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import ModelPreview from '@/components/textviewer/ModelPreview';
-import { CollectionDetails } from '@/data/models/collection';
+import { CollectionDetails } from '@/data/models/collection/collection';
 import { DataModel } from '@/data/models/dataModel/dataModel';
 import { LLMProfile } from '@/data/models/LLMProfile';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';

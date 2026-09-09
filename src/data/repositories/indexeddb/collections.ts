@@ -1,12 +1,15 @@
+import { CollectionCreateDTO } from '@/data/models/collection/collection.dto';
 import { CollectionElement } from '@/data/models/collectionElement';
 import { AnnotationScope, CanvasScope } from '@/data/models/scope/scope';
 import { Tag } from '@/data/models/tag';
+import { DBError } from '@/data/utils/errors';
 import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import { FunctionResult } from '@/utils/functionResult';
+import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
 import { groupBy, mapValues } from 'lodash';
 import { v4 as uuid } from 'uuid';
-import { Collection, CollectionDetails } from '../../models/collection';
+import { Collection, CollectionDetails } from '../../models/collection/collection';
 import { EntityNotFoundError } from '../EntityNotFoundError';
 import { db } from './db';
 import {
@@ -112,20 +115,6 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     ]);
   }
 
-  async getOfflineCollections(): Promise<CollectionDetails[]> {
-    return await db.collections.where('offline').equals(1).toArray();
-  }
-
-  async getOfflineCanvases(): Promise<Canvas[]> {
-    const offlineCollections = await this.getOfflineCollections();
-    const canvasArrays = await Promise.all(
-      offlineCollections.map(async (collection) =>
-        FunctionResult.unwrapOr(await this.getCanvasesByCollectionId(collection.id), []),
-      ),
-    );
-    return canvasArrays.flat();
-  }
-
   async getCanvasByScope(
     scope: CanvasScope | AnnotationScope,
   ): Promise<FunctionResult<CanvasWithSourceId, EntityNotFoundError>> {
@@ -160,15 +149,28 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     return count > 0;
   }
 
-  async create(collection: Collection): Promise<void> {
-    const { content, ...collectionDetails } = collection;
-    await db.transaction('rw', db.collections, db.collectionContents, async () => {
-      await db.collections.add(collectionDetails);
-      await db.collectionContents.add({
-        id: collection.id,
-        content: content ?? [],
+  async create(collectionDTO: CollectionCreateDTO): Promise<FunctionResult<Collection, DBError>> {
+    const collectionId = uuid();
+    const now = new Date().toISOString();
+    const newCollection = {
+      ...collectionDTO,
+      id: collectionId,
+      createdAt: now,
+      updatedAt: now,
+    };
+    try {
+      await db.transaction('rw', db.collections, db.collectionContents, async () => {
+        const { content, ...collectionDetails } = newCollection;
+        await db.collections.add(collectionDetails);
+        await db.collectionContents.add({
+          id: collectionId,
+          content: content ?? [],
+        });
       });
-    });
+      return FunctionResult.ok(newCollection);
+    } catch (error) {
+      return FunctionResult.err(new DBError({ message: getErrorMessage(error) }));
+    }
   }
 
   async duplicate(
@@ -219,7 +221,6 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
       tags,
       content,
       modelId,
-      offline,
       postLayoutModifierChainId,
       postOcrModifierChainId,
     }: {
@@ -228,7 +229,6 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
       tags: string[];
       content: CollectionElement[];
       modelId?: string;
-      offline: boolean;
       postLayoutModifierChainId?: string;
       postOcrModifierChainId?: string;
     },
@@ -239,7 +239,6 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
         about,
         tags,
         modelId,
-        offline,
         postLayoutModifierChainId,
         postOcrModifierChainId,
       });
@@ -252,12 +251,6 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
   async updateTags(id: string, tags: string[]): Promise<void> {
     await db.collections.update(id, {
       tags,
-    });
-  }
-
-  async updateOffline(id: string, offline: boolean): Promise<void> {
-    await db.collections.update(id, {
-      offline,
     });
   }
 
