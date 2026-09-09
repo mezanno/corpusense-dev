@@ -83,7 +83,7 @@ const CollectionInspectorGalleryItemContent = ({
 
   return (
     <div
-      className={`group flex h-fit w-fit cursor-pointer flex-col items-center rounded-md p-1 shadow transition duration-200 hover:scale-105 ${idDisplayed ? 'bg-saffron-400' : 'bg-saffron-900'} `}
+      className={`group relative flex h-fit w-fit cursor-pointer flex-col items-center rounded-md p-1 shadow transition duration-200 hover:scale-105 ${idDisplayed ? 'bg-saffron-400' : 'bg-saffron-900'} `}
       style={{
         width: `${thumbWidth}px`,
         height: `${thumbHeight}px`,
@@ -135,7 +135,9 @@ const CollectionInspectorGalleryItemContent = ({
           )}
         <span className='text-dark-slate-gray-300 italic'>{canvasItemId}</span>
       </div>
-      <WorkerStatusIcon scope={scope} />
+      <div className='absolute inset-0 flex items-center justify-center'>
+        <WorkerStatusIcon scope={scope} />
+      </div>
     </div>
   );
 };
