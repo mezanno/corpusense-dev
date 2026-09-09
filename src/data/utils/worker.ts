@@ -1,6 +1,6 @@
 import { Task, WorkerStatus } from '../models/worker/worker';
 
-function updateTaskStatus(
+function updateQueueWithTaskStatus(
   queue: Task[],
   index: number,
   status: WorkerStatus,
@@ -13,4 +13,4 @@ function updateTaskStatus(
   }
 }
 
-export { updateTaskStatus };
+export { updateQueueWithTaskStatus };

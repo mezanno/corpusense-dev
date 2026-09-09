@@ -2,7 +2,7 @@ import { workerPlugins } from '@/App';
 import { useWorkerContext } from '@/components/reducers/WorkerContext';
 import { WorkerStatus } from '@/data/models/worker/worker';
 import { getWorkerRepository } from '@/data/repositories/indexeddb/dbFactory';
-import { updateTaskStatus } from '@/data/utils/worker';
+import { updateQueueWithTaskStatus } from '@/data/utils/worker';
 import { deleteFile } from '@/state/sagas/plugins/workers/supabase/utils';
 import { JobRow, supabase } from '@/utils/config';
 import {
@@ -102,7 +102,13 @@ const useJobRealtime = () => {
       }
 
       // Update the local queue
-      const updatedQueue = updateTaskStatus(worker.queue, task.id, taskStatus, statusMessage);
+      const updatedQueue = updateQueueWithTaskStatus(
+        worker.queue,
+        task.id,
+        taskStatus,
+        statusMessage,
+      );
+      await workerRepository.updateTaskStatus(worker.id, task.id, taskStatus, statusMessage);
 
       // Determine the overall worker status based on the entire queue
       const allFinished = updatedQueue.every(
@@ -121,7 +127,6 @@ const useJobRealtime = () => {
       // Persist changes to IndexedDB
       await workerRepository.patch(worker.id, {
         status: overallStatus,
-        queue: updatedQueue,
       });
 
       // Only remove the job once it succeeded and its result was processed without error; keep it otherwise for troubleshooting

@@ -16,7 +16,7 @@ import {
   getResultRepository,
   getWorkerRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
-import { updateTaskStatus } from '@/data/utils/worker';
+import { updateQueueWithTaskStatus } from '@/data/utils/worker';
 import i18n from '@/i18n';
 import { FunctionResult } from '@/utils/functionResult';
 import { getErrorMessage } from '@/utils/utils';
@@ -206,7 +206,7 @@ function* startWorker(
       task = { ...task, status: WorkerStatus.INPROGRESS };
       currentWorker = {
         ...currentWorker,
-        queue: updateTaskStatus(currentWorker.queue, idTask, WorkerStatus.INPROGRESS),
+        queue: updateQueueWithTaskStatus(currentWorker.queue, idTask, WorkerStatus.INPROGRESS),
       };
 
       yield call([workerRepository, workerRepository.patch], currentWorker.id, {
@@ -244,14 +244,24 @@ function* startWorker(
               yield call([resultRepository, resultRepository.add], result);
               currentWorker = {
                 ...currentWorker,
-                queue: updateTaskStatus(currentWorker.queue, idTask, WorkerStatus.COMPLETED, ''), //on ajoute un message vide pour supprimer un potentiel précédent message d'erreur
+                queue: updateQueueWithTaskStatus(
+                  currentWorker.queue,
+                  idTask,
+                  WorkerStatus.COMPLETED,
+                  '',
+                ), //on ajoute un message vide pour supprimer un potentiel précédent message d'erreur
               };
             }
             break;
           case WorkerStatus.POSTED:
             currentWorker = {
               ...currentWorker,
-              queue: updateTaskStatus(currentWorker.queue, idTask, WorkerStatus.POSTED, ''),
+              queue: updateQueueWithTaskStatus(
+                currentWorker.queue,
+                idTask,
+                WorkerStatus.POSTED,
+                '',
+              ),
             };
             break;
           case WorkerStatus.ERROR:
@@ -261,7 +271,7 @@ function* startWorker(
             currentWorker = {
               ...currentWorker,
               status: WorkerStatus.INPROGRESS_WITH_ERRORS,
-              queue: updateTaskStatus(
+              queue: updateQueueWithTaskStatus(
                 currentWorker.queue,
                 idTask,
                 WorkerStatus.ERROR,
@@ -281,7 +291,7 @@ function* startWorker(
         currentWorker = {
           ...currentWorker,
           status: WorkerStatus.INPROGRESS_WITH_ERRORS,
-          queue: updateTaskStatus(
+          queue: updateQueueWithTaskStatus(
             currentWorker.queue,
             idTask,
             WorkerStatus.ERROR,
@@ -328,7 +338,11 @@ function* startWorker(
 
         //if there is a task in progress, we update its status to WAITING
         if (task !== undefined) {
-          currentWorker.queue = updateTaskStatus(currentWorker.queue, idTask, WorkerStatus.WAITING);
+          currentWorker.queue = updateQueueWithTaskStatus(
+            currentWorker.queue,
+            idTask,
+            WorkerStatus.WAITING,
+          );
         }
         yield call([workerRepository, workerRepository.patch], currentWorker.id, {
           status: currentWorker.status,
