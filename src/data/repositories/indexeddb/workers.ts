@@ -123,18 +123,22 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
     };
     const updatedQueue = worker.queue.map((task, i) => (i === taskIndex ? updatedTask : task));
 
-    // Determine the overall worker status based on the entire queue
-    const allFinished = worker.queue.every(
+    // Determine the overall worker status based on the updated queue (must include the change just made above)
+    const allFinished = updatedQueue.every(
       (t) => t.status === WorkerStatus.COMPLETED || t.status === WorkerStatus.ERROR,
     );
-    const anyError = worker.queue.some((t) => t.status === WorkerStatus.ERROR);
+    const anyError = updatedQueue.some((t) => t.status === WorkerStatus.ERROR);
+    const anyPosted = updatedQueue.some((t) => t.status === WorkerStatus.POSTED);
 
     let overallStatus: WorkerStatus;
     if (allFinished) {
       overallStatus = anyError ? WorkerStatus.COMPLETED_WITH_ERRORS : WorkerStatus.COMPLETED;
+    } else if (anyError) {
+      overallStatus = WorkerStatus.INPROGRESS_WITH_ERRORS;
+    } else if (anyPosted) {
+      overallStatus = WorkerStatus.POSTED;
     } else {
-      // If not all tasks are finished, it's either in progress or in progress with errors
-      overallStatus = anyError ? WorkerStatus.INPROGRESS_WITH_ERRORS : WorkerStatus.INPROGRESS;
+      overallStatus = WorkerStatus.INPROGRESS;
     }
 
     try {

@@ -16,7 +16,6 @@ import {
   getResultRepository,
   getWorkerRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
-import { updateQueueWithTaskStatus } from '@/data/utils/worker';
 import i18n from '@/i18n';
 import { FunctionResult } from '@/utils/functionResult';
 import { getErrorMessage } from '@/utils/utils';
@@ -204,14 +203,14 @@ function* startWorker(
       }
       //update the status of the task to INPROGRESS
       task = { ...task, status: WorkerStatus.INPROGRESS };
-      currentWorker = {
-        ...currentWorker,
-        queue: updateQueueWithTaskStatus(currentWorker.queue, idTask, WorkerStatus.INPROGRESS),
-      };
+      currentWorker.queue[idTask] = task;
 
-      yield call([workerRepository, workerRepository.patch], currentWorker.id, {
-        queue: currentWorker.queue,
-      });
+      yield call(
+        [workerRepository, workerRepository.updateTaskStatus],
+        currentWorker.id,
+        task.id,
+        WorkerStatus.INPROGRESS,
+      );
 
       //start the saga for the task
       try {
@@ -242,42 +241,49 @@ function* startWorker(
               };
 
               yield call([resultRepository, resultRepository.add], result);
-              currentWorker = {
-                ...currentWorker,
-                queue: updateQueueWithTaskStatus(
-                  currentWorker.queue,
-                  idTask,
-                  WorkerStatus.COMPLETED,
-                  '',
-                ), //on ajoute un message vide pour supprimer un potentiel précédent message d'erreur
+              //message vide pour supprimer un potentiel précédent message d'erreur
+              currentWorker.queue[idTask] = {
+                ...currentWorker.queue[idTask],
+                status: WorkerStatus.COMPLETED,
+                statusMessage: '',
               };
+              yield call(
+                [workerRepository, workerRepository.updateTaskStatus],
+                currentWorker.id,
+                idTask,
+                WorkerStatus.COMPLETED,
+              );
             }
             break;
           case WorkerStatus.POSTED:
-            currentWorker = {
-              ...currentWorker,
-              queue: updateQueueWithTaskStatus(
-                currentWorker.queue,
-                idTask,
-                WorkerStatus.POSTED,
-                '',
-              ),
+            currentWorker.queue[idTask] = {
+              ...currentWorker.queue[idTask],
+              status: WorkerStatus.POSTED,
+              statusMessage: '',
             };
+            yield call(
+              [workerRepository, workerRepository.updateTaskStatus],
+              currentWorker.id,
+              idTask,
+              WorkerStatus.POSTED,
+            );
             break;
           case WorkerStatus.ERROR:
             console.error(
               `Task for scope ${toString(task.scope)} encountered an error: ${taskResult.statusMessage}`,
             );
-            currentWorker = {
-              ...currentWorker,
-              status: WorkerStatus.INPROGRESS_WITH_ERRORS,
-              queue: updateQueueWithTaskStatus(
-                currentWorker.queue,
-                idTask,
-                WorkerStatus.ERROR,
-                taskResult.statusMessage,
-              ),
+            currentWorker.queue[idTask] = {
+              ...currentWorker.queue[idTask],
+              status: WorkerStatus.ERROR,
+              statusMessage: taskResult.statusMessage,
             };
+            yield call(
+              [workerRepository, workerRepository.updateTaskStatus],
+              currentWorker.id,
+              idTask,
+              WorkerStatus.ERROR,
+              taskResult.statusMessage,
+            );
             hasError = true;
             // i++; //needed if we remove the task when it is completed
             break;
@@ -288,25 +294,20 @@ function* startWorker(
         idTask++;
       } catch (error) {
         console.error(`Error in plugin saga for ${worker.name}:`, error);
-        currentWorker = {
-          ...currentWorker,
-          status: WorkerStatus.INPROGRESS_WITH_ERRORS,
-          queue: updateQueueWithTaskStatus(
-            currentWorker.queue,
-            idTask,
-            WorkerStatus.ERROR,
-            getErrorMessage(error),
-          ),
+        currentWorker.queue[idTask] = {
+          ...currentWorker.queue[idTask],
+          status: WorkerStatus.ERROR,
+          statusMessage: getErrorMessage(error),
         };
+        yield call(
+          [workerRepository, workerRepository.updateTaskStatus],
+          currentWorker.id,
+          idTask,
+          WorkerStatus.ERROR,
+          getErrorMessage(error),
+        );
         hasError = true;
       }
-
-      //update the worker variables at each iteration
-      yield call([workerRepository, workerRepository.patch], currentWorker.id, {
-        status: currentWorker.status,
-        statusMessage: currentWorker.statusMessage,
-        queue: currentWorker.queue,
-      });
     } //end while loop
 
     if (hasError) {
@@ -338,8 +339,9 @@ function* startWorker(
 
         //if there is a task in progress, we update its status to WAITING
         if (task !== undefined) {
-          currentWorker.queue = updateQueueWithTaskStatus(
-            currentWorker.queue,
+          yield call(
+            [workerRepository, workerRepository.updateTaskStatus],
+            currentWorker.id,
             idTask,
             WorkerStatus.WAITING,
           );

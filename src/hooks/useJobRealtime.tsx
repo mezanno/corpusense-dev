@@ -2,7 +2,6 @@ import { workerPlugins } from '@/App';
 import { useWorkerContext } from '@/components/reducers/WorkerContext';
 import { WorkerStatus } from '@/data/models/worker/worker';
 import { getWorkerRepository } from '@/data/repositories/indexeddb/dbFactory';
-import { updateQueueWithTaskStatus } from '@/data/utils/worker';
 import { deleteFile } from '@/state/sagas/plugins/workers/supabase/utils';
 import { JobRow, supabase } from '@/utils/config';
 import {
@@ -102,32 +101,7 @@ const useJobRealtime = () => {
       }
 
       // Update the local queue
-      const updatedQueue = updateQueueWithTaskStatus(
-        worker.queue,
-        task.id,
-        taskStatus,
-        statusMessage,
-      );
       await workerRepository.updateTaskStatus(worker.id, task.id, taskStatus, statusMessage);
-
-      // Determine the overall worker status based on the entire queue
-      const allFinished = updatedQueue.every(
-        (t) => t.status === WorkerStatus.COMPLETED || t.status === WorkerStatus.ERROR,
-      );
-      const anyError = updatedQueue.some((t) => t.status === WorkerStatus.ERROR);
-
-      let overallStatus: WorkerStatus;
-      if (allFinished) {
-        overallStatus = anyError ? WorkerStatus.COMPLETED_WITH_ERRORS : WorkerStatus.COMPLETED;
-      } else {
-        // If not all tasks are finished, it's either in progress or in progress with errors
-        overallStatus = anyError ? WorkerStatus.INPROGRESS_WITH_ERRORS : WorkerStatus.INPROGRESS;
-      }
-
-      // Persist changes to IndexedDB
-      await workerRepository.patch(worker.id, {
-        status: overallStatus,
-      });
 
       // Only remove the job once it succeeded and its result was processed without error; keep it otherwise for troubleshooting
       if (job.status === 'completed' && taskStatus === WorkerStatus.COMPLETED) {
