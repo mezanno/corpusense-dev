@@ -67,7 +67,7 @@
   "btn_create_project": "Create a Project",
   "btn_save_modifierchain": "Save Modifier Chain",
   "btn_download_export": "Download Export",
-  "btn_import_collection": "Import Collection",
+  "btn_import_collection": "Import Collection(s)",
   "btn_export_collection": "Export Collection(s)",
   "btn_import": "Import",
   "btn_toggle_mode_annotate": "Annotation Mode",
