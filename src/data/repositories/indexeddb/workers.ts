@@ -68,6 +68,7 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
     workerId: string,
     taskId: number,
     newStatus: WorkerStatus,
+    statusMessage?: string,
   ): Promise<FunctionResult<boolean, EntityNotFoundError>> {
     const worker = await db.workers.get(workerId);
     if (!worker) {
@@ -100,6 +101,8 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
         break;
     }
     worker.queue[taskIndex].status = newStatus;
+    worker.queue[taskIndex].statusMessage = statusMessage;
+
     await db.workers.update(workerId, { queue: worker.queue });
     return FunctionResult.ok(true);
   }

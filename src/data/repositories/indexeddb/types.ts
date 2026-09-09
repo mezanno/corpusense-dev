@@ -197,6 +197,7 @@ export interface WorkerRepository {
     workerId: string,
     taskId: number,
     newStatus: WorkerStatus,
+    statusMessage?: string,
   ): Promise<FunctionResult<boolean, EntityNotFoundError>>;
 
   deleteById(workerId: string): Promise<void>;
