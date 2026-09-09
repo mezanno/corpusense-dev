@@ -1,7 +1,7 @@
 import { Scope } from '@/data/models/scope/scope';
 import { Worker } from '@/data/models/worker/worker';
 import useDialog from '@/hooks/ui/useDialog';
-import { Download } from 'lucide-react';
+import { FileDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useWorkerContext } from './reducers/WorkerContext';
 import {
@@ -28,12 +28,17 @@ const ResultsAvailable = ({ scope, showTitle }: { scope: Scope; showTitle?: bool
   };
 
   return (
-    <div className='soft-button mr-2'>
+    <div
+      className='soft-button'
+      title={t('info_results_available')}
+      aria-label={t('info_results_available')}
+    >
       <DropdownMenu>
         <DropdownMenuTrigger className='flex items-center gap-2'>
-          <Download size={18} />
-          {showTitle === undefined ||
-            (showTitle && <span className='text-sm'>{t('info_results_available')}</span>)}
+          <FileDown />
+          {(showTitle === undefined || showTitle === true) && (
+            <span className='text-sm'>{t('info_results_available')}</span>
+          )}
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           {workersWithResults

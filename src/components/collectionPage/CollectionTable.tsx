@@ -209,7 +209,7 @@ const CollectionTable = () => {
             >
               <Trash2 />
             </IconButtonWithTooltip>
-            <ResultsAvailable scope={{ collectionId }} />
+            <ResultsAvailable scope={{ collectionId }} showTitle={false} />
           </div>
         );
       },
