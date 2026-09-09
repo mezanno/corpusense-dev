@@ -37,7 +37,7 @@ const CollectionsManagerPage = () => {
       {collections.length > 0 ? (
         <section className='flex min-h-0 w-full flex-1 flex-col items-center gap-1'>
           <h2 className='text-xl'>
-            {t('info_number_of_collections', { number: collections.length })}
+            <strong>{t('info_number_of_collections', { number: collections.length })}</strong>
           </h2>
           <CollectionTable />
         </section>

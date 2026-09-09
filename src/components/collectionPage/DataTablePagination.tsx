@@ -35,7 +35,7 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
               localStorage.setItem('collectionPageTablePageSize', value);
             }}
           >
-            <SelectTrigger className='h-8 w-[70px]'>
+            <SelectTrigger className='h-8 w-17.5'>
               <SelectValue placeholder={table.getState().pagination.pageSize} />
             </SelectTrigger>
             <SelectContent side='top'>
@@ -47,7 +47,7 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
             </SelectContent>
           </Select>
         </div>
-        <div className='flex w-[100px] items-center justify-center text-sm font-medium'>
+        <div className='flex w-25 items-center justify-center text-sm font-medium'>
           {t('info_collection_page', {
             page: table.getState().pagination.pageIndex + 1,
             totalPages: table.getPageCount(),
