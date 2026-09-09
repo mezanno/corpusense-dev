@@ -1,7 +1,7 @@
 import { Collection } from '@/data/models/collection/collection';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import useDialog from '@/hooks/ui/useDialog';
-import { Copy } from 'lucide-react';
+import { Copy, DownloadIcon } from 'lucide-react';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconButtonWithTooltip } from '../IconButtonWithTooltip';
@@ -14,7 +14,8 @@ const CollectionToolbar = memo(function CollectionToolbarFunc({
   collection: Collection;
 }) {
   const { t } = useTranslation();
-  const { openRemoveAnnotationsDialog, openDupicateCollectionDialog } = useDialog();
+  const { openRemoveAnnotationsDialog, openDupicateCollectionDialog, openExportCollectionDialog } =
+    useDialog();
   const isWorkerRunning = useWorkerContext().isWorkerOrTaskRunning({ collectionId: collection.id });
 
   const { recomputeRegions } = useAnnotationActions();
@@ -41,6 +42,10 @@ const CollectionToolbar = memo(function CollectionToolbarFunc({
     openDupicateCollectionDialog(collection);
   };
 
+  const handleExport = () => {
+    openExportCollectionDialog([collection.id]);
+  };
+
   return (
     <div className='flex gap-2'>
       <Toolbar
@@ -51,6 +56,14 @@ const CollectionToolbar = memo(function CollectionToolbarFunc({
       <IconButtonWithTooltip tooltip={t('btn_duplicate')} onClick={() => void handleDuplicate()}>
         <Copy />
       </IconButtonWithTooltip>
+      <button
+        className='soft-button'
+        onClick={handleExport}
+        aria-label={t('btn_export_collection')}
+        title={t('btn_export_collection')}
+      >
+        <DownloadIcon />
+      </button>
     </div>
   );
 });
