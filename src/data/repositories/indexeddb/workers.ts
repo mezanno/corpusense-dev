@@ -64,6 +64,46 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
     await db.workers.update(id, changes);
   }
 
+  async updateTaskStatus(
+    workerId: string,
+    taskId: number,
+    newStatus: WorkerStatus,
+  ): Promise<FunctionResult<boolean, EntityNotFoundError>> {
+    const worker = await db.workers.get(workerId);
+    if (!worker) {
+      return FunctionResult.err(new EntityNotFoundError({ entity: 'Worker', id: workerId }));
+    }
+    const taskIndex = worker.queue.findIndex((task) => task.id === taskId);
+    if (taskIndex === -1) {
+      return FunctionResult.err(
+        new EntityNotFoundError({ entity: 'Task', id: `${workerId}_${taskId}` }),
+      );
+    }
+    const currentStatus = worker.queue[taskIndex].status;
+    switch (newStatus) {
+      case WorkerStatus.POSTING:
+        if (currentStatus !== WorkerStatus.INPROGRESS) {
+          return FunctionResult.ok(false);
+        }
+        break;
+      case WorkerStatus.POSTED:
+        if (currentStatus !== WorkerStatus.POSTING) {
+          return FunctionResult.ok(false);
+        }
+        break;
+      case WorkerStatus.INPROGRESS:
+        if (currentStatus !== WorkerStatus.WAITING && currentStatus !== WorkerStatus.POSTED) {
+          return FunctionResult.ok(false);
+        }
+        break;
+      default:
+        break;
+    }
+    worker.queue[taskIndex].status = newStatus;
+    await db.workers.update(workerId, { queue: worker.queue });
+    return FunctionResult.ok(true);
+  }
+
   async deleteById(workerId: string): Promise<void> {
     await db.transaction('rw', db.workers, db.results, async () => {
       await db.workers.delete(workerId);

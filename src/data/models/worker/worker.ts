@@ -6,6 +6,7 @@ export enum WorkerStatus {
   ALL = 'all', // Special status to represent all workers
   WAITING = 'waiting', // Worker is waiting to be processed
   INPROGRESS = 'inprogress', // Worker is currently being processed
+  POSTING = 'posting', // Worker is being posted to an external service
   POSTED = 'posted', // Worker has been posted to an external service
   INPROGRESS_WITH_ERRORS = 'inprogress_with_errors', // Worker is being processed but encountered errors
   UNFINISHED = 'unfinished', // Worker has been processed but not completed

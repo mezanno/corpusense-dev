@@ -16,7 +16,7 @@ import { Source, SourceContent } from '@/data/models/source/source';
 import { AddSourceDTO } from '@/data/models/source/source.dto';
 import { StoredManifestDetails } from '@/data/models/storedManifest';
 import { Tag } from '@/data/models/tag';
-import { Worker } from '@/data/models/worker/worker';
+import { Worker, WorkerStatus } from '@/data/models/worker/worker';
 import { DBError } from '@/data/utils/errors';
 import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import { FunctionResult } from '@/utils/functionResult';
@@ -193,6 +193,11 @@ export interface WorkerRepository {
   addAll(workers: Worker[]): Promise<void>;
 
   patch(id: string, changes: Partial<Worker>): Promise<void>;
+  updateTaskStatus(
+    workerId: string,
+    taskId: number,
+    newStatus: WorkerStatus,
+  ): Promise<FunctionResult<boolean, EntityNotFoundError>>;
 
   deleteById(workerId: string): Promise<void>;
   deleteByScope(scope: Scope): Promise<string[]>;
