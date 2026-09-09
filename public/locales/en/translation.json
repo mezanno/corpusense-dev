@@ -368,6 +368,7 @@
   "info_there_is_no_worker": "There is no process linked to this collection.",
   "info_worker_queue_size": "{{size}} items",
   "info_worker_completed": "A process has just finished",
+  "info_worker_all_tasks_posted": "All tasks have been posted to the queue",
   "info_worker_completed_with_error": "A process has just finished with errors",
   "info_no_worker_running": "No process running",
   "info_no_worker_selected": "No process selected",

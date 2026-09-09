@@ -368,6 +368,7 @@
   "info_there_is_no_worker": "Il n'existe aucun traitement lié à cette collection.",
   "info_worker_queue_size": "{{size}} éléments",
   "info_worker_completed": "Un traitement vient de se terminer",
+  "info_worker_all_tasks_posted": "Tous les traitements ont été ajoutés à la file d'attente",
   "info_worker_completed_with_error": "Un traitement vient de se terminer avec des erreurs",
   "info_no_worker_running": "Aucun traitement en cours",
   "info_no_worker_selected": "Aucun traitement sélectionné",
