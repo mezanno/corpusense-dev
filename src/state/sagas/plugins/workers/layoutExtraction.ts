@@ -7,6 +7,7 @@ import { Task, Worker, WorkerResponse, WorkerStatus } from '@/data/models/worker
 import {
   getAnnotationRepository,
   getCollectionRepository,
+  getWorkerRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { applyModifierChainToAnnotations } from '@/data/utils/modifierChain';
 import { supabase } from '@/utils/config';
@@ -68,6 +69,9 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
     try {
       const user = (await supabase.auth.getUser()).data.user;
       if (user !== null) {
+        const workerRepository = getWorkerRepository();
+        await workerRepository.updateTaskStatus(worker.id, task.id, WorkerStatus.POSTING);
+
         const imageUrl = await uploadCanvasImage(canvasWithSourceId);
 
         const { data, error: supabaseError } = await supabase
