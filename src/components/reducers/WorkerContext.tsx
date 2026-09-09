@@ -98,7 +98,10 @@ export const WorkerProvider = ({ children }: Props) => {
           const task = worker.queue[i];
           if (
             isSameScope(task.scope, scope) &&
-            (task.status === WorkerStatus.INPROGRESS || task.status === WorkerStatus.WAITING)
+            (task.status === WorkerStatus.INPROGRESS ||
+              task.status === WorkerStatus.WAITING ||
+              task.status === WorkerStatus.POSTED ||
+              task.status === WorkerStatus.POSTING)
           ) {
             return task.status;
           }
