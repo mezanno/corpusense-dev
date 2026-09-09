@@ -103,8 +103,34 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
     worker.queue[taskIndex].status = newStatus;
     worker.queue[taskIndex].statusMessage = statusMessage;
 
-    await db.workers.update(workerId, { queue: worker.queue });
-    return FunctionResult.ok(true);
+    // Determine the overall worker status based on the entire queue
+    const allFinished = worker.queue.every(
+      (t) => t.status === WorkerStatus.COMPLETED || t.status === WorkerStatus.ERROR,
+    );
+    const anyError = worker.queue.some((t) => t.status === WorkerStatus.ERROR);
+
+    let overallStatus: WorkerStatus;
+    if (allFinished) {
+      overallStatus = anyError ? WorkerStatus.COMPLETED_WITH_ERRORS : WorkerStatus.COMPLETED;
+    } else {
+      // If not all tasks are finished, it's either in progress or in progress with errors
+      overallStatus = anyError ? WorkerStatus.INPROGRESS_WITH_ERRORS : WorkerStatus.INPROGRESS;
+    }
+
+    try {
+      await db.transaction('rw', db.workers, async () => {
+        // Persist changes to IndexedDB
+        await this.patch(worker.id, {
+          status: overallStatus,
+        });
+
+        await db.workers.update(workerId, { queue: worker.queue });
+      });
+      return FunctionResult.ok(true);
+    } catch (error) {
+      console.error('Error updating task status:', error);
+      return FunctionResult.err(new EntityNotFoundError({ entity: 'Worker', id: workerId }));
+    }
   }
 
   async deleteById(workerId: string): Promise<void> {
