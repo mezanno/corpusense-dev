@@ -32,7 +32,7 @@ const WorkersMenu = ({ scope }: { scope: Scope }) => {
           if (workerPlugin.runtimeParametersSchema !== undefined) {
             openStartWorkerDialog(plugin.name, scope);
           } else {
-            if (plugin.category === 'llm') {
+            if (plugin.category === 'llm' && plugin.name !== 'mistral') {
               openSelectLLMDialog((profileId) => {
                 appDispatch(
                   startWorkerProcessRequest({
