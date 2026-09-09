@@ -16,12 +16,13 @@ import { Source, SourceContent } from '@/data/models/source/source';
 import { AddSourceDTO } from '@/data/models/source/source.dto';
 import { StoredManifestDetails } from '@/data/models/storedManifest';
 import { Tag } from '@/data/models/tag';
-import { Worker, WorkerStatus } from '@/data/models/worker/worker';
+import { Task, Worker, WorkerStatus } from '@/data/models/worker/worker';
 import { DBError } from '@/data/utils/errors';
 import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import { FunctionResult } from '@/utils/functionResult';
 import { Canvas, Manifest } from '@iiif/presentation-3';
 import { EntityNotFoundError } from '../EntityNotFoundError';
+import { StatusChangeError } from './workers';
 
 export interface AnnotationRepository {
   getById(id: string): Promise<FunctionResult<Annotation, EntityNotFoundError>>;
@@ -198,7 +199,7 @@ export interface WorkerRepository {
     taskId: number,
     newStatus: WorkerStatus,
     statusMessage?: string,
-  ): Promise<FunctionResult<boolean, EntityNotFoundError>>;
+  ): Promise<FunctionResult<Task, EntityNotFoundError | StatusChangeError>>;
 
   deleteById(workerId: string): Promise<void>;
   deleteByScope(scope: Scope): Promise<string[]>;

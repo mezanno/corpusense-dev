@@ -1,12 +1,22 @@
 import { Scope } from '@/data/models/scope/scope';
 import { isCollectionScope } from '@/data/models/scope/scope.utils';
-import { Worker, WorkerStatus } from '@/data/models/worker/worker';
+import { Task, Worker, WorkerStatus } from '@/data/models/worker/worker';
 import { WorkerCreateDTO } from '@/data/models/worker/worker.dto';
+import { BaseError } from '@/utils/BaseError';
 import { FunctionResult } from '@/utils/functionResult';
 import { EntityNotFoundError } from '../EntityNotFoundError';
 import { db } from './db';
 import { WorkerRepository } from './types';
 import { computeScopeKey } from './utils';
+
+export class StatusChangeError extends BaseError {
+  constructor(context: { workerId: string; taskId: string; newStatus: WorkerStatus }) {
+    super(
+      `Task ${context.taskId} from worker ${context.workerId} cannot change to status ${context.newStatus}`,
+      { context },
+    );
+  }
+}
 
 export class IndexedDBWorkerRepository implements WorkerRepository {
   async getAll(): Promise<Worker[]> {
@@ -69,7 +79,7 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
     taskId: number,
     newStatus: WorkerStatus,
     statusMessage?: string,
-  ): Promise<FunctionResult<boolean, EntityNotFoundError>> {
+  ): Promise<FunctionResult<Task, EntityNotFoundError | StatusChangeError>> {
     const worker = await db.workers.get(workerId);
     if (!worker) {
       return FunctionResult.err(new EntityNotFoundError({ entity: 'Worker', id: workerId }));
@@ -84,24 +94,34 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
     switch (newStatus) {
       case WorkerStatus.POSTING:
         if (currentStatus !== WorkerStatus.INPROGRESS) {
-          return FunctionResult.ok(false);
+          return FunctionResult.err(
+            new StatusChangeError({ workerId, taskId: `${taskId}`, newStatus }),
+          );
         }
         break;
       case WorkerStatus.POSTED:
         if (currentStatus !== WorkerStatus.POSTING) {
-          return FunctionResult.ok(false);
+          return FunctionResult.err(
+            new StatusChangeError({ workerId, taskId: `${taskId}`, newStatus }),
+          );
         }
         break;
       case WorkerStatus.INPROGRESS:
         if (currentStatus !== WorkerStatus.WAITING && currentStatus !== WorkerStatus.POSTED) {
-          return FunctionResult.ok(false);
+          return FunctionResult.err(
+            new StatusChangeError({ workerId, taskId: `${taskId}`, newStatus }),
+          );
         }
         break;
       default:
         break;
     }
-    worker.queue[taskIndex].status = newStatus;
-    worker.queue[taskIndex].statusMessage = statusMessage;
+    const updatedTask: Task = {
+      ...worker.queue[taskIndex],
+      status: newStatus,
+      statusMessage: statusMessage,
+    };
+    const updatedQueue = worker.queue.map((task, i) => (i === taskIndex ? updatedTask : task));
 
     // Determine the overall worker status based on the entire queue
     const allFinished = worker.queue.every(
@@ -124,9 +144,9 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
           status: overallStatus,
         });
 
-        await db.workers.update(workerId, { queue: worker.queue });
+        await db.workers.update(workerId, { queue: updatedQueue });
       });
-      return FunctionResult.ok(true);
+      return FunctionResult.ok(updatedTask);
     } catch (error) {
       console.error('Error updating task status:', error);
       return FunctionResult.err(new EntityNotFoundError({ entity: 'Worker', id: workerId }));
