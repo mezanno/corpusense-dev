@@ -370,6 +370,7 @@
   "info_worker_completed": "A process has just finished",
   "info_worker_all_tasks_posted": "All tasks have been posted to the queue",
   "info_worker_completed_with_error": "A process has just finished with errors",
+  "info_worker_remaining_time": "Estimated remaining time: {{time}}s",
   "info_no_worker_running": "No process running",
   "info_no_worker_selected": "No process selected",
   "info_no_canvas_selected": "No canvas selected",

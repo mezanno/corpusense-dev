@@ -9,10 +9,12 @@ import { useTranslation } from 'react-i18next';
 import LlmStatus from '../collectionPage/LlmStatus';
 import OcrStatus from '../collectionPage/OcrStatus';
 import { useCollectionInspectorContext } from '../reducers/CollectionInspectorContext';
+import { useWorkerContext } from '../reducers/WorkerContext';
 import ResultsAvailable from '../ResultsAvailable';
 import CollectionInspectorGallery from './CollectionInspectorGallery';
 import CollectionInspectorHeader from './CollectionInspectorHeader';
 import CollectionToolbar from './CollectionToolbar';
+import CollectionWorkerCounters from './CollectionWorkerCounters';
 
 const CollectionInspectorContent = ({
   collectionId,
@@ -32,7 +34,10 @@ const CollectionInspectorContent = ({
     handlePrevious,
   } = useCollectionInspectorContext();
   const { openCollection } = useCollectionContext();
+  const isWorkerRunning = useWorkerContext().isWorkerOrTaskRunning({ collectionId });
+
   const { setScope } = useAnnotationContext();
+
   const canvas = defaultCanvasId !== null ? getCanvasById(defaultCanvasId) : null;
 
   const onKeyPressed = (key: string) => {
@@ -75,7 +80,14 @@ const CollectionInspectorContent = ({
               <CollectionInspectorHeader {...collection} />
               {collection.content.length > 0 && (
                 <div className='flex w-full items-center justify-between'>
-                  <CollectionToolbar collection={collection} />
+                  {isWorkerRunning ? (
+                    <div className='flex items-center gap-2'>
+                      <strong>{t('info_worker_running')}</strong>
+                      <CollectionWorkerCounters collectionId={collectionId} />
+                    </div>
+                  ) : (
+                    <CollectionToolbar collection={collection} />
+                  )}
                   <div className='flex items-center gap-2'>
                     <OcrStatus collectionId={collectionId} />
                     <LlmStatus collectionId={collectionId} />
