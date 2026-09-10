@@ -5,7 +5,6 @@ import { Copy, DownloadIcon } from 'lucide-react';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconButtonWithTooltip } from '../IconButtonWithTooltip';
-import { useWorkerContext } from '../reducers/WorkerContext';
 import Toolbar from '../ToolBar';
 
 const CollectionToolbar = memo(function CollectionToolbarFunc({
@@ -16,17 +15,8 @@ const CollectionToolbar = memo(function CollectionToolbarFunc({
   const { t } = useTranslation();
   const { openRemoveAnnotationsDialog, openDupicateCollectionDialog, openExportCollectionDialog } =
     useDialog();
-  const isWorkerRunning = useWorkerContext().isWorkerOrTaskRunning({ collectionId: collection.id });
 
   const { recomputeRegions } = useAnnotationActions();
-
-  if (isWorkerRunning) {
-    return (
-      <div className='panel'>
-        <strong>{t('info_worker_running')}</strong>
-      </div>
-    );
-  }
 
   const handleDeleteAllAnnotations = () => {
     openRemoveAnnotationsDialog({ collectionId: collection.id });
