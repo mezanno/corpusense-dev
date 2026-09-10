@@ -190,9 +190,12 @@ function* startWorker(
       }
     }
 
-    //start the saga for each task in the queue
+    //start the saga for each task in the queuew
     const resultRepository = getResultRepository();
     let hasError = false;
+
+    let averageTaskDuration = 0;
+    let totalTasksDone = 0;
 
     while (idTask < currentWorker.queue.length) {
       task = currentWorker.queue[idTask];
@@ -201,6 +204,7 @@ function* startWorker(
         idTask++;
         continue;
       }
+      const taskStartTime = Date.now();
       //update the status of the task to INPROGRESS
       task = { ...task, status: WorkerStatus.INPROGRESS };
       currentWorker.queue[idTask] = task;
@@ -291,7 +295,27 @@ function* startWorker(
             // i++; //needed if we remove the task when it is completed
             console.warn(`Unknown status for task: ${taskResult.status}`);
         }
+
+        //compute duration
+        const alpha = 0.2; //weight for the moving average
+        const taskStopTime = Date.now();
+        const taskDuration = taskStopTime - taskStartTime;
+        averageTaskDuration =
+          totalTasksDone === 0
+            ? taskDuration
+            : alpha * taskDuration + (1 - alpha) * averageTaskDuration;
+        console.log(
+          `Task for scope ${toString(task.scope)} completed in ${taskDuration} ms. Average duration: ${averageTaskDuration} ms`,
+        );
+        const remainingTaskCount = currentWorker.queue.length - idTask - 1;
+        const remaingingTime = averageTaskDuration * remainingTaskCount;
+        currentWorker.estimatedDuration = remaingingTime;
+        yield call([workerRepository, workerRepository.patch], currentWorker.id, {
+          estimatedDuration: remaingingTime,
+        });
+
         idTask++;
+        totalTasksDone++;
       } catch (error) {
         console.error(`Error in plugin saga for ${worker.name}:`, error);
         currentWorker.queue[idTask] = {
