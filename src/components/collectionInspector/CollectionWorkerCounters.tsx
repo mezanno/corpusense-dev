@@ -1,6 +1,6 @@
 import { WorkerStatus } from '@/data/models/worker/worker';
-import { Pickaxe } from 'lucide-react';
 import { useMemo } from 'react';
+import { PacmanLoader } from 'react-spinners';
 import { useWorkerContext } from '../reducers/WorkerContext';
 import WorkerDurationCounter from './WorkerDurationCounter';
 
@@ -22,9 +22,11 @@ const CollectionWorkerCounters = ({ collectionId }: { collectionId: string }) =>
     <div className='flex w-full flex-col gap-1'>
       {runningWorkers.map((worker) => (
         <div className='flex gap-2' key={`${worker.id}-${worker.estimatedDuration}`}>
-          <p className='flex items-baseline gap-1 font-semibold'>
-            <Pickaxe size={10} />
-            {worker.name}
+          <p className='flex flex-col items-baseline gap-1 text-sm font-semibold'>
+            <span className='flex items-center gap-8'>
+              <PacmanLoader size={10} />
+              {worker.name}
+            </span>
             <WorkerDurationCounter estimatedDuration={worker.estimatedDuration} />
           </p>
         </div>
