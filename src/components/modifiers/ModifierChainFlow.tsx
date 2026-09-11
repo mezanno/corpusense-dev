@@ -176,12 +176,18 @@ const ModifierChainFlow = ({
 
     void (async () => {
       try {
-        const { modifiers: loadedModifiers, modifierValues: loadedValues } =
-          await loadModifierChain(initialChainId);
+        const {
+          modifiers: loadedModifiers,
+          modifierValues: loadedValues,
+          name,
+        } = await loadModifierChain(initialChainId);
         setNodes([]);
         setEdges([]);
         setModifiers(loadedModifiers);
         setModifierValues(loadedValues);
+        if (name !== undefined) {
+          setCurrentChainName(name);
+        }
       } catch (error) {
         console.error('Failed to load modifier chain:', error);
       }
