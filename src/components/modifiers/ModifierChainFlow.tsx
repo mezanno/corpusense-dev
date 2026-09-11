@@ -11,12 +11,13 @@ import {
   MarkerType,
   Node,
   ReactFlow,
+  ReactFlowInstance,
   useEdgesState,
   useNodesState,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { FolderOpen, Save } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import AddNode from './AddNode';
@@ -55,6 +56,7 @@ const ModifierChainFlow = ({
   const [nodes, setNodes] = useNodesState<Node>([]);
   const [edges, setEdges] = useEdgesState<Edge>([]);
   const [showPreview, setShowPreview] = useState(false);
+  const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
 
   const { loadModifierChain } = useModifierChainIO();
 
@@ -186,7 +188,7 @@ const ModifierChainFlow = ({
     })();
   }, [initialChainId]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (modifiers.length === 0) {
       setNodes([
         {
@@ -250,6 +252,17 @@ const ModifierChainFlow = ({
     setEdges(newEdges);
   }, [modifiers, modifierValues]);
 
+  // Fit view when modifiers change
+  useEffect(() => {
+    if (reactFlowInstance === null || modifiers.length === 0) return;
+
+    const animationFrame = requestAnimationFrame(() => {
+      void reactFlowInstance.fitView({ padding: 0.2 });
+    });
+
+    return () => cancelAnimationFrame(animationFrame);
+  }, [modifiers, reactFlowInstance]);
+
   return (
     <div className='flex h-full w-full flex-col'>
       <div className='mt-4 flex justify-center space-x-2'>
@@ -312,7 +325,7 @@ const ModifierChainFlow = ({
           selectionOnDrag={false}
           //TODO: à revoir, ça log un clic à chaque fois qu'on clique sur un node, même pour interagir avec les inputs du form
           onNodeClick={() => console.log('clic')}
-          fitView
+          onInit={setReactFlowInstance}
         >
           <Background />
           <Controls />
