@@ -8,7 +8,7 @@ import { Modifier } from './Modifier';
 const hpSchema = z.object({
   filterType: z.enum(['HP', 'LP']).default('HP'),
   threshold: z.number().min(0).default(0),
-  dimension: z.enum(['area', 'width', 'height']).default('area'),
+  dimension: z.enum(['width', 'height', 'area']).default('width'),
 });
 
 export class FilterModifier extends Modifier<typeof hpSchema> {
@@ -36,7 +36,7 @@ export class FilterModifier extends Modifier<typeof hpSchema> {
         dimension: {
           label: i18n.t('form_label_modifier_filter_dimension'),
           description: i18n.t('form_description_modifier_filter_dimension'),
-          options: ['area', 'width', 'height'],
+          options: ['width', 'height', 'area'],
         },
       },
       i18n.t('form_description_modifier_filter'),
