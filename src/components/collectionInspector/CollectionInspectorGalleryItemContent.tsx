@@ -34,11 +34,13 @@ const CollectionInspectorGalleryItemContent = ({
   isDragging: boolean;
 }) => {
   const { t } = useTranslation();
+  const { isWorkerOrTaskRunning } = useWorkerContext();
   const scope = useMemo(
     () => ({ collectionId, canvasId: canvasWithSourceId.canvas.id }),
     [collectionId, canvasWithSourceId.canvas.id],
   );
-  const isWorkerRunning = useWorkerContext().isWorkerOrTaskRunning(scope);
+  // const isWorkerRunning = useWorkerContext().isWorkerOrTaskRunning(scope);
+  const isWorkerRunning = isWorkerOrTaskRunning({ collectionId });
   const idDisplayed = canvasToDisplay?.canvas.id === canvasWithSourceId.canvas.id;
   const hasOcrAnnotations = useOcrAnnotations(scope).hasOcrAnnotations;
   const { removeElementFromCollection } = useCollections();
