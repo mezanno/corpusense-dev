@@ -8,7 +8,7 @@ import {
   getAnnotationTempRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useEffectEvent, useMemo } from 'react';
+import { useCallback, useEffect, useEffectEvent, useMemo } from 'react';
 
 const duplicateAnnotations = (fromAnnotations: Annotation[]) => {
   const duplicatedAnnotations = [];
@@ -30,12 +30,13 @@ const useAnnotationModifierActions = ({
 }) => {
   const annotationLiveRepository = useMemo(() => getAnnotationLiveRepository(), []);
   const annotationTempRepository = useMemo(() => getAnnotationTempRepository(), []);
-
-  const scopeAnnotations = useLiveQuery(
-    annotationLiveRepository.getByScopeAndType(scope, applyModifierChainTo),
-    [scope, applyModifierChainTo, annotationLiveRepository],
-    [],
+  const { canvasId, collectionId } = scope;
+  const getScopeAnnotations = useCallback(
+    () => annotationLiveRepository.getByScopeAndType(scope, applyModifierChainTo)(),
+    [annotationLiveRepository, canvasId, collectionId, applyModifierChainTo],
   );
+
+  const scopeAnnotations = useLiveQuery(getScopeAnnotations, [getScopeAnnotations], []);
 
   useEffect(() => {
     void (async () => {
