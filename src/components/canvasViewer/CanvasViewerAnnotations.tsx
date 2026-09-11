@@ -43,7 +43,7 @@ const CanvasViewerAnnotations = ({
   }, [annotationsInAnnotorious]);
 
   useEffect(() => {
-    if (anno !== null) {
+    if (anno !== null && anno !== undefined) {
       anno.clearAnnotations();
       isNewCanvas.current = true;
     }
@@ -100,14 +100,6 @@ const CanvasViewerAnnotations = ({
   useEffect(() => {
     if (anno === null || anno === undefined) return;
 
-    const viewer = anno.viewer;
-    // viewer.addHandler('tile-load-failed', (event) => {
-    //   console.log("Erreur lors du chargement d'une tuile", event);
-    // });
-    viewer.addHandler('open-failed', (event) => {
-      console.log("Erreur lors du chargement d'une source'", event);
-    });
-
     const onCreate = (annotation: ImageAnnotation) => {
       if (collectionId !== undefined) {
         void (async () => {
@@ -132,8 +124,6 @@ const CanvasViewerAnnotations = ({
     return () => {
       anno.off('createAnnotation', onCreate);
       anno.off('updateAnnotation', onUpdate);
-      // viewer.removeAllHandlers('tile-load-failed');
-      viewer.removeAllHandlers('open-failed');
     };
   }, [anno, canvas.id, collectionId, saveAnnotation, updateAnnotation, setMode]);
 
@@ -151,7 +141,7 @@ const CanvasViewerAnnotations = ({
   }, [anno, annotationsInStore, annotationScale]);
 
   useEffect(() => {
-    if (anno !== null) {
+    if (anno !== null && anno !== undefined) {
       anno.setVisible(showAnnotations);
     }
   }, [showAnnotations, anno]);

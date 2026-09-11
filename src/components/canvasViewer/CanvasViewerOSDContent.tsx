@@ -26,7 +26,7 @@ import {
   MoveVertical,
 } from 'lucide-react';
 import OpenSeadragon from 'openseadragon';
-import { useEffect } from 'react';
+import { Component, ErrorInfo, ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CanvasViewerMode } from './CanvasViewer';
 
@@ -36,6 +36,23 @@ const colors = {
   [ElementType.UNKNOWN.toString()]: '#e9c46a',
   [ElementType.TEMP.toString()]: '#2646bb',
 };
+
+class OpenSeadragonErrorBoundary extends Component<
+  { children: ReactNode; fallback: (error: Error) => ReactNode },
+  { error: Error | null }
+> {
+  state = { error: null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  componentDidCatch(_error: Error, _errorInfo: ErrorInfo) {}
+
+  render() {
+    return this.state.error === null ? this.props.children : this.props.fallback(this.state.error);
+  }
+}
 
 const CanvasViewerOSDContent = ({
   canvas,
@@ -57,6 +74,8 @@ const CanvasViewerOSDContent = ({
   // const [options, setOptions] = useState<OpenSeadragon.Options | null>(null);
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>();
   const { error, source } = useTileSource({ canvas, sourceId });
+  const viewerKey = `${canvas.id}:${sourceId}`;
+  const [viewerError, setViewerError] = useState<{ key: string; message: string } | null>(null);
 
   const options =
     source !== null
@@ -75,6 +94,26 @@ const CanvasViewerOSDContent = ({
           },
         }
       : null;
+
+  useEffect(() => {
+    if (anno === null || anno === undefined) return;
+
+    const viewer = anno.viewer;
+    const handleOpenFailed = (event: OpenSeadragon.OpenFailedEvent) => {
+      setViewerError({ key: viewerKey, message: event.message });
+    };
+    const handleTileLoadFailed = (event: OpenSeadragon.TileLoadFailedEvent) => {
+      setViewerError({ key: viewerKey, message: event.message });
+    };
+
+    viewer.addHandler('open-failed', handleOpenFailed);
+    viewer.addHandler('tile-load-failed', handleTileLoadFailed);
+
+    return () => {
+      viewer.removeHandler('open-failed', handleOpenFailed);
+      viewer.removeHandler('tile-load-failed', handleTileLoadFailed);
+    };
+  }, [anno, viewerKey]);
 
   useEffect(() => {
     if (hovered != null) {
@@ -148,12 +187,31 @@ const CanvasViewerOSDContent = ({
         onKeyDown={handleKeyDown}
         onMouseLeave={() => setHovered(null)}
       >
-        {options != null && (
-          <OpenSeadragonViewer
-            aria-label='canvas viewer'
-            className='h-full w-full'
-            options={options}
-          />
+        {viewerError?.key === viewerKey ? (
+          <div className='flex h-full w-full items-center justify-center' role='alert'>
+            <p className='text-red-500'>
+              {t('error_loading_canvas', { error: viewerError.message })}
+            </p>
+          </div>
+        ) : (
+          options != null && (
+            <OpenSeadragonErrorBoundary
+              key={viewerKey}
+              fallback={(boundaryError) => (
+                <div className='flex h-full w-full items-center justify-center' role='alert'>
+                  <p className='text-red-500'>
+                    {t('error_loading_canvas', { error: boundaryError.message })}
+                  </p>
+                </div>
+              )}
+            >
+              <OpenSeadragonViewer
+                aria-label='canvas viewer'
+                className='h-full w-full'
+                options={options}
+              />
+            </OpenSeadragonErrorBoundary>
+          )
         )}
       </div>
       {distanceBetweenSelectedAnnotations && distanceBetweenSelectedAnnotationCenters && (
