@@ -259,19 +259,6 @@ function* startWorker(
               );
             }
             break;
-          case WorkerStatus.POSTED:
-            currentWorker.queue[idTask] = {
-              ...currentWorker.queue[idTask],
-              status: WorkerStatus.POSTED,
-              statusMessage: '',
-            };
-            yield call(
-              [workerRepository, workerRepository.updateTaskStatus],
-              currentWorker.id,
-              idTask,
-              WorkerStatus.POSTED,
-            );
-            break;
           case WorkerStatus.ERROR:
             console.error(
               `Task for scope ${toString(task.scope)} encountered an error: ${taskResult.statusMessage}`,
