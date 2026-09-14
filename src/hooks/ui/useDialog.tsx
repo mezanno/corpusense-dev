@@ -44,6 +44,7 @@ export type FormProps<TResult = unknown> = {
 type FormDialogOptions = {
   title: string;
   confirmLabel?: string;
+  cancelLabel?: string;
   renderForm: (
     formRef: RefObject<HTMLFormElement | null>, //référence au formulaire pour pouvoir déclencher le submit
     setCanSubmit: (can: boolean) => void, //indique si le bouton de confirmation doit être actif (en fonction de la validité du formulaire)
@@ -61,27 +62,30 @@ const useDialog = () => {
   const openFormDialog = ({
     title,
     confirmLabel,
+    cancelLabel,
     renderForm,
     closeOnAction,
   }: FormDialogOptions) => {
     const formRef = { current: null } as RefObject<HTMLFormElement | null>; // Create a new ref for each dialog
-
-    if (confirmLabel === undefined) {
-      openDialog({
-        title,
-        children: renderForm(formRef, setCanSubmit, closeDialog),
-      });
-    } else {
-      openDialog({
-        title,
-        children: renderForm(formRef, setCanSubmit, closeDialog),
-        onConfirm: {
-          message: confirmLabel,
-          action: () => formRef.current?.requestSubmit(),
-          closeOnAction,
-        },
-      });
-    }
+    openDialog({
+      title,
+      children: renderForm(formRef, setCanSubmit, closeDialog),
+      onConfirm:
+        confirmLabel !== undefined
+          ? {
+              message: confirmLabel,
+              action: () => formRef.current?.requestSubmit(),
+              closeOnAction,
+            }
+          : undefined,
+      onCancel:
+        cancelLabel !== undefined
+          ? {
+              message: cancelLabel,
+              action: () => closeDialog(),
+            }
+          : undefined,
+    });
   };
 
   const openImportCollectionDialog = () => {
