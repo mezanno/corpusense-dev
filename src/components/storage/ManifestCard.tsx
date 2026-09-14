@@ -72,10 +72,10 @@ export function ManifestCard({ source, isHighlighted }: ManifestCardProps) {
       }}
     >
       <CardContent
-        className='flex h-fit w-full flex-1 flex-col items-end justify-end rounded-t-xl bg-white/50 p-2 wrap-anywhere'
+        className='flex min-h-0 flex-1 flex-col items-end justify-end rounded-t-xl bg-white/50 p-2'
         title={source.name}
       >
-        <h3 className='font-bold'>{source.name}</h3>
+        <h3 className='font-bold wrap-anywhere'>{source.name}</h3>
         <div className='flex items-center space-x-2 text-sm'>
           <Layers size={14} /> <span>{source.pageCount} Pages</span>
         </div>
@@ -97,7 +97,7 @@ export function ManifestCard({ source, isHighlighted }: ManifestCardProps) {
           </>
         )}
       </CardContent>
-      <CardFooter className='flex justify-between rounded-b-xl bg-white p-2'>
+      <CardFooter className='flex shrink-0 justify-between rounded-b-xl bg-white p-2'>
         <div
           onClick={handleEditRemoteSource}
           className='cursor-pointer'
