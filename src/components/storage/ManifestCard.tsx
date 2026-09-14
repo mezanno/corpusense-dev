@@ -71,10 +71,11 @@ export function ManifestCard({ source, isHighlighted }: ManifestCardProps) {
         cursor: 'pointer',
       }}
     >
-      <CardContent className='flex h-fit w-full flex-1 flex-col items-end justify-end rounded-t-xl bg-white/50 p-1'>
-        <h3 className='font-bold' title={source.name}>
-          {source.name}
-        </h3>
+      <CardContent
+        className='flex h-fit w-full flex-1 flex-col items-end justify-end rounded-t-xl bg-white/50 p-2 wrap-anywhere'
+        title={source.name}
+      >
+        <h3 className='font-bold'>{source.name}</h3>
         <div className='flex items-center space-x-2 text-sm'>
           <Layers size={14} /> <span>{source.pageCount} Pages</span>
         </div>
