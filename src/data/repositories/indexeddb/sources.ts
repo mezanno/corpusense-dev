@@ -1,4 +1,10 @@
-import { Source, SourceContent, SourceWithContent } from '@/data/models/source/source';
+import {
+  Source,
+  SourceContent,
+  SourceWithContent,
+  SourceWithContentAndThumbnail,
+  StoredBlob,
+} from '@/data/models/source/source';
 import { AddSourceDTO } from '@/data/models/source/source.dto';
 import { DBError } from '@/data/utils/errors';
 import { extractCanvasById, getThumbnailBlob } from '@/data/utils/manifest';
@@ -77,12 +83,12 @@ export class IndexedDBSourceRepository implements SourceRepository {
     }
   }
 
-  async getBlob(blobId: string): Promise<FunctionResult<Blob, EntityNotFoundError>> {
+  async getBlob(blobId: string): Promise<FunctionResult<StoredBlob, EntityNotFoundError>> {
     const storedBlob = await db.storedBlobs.get(blobId);
     if (!storedBlob) {
       return FunctionResult.err(new EntityNotFoundError({ entity: 'Blob', id: blobId }));
     }
-    return FunctionResult.ok(storedBlob.blob);
+    return FunctionResult.ok(storedBlob);
   }
 
   async getById(sourceId: string): Promise<FunctionResult<Source, EntityNotFoundError>> {
@@ -117,6 +123,23 @@ export class IndexedDBSourceRepository implements SourceRepository {
     return FunctionResult.ok({
       ...sourceResult.value,
       content: contentResult.value,
+    });
+  }
+
+  async getSourceWithContentAndThumbnailById(
+    sourceId: string,
+  ): Promise<FunctionResult<SourceWithContentAndThumbnail, EntityNotFoundError>> {
+    const sourceWithContentResult = await this.getSourceWithContentById(sourceId);
+    if (!sourceWithContentResult.ok) {
+      return sourceWithContentResult;
+    }
+    const storedBlobResult = await this.getBlob(sourceWithContentResult.value.thumbnailBlobId);
+    if (!storedBlobResult.ok) {
+      return storedBlobResult;
+    }
+    return FunctionResult.ok({
+      ...sourceWithContentResult.value,
+      thumbnailBlob: storedBlobResult.value,
     });
   }
 

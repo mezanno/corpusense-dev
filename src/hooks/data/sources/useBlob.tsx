@@ -1,3 +1,4 @@
+import { StoredBlob } from '@/data/models/source/source';
 import { getSourceRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useState } from 'react';
@@ -5,7 +6,7 @@ import { useEffect, useEffectEvent, useState } from 'react';
 const useBlob = (blobId: string) => {
   const [thumbUrl, setThumbUrl] = useState<string | null>(null);
 
-  const { data } = useQuery<Blob, Error>({
+  const { data } = useQuery<StoredBlob, Error>({
     queryKey: ['blob', blobId],
     queryFn: async () => {
       const sourceRepository = getSourceRepository();
@@ -21,7 +22,7 @@ const useBlob = (blobId: string) => {
 
   useEffect(() => {
     if (data) {
-      const url = URL.createObjectURL(data);
+      const url = URL.createObjectURL(data.blob);
       onNewUrl(url);
       return () => URL.revokeObjectURL(url); // libère la mémoire quand le composant se détruit
     }
