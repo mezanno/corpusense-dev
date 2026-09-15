@@ -1,5 +1,6 @@
 import { FormProps } from '@/hooks/ui/useDialog';
 import { ConvertedFileInfo, usePdfConverter } from '@/hooks/usePdfConverter';
+import { FunctionResult } from '@/utils/functionResult';
 import { AlertCircle, CheckCircle, Download, FileUp } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -27,9 +28,16 @@ const ConvertPdfForm = ({ closeDialog, onResult }: FormProps<string>) => {
 
   const handleAddToLibrary = async () => {
     if (convertedFileInfo) {
-      const newSourceId = await addConvertedFileToLibrary(convertedFileInfo);
-      onResult?.(newSourceId);
-      closeDialog?.();
+      const newSourceResult = await addConvertedFileToLibrary(convertedFileInfo);
+      FunctionResult.match(newSourceResult, {
+        ok: (newSource) => {
+          onResult?.(newSource.id);
+          closeDialog?.();
+        },
+        err: (error) => {
+          console.error('Error adding converted file to library: ', error);
+        },
+      });
     }
   };
 

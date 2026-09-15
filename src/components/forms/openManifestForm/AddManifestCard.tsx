@@ -1,5 +1,6 @@
 import { SourceWithContent } from '@/data/models/source/source';
 import useSources from '@/hooks/data/sources/useSources';
+import { FunctionResult } from '@/utils/functionResult';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { IIIFExternalWebResource, Manifest } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
@@ -79,9 +80,16 @@ const AddManifestCard = ({
           values.manifestName ??
           parsedManifest.resource.getSummary() ??
           t('manifest_untitled', { date: new Date().toLocaleString() });
-        const newSourceId = await addManifestToLibrary(loadedManifest, name);
-        onResult?.(newSourceId);
-        if (closeDialog) closeDialog();
+        const newSourceResult = await addManifestToLibrary(loadedManifest, name);
+        FunctionResult.match(newSourceResult, {
+          ok: (source) => {
+            onResult?.(source.id);
+            if (closeDialog) closeDialog();
+          },
+          err: (error) => {
+            console.error('Error adding manifest to library: ', error);
+          },
+        });
       }
     }
   }

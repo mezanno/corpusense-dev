@@ -13,7 +13,7 @@ import { Project } from '@/data/models/project';
 import { Result } from '@/data/models/result/result';
 import { ResultCreateDTO } from '@/data/models/result/result.dto';
 import { AnnotationScope, CanvasScope, Scope } from '@/data/models/scope/scope';
-import { Source, SourceContent } from '@/data/models/source/source';
+import { Source, SourceContent, SourceWithContent } from '@/data/models/source/source';
 import { AddSourceDTO } from '@/data/models/source/source.dto';
 import { StoredManifestDetails } from '@/data/models/storedManifest';
 import { Tag } from '@/data/models/tag';
@@ -113,7 +113,7 @@ export interface ManifestRepository {
 }
 
 export interface SourceRepository {
-  add(source: AddSourceDTO): Promise<string>;
+  add(source: AddSourceDTO): Promise<FunctionResult<SourceWithContent, DBError>>;
 
   getBlob(blobId: string): Promise<FunctionResult<Blob, EntityNotFoundError>>;
   getById(sourceId: string): Promise<FunctionResult<Source, EntityNotFoundError>>;

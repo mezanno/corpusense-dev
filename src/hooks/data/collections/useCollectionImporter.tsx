@@ -15,6 +15,7 @@ import {
 } from '@/data/repositories/indexeddb/dbFactory';
 import { useAppDispatch } from '@/hooks/hooks';
 import { ProgressLoggerSetters } from '@/hooks/ui/useLogger';
+import { FunctionResult } from '@/utils/functionResult';
 import { getErrorMessage } from '@/utils/utils';
 import { Cozy } from 'cozy-iiif';
 import { default as JSZip } from 'jszip';
@@ -68,9 +69,20 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
           parsed.resource.getSummary() ??
           t('manifest_untitled', { date: new Date().toLocaleString() });
 
-        const newSourceId = await addManifestToLibrary(loadedManifest, name);
-
-        manifestMap.set(id, newSourceId);
+        const newSourceResult = await addManifestToLibrary(loadedManifest, name);
+        FunctionResult.match(newSourceResult, {
+          ok: (newSource) => {
+            addLog(t('log_manifest_added_to_library', { id, sourceId: newSource.id }), 'success');
+            manifestMap.set(id, newSource.id);
+          },
+          err: (error) => {
+            addLog(
+              t('error_adding_manifest_to_library', { id, error: getErrorMessage(error) }),
+              'error',
+            );
+            throw new Error(`Manifest ${id} could not be added to library`);
+          },
+        });
       }
 
       //step 2 : update the collection content with the new sourceIds
@@ -93,6 +105,7 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
       } else {
         return {
           collection: parseResult.data,
+          sources: [], //sources are already added to the library, we don't need to add them again
           annotations,
           model,
           workers,

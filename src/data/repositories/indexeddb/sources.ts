@@ -1,5 +1,6 @@
-import { Source, SourceContent } from '@/data/models/source/source';
+import { Source, SourceContent, SourceWithContent } from '@/data/models/source/source';
 import { AddSourceDTO } from '@/data/models/source/source.dto';
+import { DBError } from '@/data/utils/errors';
 import { extractCanvasById, getThumbnailBlob } from '@/data/utils/manifest';
 import { FunctionResult } from '@/utils/functionResult';
 import {
@@ -13,45 +14,47 @@ import { db } from './db';
 import { SourceRepository } from './types';
 
 export class IndexedDBSourceRepository implements SourceRepository {
-  async add(dto: AddSourceDTO): Promise<string> {
+  async add(dto: AddSourceDTO): Promise<FunctionResult<SourceWithContent, DBError>> {
     const sourceId = uuid();
-    try {
-      await db.transaction('rw', db.storedBlobs, db.sources, db.sourceContents, async () => {
-        const thumbnailBlobId = uuid();
-
-        await db.storedBlobs.add({
-          id: thumbnailBlobId,
-          blob: dto.thumbnailBlob,
-        });
-        await db.sources.add({
-          id: sourceId,
-          name: dto.name,
-          type: dto.type,
-          pageCount: dto.pageCount,
-          thumbnailBlobId,
-        });
-        if (dto.type === 'local') {
-          await db.sourceContents.add({
+    const thumbnailBlobId = uuid();
+    const newSource = {
+      id: sourceId,
+      name: dto.name,
+      type: dto.type,
+      pageCount: dto.pageCount,
+      thumbnailBlobId,
+    };
+    const sourceContent: SourceContent =
+      dto.type === 'local'
+        ? {
             id: sourceId,
             type: 'local',
             manifest: dto.manifest,
             localFile: {
               ...dto.localFile,
             },
-          } as SourceContent);
-        } else {
-          await db.sourceContents.add({
+          }
+        : {
             id: sourceId,
             type: 'remote',
             manifest: dto.manifest,
-          });
-        }
+          };
+    try {
+      await db.transaction('rw', db.storedBlobs, db.sources, db.sourceContents, async () => {
+        await db.storedBlobs.add({
+          id: thumbnailBlobId,
+          blob: dto.thumbnailBlob,
+        });
+        await db.sources.add(newSource);
+        await db.sourceContents.add(sourceContent);
       });
 
-      return sourceId;
+      return FunctionResult.ok({
+        ...newSource,
+        content: sourceContent,
+      });
     } catch (error) {
-      console.error('Error adding source: ', error);
-      throw error;
+      return FunctionResult.err(new DBError({ message: 'Failed to add source to IndexedDB' }));
     }
   }
 
