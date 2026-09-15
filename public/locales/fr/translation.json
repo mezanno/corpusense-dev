@@ -500,6 +500,7 @@
   "log_legacy_collection_detected": "Format de collection hérité détecté",
   "log_importing_collection_from_file": "Importation de la collection depuis le fichier : {{filename}}",
   "log_collection_created": "Collection créée avec l'id : {{id}}",
+  "log_collection_added": "Collection ajoutée avec l'id : {{id}}",
   "log_importing_annotations": "Importation de {{count}} annotations pour la collection {{id}}...",
   "log_imported_annotations": "{{count}} annotations importées",
   "log_importing_model": "Importation du modèle {{modelId}} pour la collection {{id}}...",

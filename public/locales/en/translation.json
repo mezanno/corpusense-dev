@@ -500,6 +500,7 @@
   "log_legacy_collection_detected": "Legacy collection format detected",
   "log_importing_collection_from_file": "Importing collection from file: {{filename}}",
   "log_collection_created": "Collection created with id: {{id}}",
+  "log_collection_added": "Collection added with id : {{id}}",
   "log_importing_annotations": "Importing {{count}} annotations for collection {{id}}...",
   "log_imported_annotations": "Imported {{count}} annotations",
   "log_importing_model": "Importing model {{modelId}} for collection {{id}}...",
