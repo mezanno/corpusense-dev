@@ -118,6 +118,9 @@ export interface SourceRepository {
   getBlob(blobId: string): Promise<FunctionResult<Blob, EntityNotFoundError>>;
   getById(sourceId: string): Promise<FunctionResult<Source, EntityNotFoundError>>;
   getContentById(sourceId: string): Promise<FunctionResult<SourceContent, EntityNotFoundError>>;
+  getSourceWithContentById(
+    sourceId: string,
+  ): Promise<FunctionResult<SourceWithContent, EntityNotFoundError>>;
   getContentByManifestUrl(
     manifestUrl: string,
   ): Promise<FunctionResult<SourceContent, EntityNotFoundError>>;
