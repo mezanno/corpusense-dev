@@ -1,6 +1,7 @@
 import { Annotation, ElementType } from '@/data/models/annotations/annotation';
 import { AnnotationDTO } from '@/data/models/annotations/annotation.dto';
 import { Collection, CollectionDetails } from '@/data/models/collection/collection';
+import { CollectionCreateDTO } from '@/data/models/collection/collection.dto';
 import { CollectionElement } from '@/data/models/collectionElement';
 import { ConvertedFile } from '@/data/models/convertedFile';
 import { DataModel } from '@/data/models/dataModel/dataModel';
@@ -64,7 +65,7 @@ export interface CollectionRepository {
   ): Promise<FunctionResult<string[], EntityNotFoundError>>;
   exists(id: string): Promise<boolean>;
 
-  create(collection: Collection): Promise<FunctionResult<Collection, DBError>>;
+  create(collectionDTO: CollectionCreateDTO): Promise<FunctionResult<Collection, DBError>>;
   addContentToCollection(collection: Collection): Promise<void>;
   duplicate(
     collectionId: string,
