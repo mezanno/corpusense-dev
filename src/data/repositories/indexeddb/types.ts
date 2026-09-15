@@ -66,6 +66,7 @@ export interface CollectionRepository {
   exists(id: string): Promise<boolean>;
 
   create(collectionDTO: CollectionCreateDTO): Promise<FunctionResult<Collection, DBError>>;
+  add(collection: Collection): Promise<FunctionResult<void, DBError>>;
   addContentToCollection(collection: Collection): Promise<void>;
   duplicate(
     collectionId: string,

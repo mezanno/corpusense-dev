@@ -173,6 +173,22 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     }
   }
 
+  async add(collection: Collection): Promise<FunctionResult<void, DBError>> {
+    try {
+      await db.transaction('rw', db.collections, db.collectionContents, async () => {
+        const { content, ...collectionDetails } = collection;
+        await db.collections.add(collectionDetails);
+        await db.collectionContents.add({
+          id: collection.id,
+          content: content ?? [],
+        });
+      });
+      return FunctionResult.ok(undefined);
+    } catch (error) {
+      return FunctionResult.err(new DBError({ message: getErrorMessage(error) }));
+    }
+  }
+
   async duplicate(
     collectionId: string,
     newName: string,
