@@ -5,11 +5,13 @@ import {
   LegacyExportedCollection,
   LegacyExportedCollectionSchema,
 } from '@/data/models/collection/collection';
+import { SourceWithContent } from '@/data/models/source/source';
 import {
   getAnnotationRepository,
   getCollectionRepository,
   getModelRepository,
   getResultRepository,
+  getSourceRepository,
   getTagRepository,
   getWorkerRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
@@ -55,6 +57,7 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
           return { id, loadedManifest: loadedManifestResult.value };
         }),
       );
+      const sources: SourceWithContent[] = [];
       //then add the manifests to the library and create a new sourceId for each manifestId
       for (const { id, loadedManifest } of manifests) {
         addLog(t('log_fetched_manifest', { id }));
@@ -74,6 +77,7 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
           ok: (newSource) => {
             addLog(t('log_manifest_added_to_library', { id, sourceId: newSource.id }), 'success');
             manifestMap.set(id, newSource.id);
+            sources.push(newSource);
           },
           err: (error) => {
             addLog(
@@ -105,7 +109,7 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
       } else {
         return {
           collection: parseResult.data,
-          sources: [], //sources are already added to the library, we don't need to add them again
+          sources,
           annotations,
           model,
           workers,
@@ -153,7 +157,8 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
         );
         return;
       }
-      const { collection, annotations, model, workers, results, tags } = importedCollection;
+      const { collection, sources, annotations, model, workers, results, tags } =
+        importedCollection;
 
       //réimporte les manifestes liés à la collection (si besoin)
       const manifestIds = uniq(collection.content.map((item) => item.manifestId)).filter(
@@ -177,6 +182,34 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
           );
         }
         return;
+      }
+
+      if (sources !== undefined && sources.length > 0) {
+        addLog(t('log_importing_sources', { count: sources.length, id: collection.id }));
+        const sourceRepository = getSourceRepository();
+        for (let i = 0; i < sources.length; i++) {
+          const source = sources[i];
+          addLog(t('log_importing_source', { sourceId: source.id, collectionId: collection.id }));
+          const addSourceResult = await sourceRepository.addSourceWithContent(source);
+          FunctionResult.match(addSourceResult, {
+            ok: () => {
+              addLog(
+                t('log_source_imported', { sourceId: source.id, collectionId: collection.id }),
+                'success',
+              );
+            },
+            err: (error) => {
+              addLog(
+                t('error_importing_source', {
+                  sourceId: source.id,
+                  collectionId: collection.id,
+                  error: getErrorMessage(error),
+                }),
+                'error',
+              );
+            },
+          });
+        }
       }
 
       if (annotations !== undefined && annotations.length > 0) {
