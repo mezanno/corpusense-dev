@@ -114,6 +114,7 @@ export interface ManifestRepository {
 
 export interface SourceRepository {
   add(source: AddSourceDTO): Promise<FunctionResult<SourceWithContent, DBError>>;
+  addSourceWithContent(source: SourceWithContent): Promise<FunctionResult<boolean, DBError>>;
 
   getBlob(blobId: string): Promise<FunctionResult<Blob, EntityNotFoundError>>;
   getById(sourceId: string): Promise<FunctionResult<Source, EntityNotFoundError>>;

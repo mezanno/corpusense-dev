@@ -7,6 +7,7 @@ import {
   getManifestFromConvertedFile,
   reconstructManifestFromConvertedFile,
 } from '@/utils/manifest';
+import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
 import { v4 as uuid } from 'uuid';
 import { EntityNotFoundError } from '../EntityNotFoundError';
@@ -55,6 +56,24 @@ export class IndexedDBSourceRepository implements SourceRepository {
       });
     } catch (error) {
       return FunctionResult.err(new DBError({ message: 'Failed to add source to IndexedDB' }));
+    }
+  }
+
+  async addSourceWithContent(source: SourceWithContent): Promise<FunctionResult<boolean, DBError>> {
+    const { content, ...sourceWithoutContent } = source;
+    try {
+      await db.transaction('rw', db.sources, db.sourceContents, async () => {
+        await db.sources.add(sourceWithoutContent);
+        await db.sourceContents.add(content);
+      });
+
+      return FunctionResult.ok(true);
+    } catch (error) {
+      return FunctionResult.err(
+        new DBError({
+          message: getErrorMessage(error) || 'Failed to add source with content to IndexedDB',
+        }),
+      );
     }
   }
 
