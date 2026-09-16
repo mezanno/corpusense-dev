@@ -1,23 +1,29 @@
-# Corpusense - Architecture
+# Corpusense - Architecture & Communication des Données
 
-![Oragnisation de Corpusense](./images/corpusense_oragnisation.png)
+CorpuSense repose sur une **architecture hybride Local-First**. Les données métier persistantes sont conservées dans IndexedDB et lues de manière réactive par l'IHM via Dexie `useLiveQuery`. Redux et Sagas gèrent l'orchestration des tâches d'arrière-plan et les événements système.
 
-${\color{blue}Chemin \space bleu}$ : chargement initial (au démarrage de l'application)
+---
 
-1. différentes fonction Saga enregistrées (rootSaga) besoin de récupérer les. Elles appellent les repository nécessaire (call)
-2. les fonctions dans les repositories récupèrent les données d'IndexedDB grâce à l'orm Dexie
-3. les Sagas récupèrent les données des repositories
-4. envoie les données vers le store Redux (put)
+## 🔵 Flux 1 : Lecture & Réactivité Locale (Standard UI Local-First)
 
-${\color{green}Chemin \space bleu}$ : un composant a besoin d'afficher une donnée
+1. Les composant React s'abonnent aux données via des hooks dédiés (`useLiveCollections`, `useLiveSources`, `useAnnotationsForCanvas`).
+2. Les hooks appellent les repositories IndexedDB (`src/data/repositories/indexeddb/`).
+3. Dexie `useLiveQuery` observe les tables IndexedDB.
+4. Toute modification dans IndexedDB rafraîchit automatiquement et immédiatement l'affichage des composants React abonnés.
 
-1. récupération des données provenant du store grâce à un sélecteur (selector)
+---
 
-${\color{orange}Chemin \space orange}$ : mise à jour de données
+## 🟠 Flux 2 : Manipulation de Données & Result Pattern (`FunctionResult`)
 
-1. l'utilisateur met à jour une/des donnée(s). Il l'envoie vers le store (dispatch)
-2. l'appel vers le store est intercepté par une fonction Saga qui se charge d'appliquer la logique métier. Le store lui ne met pas les données à mettre à jour à jour dans le store. Il peut mettre des variables d'état à jour (type chargement en cours...)
-3. la fonction Saga envoie les nouvelles données vers un/des repositories
-4. le(s) repositories enregistre(nt) les données dans IndexedDB grâce à Dexie
-5. le(s) repositories envoie(nt) les données si nécessaire
-6. la fonction Saga envoie l'instruction de mise à jour au store (put)
+1. Les composants ou Sagas appellent les méthodes des repositories via les factories (`dbFactory.ts`).
+2. Les opérations faillibles retournent des valeurs typées `FunctionResult<T, E>` (`{ ok: true, value: T } | { ok: false, error: E }`).
+3. Les erreurs explicites (`EntityNotFoundError`, `DBError`, `StatusChangeError`) sont traitées sans `try/catch` sauvage.
+
+---
+
+## 🟢 Flux 3 : Orchestration Asynchrone & Workers (Redux + Sagas + Realtime)
+
+1. L'IHM déclenche une tâche d'arrière-plan en dispatchant une action Redux (ex: `startWorkerRequest`).
+2. Le middleware Redux-Saga intercepte l'action, instancie le plugin approprié (`mistral.ts`, `tesseract.ts`, `surya.ts`, etc.) et fait évoluer le statut du worker (`POSTING`, `POSTED`, `INPROGRESS`).
+3. Les résultats produits sont enregistrés directement dans les Repositories IndexedDB via `FunctionResult`.
+4. Une notification d'événement/toast est émise sur le store Redux (`eventsReducer`), et la vue réactive se met à jour automatiquement via IndexedDB.

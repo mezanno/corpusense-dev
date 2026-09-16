@@ -22,17 +22,18 @@
 ### Technologies principales
 - **Interface & UI** : [React 19](https://react.dev/), [TypeScript 5.9](https://www.typescriptlang.org/), [Tailwind CSS 4](https://tailwindcss.com/), composants UI accessibles [Radix UI](https://www.radix-ui.com/) / [Shadcn UI](https://ui.shadcn.com/), [Lucide React](https://lucide.dev/).
 - **Moteur de Build & Bundler** : [Vite 7](https://vitejs.dev/) avec extension PWA (`vite-plugin-pwa`).
-- **Gestion de l'État & Logique Asynchrone** :
+- **Gestion de l'État, Logique Asynchrone & Erreurs** :
   - *Local-First State* : [Dexie.js v4](https://dexie.org/) (ORM IndexedDB) avec réactivité UI via `useLiveQuery` (`dexie-react-hooks`).
-  - *Global Task/Event State* : [Redux Toolkit](https://redux-toolkit.js.org/) & [Redux Saga](https://redux-saga.js.org/).
+  - *Gestion d'Erreurs Fonctionnelle* : Result Pattern (`FunctionResult<T, E>`) unifiant les retours d'erreurs typées dans tous les repositories IndexedDB et hooks DAL.
+  - *Global Task/Event State* : [Redux Toolkit](https://redux-toolkit.js.org/) (store allégé, sans `redux-logger`) & [Redux Saga](https://redux-saga.js.org/).
   - *Server State & Caching* : [TanStack React Query v5](https://tanstack.com/query/latest).
   - *Local File System Handle Store* : [Zustand v5](https://zustand-demo.pmnd.rs/).
-- **Protocoles & Visualisation Documents** : `@annotorious/react`, `@annotorious/openseadragon`, `openseadragon`, `@iiif/presentation-3`, `@iiif/parser`, `@hyzyla/pdfium`, `pdfjs-dist`.
+- **Protocoles & Visualisation Documents** : `@annotorious/react`, `@annotorious/openseadragon`, `@dnd-kit/dom`, `@dnd-kit/react`, `openseadragon`, `@iiif/presentation-3`, `@iiif/parser`, `@hyzyla/pdfium`, `pdfjs-dist`.
 - **Backend & Services Distribués** : [Supabase](https://supabase.com/) (Auth, Postgres Tables, Realtime Channels, Storage), Cantaloupe IIIF Server, EmailJS.
 - **Tests & Qualité** : [Vitest](https://vitest.dev/), `@testing-library/react`, [ESLint 9](https://eslint.org/), [Prettier 3](https://prettier.io/).
 
 ### Résumé de l'architecture générale
-CorpuSense repose sur une **architecture hybride Local-First**. Les données du domaine (manifests, collections, annotations, modèles, résultats) sont conservées directement dans la base IndexedDB du navigateur via l'ORM Dexie et lues de manière réactive par les composants React via des hooks personnalisés. Redux Toolkit et Redux Saga sont réservés à l'orchestration des tâches d'arrière-plan, à la gestion du statut des workers distants et à la propagation d'événements/notifications UI. Les appels réseau vers des services tiers (Supabase, LLM, OCR) sont encapsulés dans des modules de plugins chargés dynamiquement par Vite.
+CorpuSense repose sur une **architecture hybride Local-First**. Les données du domaine (manifests, collections, annotations, modèles, résultats) sont conservées directement dans la base IndexedDB du navigateur via l'ORM Dexie et lues de manière réactive par les composants React via des hooks personnalisés utilisant le **Result Pattern** (`FunctionResult<T, E>`). Redux Toolkit et Redux Saga sont réservés à l'orchestration des tâches d'arrière-plan, à la gestion du statut des workers distants (suivi du temps réel, durée et estimation) et à la propagation d'événements/notifications UI. Les appels réseau vers des services tiers (Supabase, LLM, OCR) sont encapsulés dans des modules de plugins chargés dynamiquement par Vite.
 
 ---
 

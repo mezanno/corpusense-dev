@@ -45,6 +45,7 @@ Data structures for user collections grouping canvases.
   - `tags: string[]` (tag ids)
   - `modelId?`: associated DataModel id
   - `contentSize`: number of elements
+  - `createdAt`, `updatedAt`: ISO timestamps (`TimeStampSchema`)
 - `CollectionContent` (extends `WithStringId`):
   - `content: CollectionElement[]`
 - `Collection`: Convenience union of details + content.
@@ -52,112 +53,14 @@ Data structures for user collections grouping canvases.
 
 ---
 
-## `CollectionElement.ts`
+## `Sources.ts`
 
-A single item inside a collection.
+Data structures representing external or local sources (IIIF manifests or uploaded files).
 
-- `id?`: optional persistent id
-- `canvasId`, `manifestId`, `collectionId`
-- ordering within the collection is given by the element's index in `CollectionContent.content`, it is not stored on the element itself
-
----
-
-## `DataModel.ts`
-
-Describes the schema used by workers/NER to extract structured data from annotations.
-
-- `DataField`:
-  - `id`, `name`, `type`
-  - `description?`, `generated?` (computed), `isArray?`
-  - `color`: UI color for highlighting
-- `DataModel`:
-  - `id`, `name`, optional `description`, `prompt` (LLM/system prompt)
-  - `fields: DataField[]`
-- `DataModelCreateDTO`: Inputs for creating a model, optionally cloning from `fromModelId`.
-
----
-
-## `Event.ts`
-
-Simple app-level events.
-
-- `EventType`: `INFO` | `ERROR`
-- `Event`: `{ message: string; type: EventType }`
-
----
-
-## `History.ts`
-
-Minimal navigation history entry.
-
-- `History`: `{ url: string }`
-
----
-
-## `Metadata.ts`
-
-Key-value metadata associated with items.
-
-- `ItemMetadataAttribute`: `{ label: string; value: string }`
-- `ItemMetadata`: `{ id: string; attribute: ItemMetadataAttribute }`
-
----
-
-## `NamedEntity.ts`
-
-Named-entity recognition (NER) results tied to annotations and word indices.
-
-- `NamedEntitySelector`: `{ annotationId: string; indexes: number[] }`
-- `NamedEntity`:
-  - `id`, `dataFieldId` (refers to `DataField.id`)
-  - `value` (extracted text)
-  - `selector: NamedEntitySelector[]` (locations in text)
-  - `annotationIds: string[]` (for IndexedDB performance)
-
----
-
-## `Result.ts`
-
-Generic worker result payload stored per scope.
-
-- `Result`:
-  - `id: number`
-  - `scope: Scope`, `scopeKey: string` (for IndexedDB indexing)
-  - `workerName`, `workerId`, `taskId`
-  - `value: unknown` (worker-specific), `params: PluginParams`
-- `ResultCreateDTO`: same minus `id`/`scopeKey` (generated server/client-side)
-
----
-
-## `Scope.ts`
-
-Discriminated union describing where an operation/result applies.
-
-- `CollectionScope`: `{ collectionId }`
-- `CanvasScope`: `{ collectionId, canvasId }`
-- `AnnotationScope`: `{ collectionId, canvasId, annotationId }`
-- Narrowing helpers: `isCollectionScope`, `isCanvasScope`, `isAnnotationScope`
-- Comparison: `isSameScope(s1, s2)`
-- Formatting: `toString(scope)`
-
----
-
-## `StoredManifest.ts`
-
-Local storage types for IIIF manifests with lightweight listings.
-
-- `StoredManifestDetails` (extends `WithStringId`): `{ name, thumbnail? }`
-- `StoredManifestContent` (extends `WithStringId`): `{ content: Manifest }`
-- `StoredManifest`: union of details + manifest content
-
----
-
-## `Tag.ts` and `TagCategory.ts`
-
-Labeling system for collections/annotations.
-
-- `Tag`: `{ id, label, category? }`
-- `TagCategory`: `{ id, label, description?, tags? }`
+- `Source`: Represents a registered source (`id`, `name`, `type`: `'remote' | 'local'`).
+- `SourceContent`: Detailed content associated with a source.
+- `SourceWithContent`: Combines source metadata and content, updated to include `thumbnailBase64` for cached preview thumbnails.
+- `SourceWithContentAndThumbnail`: Extended DTO for fetching sources with resolved thumbnails.
 
 ---
 
@@ -165,7 +68,7 @@ Labeling system for collections/annotations.
 
 Background processing units and their tasks.
 
-- `WorkerStatus`: lifecycle enum (`WAITING`, `INPROGRESS`, `UNFINISHED`, `COMPLETED`, etc., with error variants)
+- `WorkerStatus`: Lifecycle enum (`WAITING`, `POSTING`, `POSTED`, `INPROGRESS`, `UNFINISHED`, `COMPLETED`, `FAILED`, etc., with status transition error `StatusChangeError`).
 - `Task`:
   - `id: number`
   - `canvas: Canvas`
@@ -173,11 +76,11 @@ Background processing units and their tasks.
   - `status: WorkerStatus`, `statusMessage?`
 - `Worker`:
   - `id`, `name`, `scope`, `scopeKey`
-  - `status`, `statusMessage?`, `createdAt`, `estimatedDuration`
+  - `status`, `statusMessage?`, `createdAt`, `estimatedDuration`, `realtimeDuration`
   - `params: PluginParams`, `queue: Task[]`
-- `WorkerResponse`: minimal result envelope for RPC/HTTP
-- `WorkerCreateDTO`: inputs to create a worker
-- Type guard `isWorker(obj)`: distinguishes saved workers from create DTOs
+- `WorkerResponse`: Minimal result envelope for RPC/HTTP.
+- `WorkerCreateDTO`: Inputs to create a worker.
+- Type guard `isWorker(obj)`: Distinguishes saved workers from create DTOs.
 
 ---
 

@@ -45,20 +45,22 @@ Guides fonctionnels détaillés :
 
 ### Flux global
 
-- Interface React (pages et composants)
-- État global Redux Toolkit
-- Logique asynchrone Redux-Saga
-- Persistance locale via IndexedDB (Dexie)
-- Plugins pour import et workers de traitement
+- Interface React 19 (pages et composants réactifs)
+- Persistance locale Local-First via IndexedDB (Dexie `useLiveQuery`)
+- Gestion d'erreurs typées via Result Pattern (`FunctionResult<T, E>`) dans la DAL
+- Store Redux Toolkit allégé (événements et notifications system UI)
+- Logique asynchrone & orchestrateur de workers (Redux-Saga + Supabase Realtime)
+- Plugins modulaires pour imports et traitements d'IA/OCR (Mistral, OpenAI, Tesseract, Pero, Surya)
 
 ### Fichiers clés
 
 - Point d'entrée app : src/main.tsx
 - Routing et providers : src/App.tsx
 - Navigation applicative : src/hooks/useAppNavigation.tsx
+- Pattern Result / Erreurs : src/utils/functionResult.ts
+- Repositories IndexedDB : src/data/repositories/indexeddb/
 - Store Redux : src/state/store.ts
 - Root saga : src/state/sagas/index.ts
-- Sagas manifest : src/state/sagas/manifests.ts
 - Sagas workers : src/state/sagas/workers.ts
 - Internationalisation : src/i18n.ts
 
@@ -66,31 +68,31 @@ Guides fonctionnels détaillés :
 
 - src/pages : pages principales
 - src/components : composants UI et métier
-- src/state : reducers, sagas, middlewares
-- src/data/models : modèles de données
-- src/data/repositories : accès aux données
-- public/locales : traductions
-- public/doc : documentation utilisateur/architecture
+- src/state : reducers, sagas, zustand stores
+- src/data/models : modèles de données et schémas Zod
+- src/data/repositories : accès aux données IndexedDB
+- public/locales : traductions i18n
+- public/doc : documentation utilisateur, architecture et optimisations
 
 ### Documentation technique interne
 
-- Architecture : public/doc/architecture.md
-- Interface : public/doc/ui.md
-- Modèles de données : public/doc/data-models.md
-- Schéma data : public/doc/data.md
+- Documentation technique complète : [public/doc/TECHNICAL_DOCUMENTATION.md](./public/doc/TECHNICAL_DOCUMENTATION.md)
+- Architecture : [public/doc/architecture.md](./public/doc/architecture.md)
+- Modèles de données : [public/doc/data-models.md](./public/doc/data-models.md)
+- Statut des optimisations : [public/doc/optimization/10-Optimizations-Status.md](./public/doc/optimization/10-Optimizations-Status.md)
+- Résumé de l'audit & recommandations : [public/doc/optimization/summary.md](./public/doc/optimization/summary.md)
 
 ## Technologies utilisées
 
-- React
-- TypeScript
-- Vite
-- Redux Toolkit
-- Redux-Saga
-- Dexie (IndexedDB)
-- Tailwind CSS
-- Shadcn/UI
-- Annotorious + OpenSeaDragon
-- Vitest + Testing Library
+- React 19
+- TypeScript 5.9
+- Vite 7
+- Dexie (IndexedDB Local-First ORM)
+- FunctionResult (Result Pattern)
+- Redux Toolkit & Redux-Saga
+- Tailwind CSS 4 & Shadcn/UI
+- Annotorious + OpenSeaDragon + dnd-kit
+- Vitest + React Testing Library
 
 Références de configuration :
 
