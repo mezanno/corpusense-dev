@@ -1,8 +1,20 @@
 # Résumé de l'Audit et des Recommandations
 
-**Dernière mise à jour** : 25 Juin 2026
-**Date initiale** : 27 Novembre 2025
+**Dernière mise à jour** : 16 Septembre 2026  
+**Date initiale** : 27 Novembre 2025  
 **Contexte** : Audit complet du projet `corpusense-dev` pour identifier les pistes d'optimisation, les améliorations possibles et le respect des bonnes pratiques.
+
+## État d'avancement (Septembre 2026)
+
+De nouvelles avancées structurantes et architecturales ont été apportées au codebase :
+
+- **Standardisation du Result Pattern (`FunctionResult<T, E>`)** : Implémentation du pattern fonctionnel d'erreurs typées dans `src/utils/functionResult.ts`, étendu à l'intégralité des repositories IndexedDB (`sources`, `collections`, `annotations`, `workers`, `modifierChain`), aux hooks de données DAL et aux sagas.
+- **Suivi des Workers Realtime & Statistiques de Durée** : Intégration des statuts d'exécution fins (`POSTING`, `POSTED`), d'un compteur de durée d'exécution en direct et de la prédiction de temps restant dans `CollectionInspector`.
+- **Nettoyage Redux & Store** : Confirmation de l'absence de middleware lourd (`redux-logger` purgé du store Redux).
+- **Vignettes & Transfert d'images** : Prise en charge de `thumbnailBase64` dans `SourceWithContent`, création du DTO `SourceWithContentAndThumbnail` et ajout de l'utilitaire `base64ToBlob`.
+- **Export & Utilitaires Excel (Plugin Mistral)** : Fonctions d'aplatissement de données complexes et de nettoyage des noms de fichiers pour l'export Excel.
+- **Évaluation IoC Awilix** : Confirmation du choix d'architecture (non-adoption d'Awilix pour maintenir l'approche légère React Context/Hooks + factories Dexie).
+- **Diagnostic des Tests Vitest** : Diagnostic de la suite de tests (13/22 fichiers OK). Identification du blocage sur 8 fichiers lié à l'absence de mock pour `ResizeObserver` lors de l'intégration de `@dnd-kit/dom`.
 
 ## État d'avancement (Juin 2026)
 
@@ -18,41 +30,27 @@ Depuis l'audit de Février, plusieurs avancées ont été réalisées, notamment
 
 - **Refonte des Workers & Realtime** : La gestion de l'état des Workers a subi une refonte majeure avec un hook dédié (`useJobRealtime`). L'application utilise maintenant une approche hybride (Supabase Realtime + Polling 20s) synchronisée via IndexedDB, sortant ainsi encore un peu plus de logique distante hors de Redux.
 - **Améliorations UI/UX quotidiennes** : L'ergonomie générale s'est améliorée (persistance de la taille des pages via `DataTablePagination`, ajout d'un tag visuel d'état `OcrStatus`, gestion des conflits avec overwrite à l'import). La validation des formulaires et l'autofocus ont été fluidifiés.
-- **Suite de tests toujours instable** : Les tests (actuellement à 77+) affichent toujours des instabilités, notamment un bug lié au mock du `WorkerContext` (`getPostedWorkers is not a function` dans `Layout.test.tsx`), ou aux utilitaires de Manifestes.
 
 ## État d'avancement (Février 2026)
 
-L'audit de Février révèle que l'architecture "Local-First" est bien en place, mais plusieurs chantiers restent en suspens :
-
-- **Suite de tests en erreur partielle** : Bien que des tests existent, l'environnement Vitest rencontre actuellement un problème d'import avec `i18n.ts` lors des tests de composants (ex: `CollectionInspectorPage`, `ManifestExplorerPage`).
-- **Restructuration des composants pending** : Le dossier `components` n'a pas encore totalement adopté l'approche modulaire "Feature-First".
-- **Optimisation de CanvasCard** : `React.memo` et les améliorations de rendu ne sont pas encore appliquées.
-
-## État d'avancement (Janvier 2026)
-
-Depuis l'audit initial, plusieurs recommandations majeures ont été mises en œuvre :
-
-- **Migration vers `useLiveQuery` (Dexie)** : Une grande partie de l'état "Données" a été migrée hors de Redux vers des hooks réactifs basés sur Dexie. Cela inclut les Collections, les Annotations, les Tags, les Modèles et l'historique des Manifestes.
-- **Simplification de Redux** : Le store Redux a été considérablement allégé. Il ne gère plus que les événements système, l'état des Workers et la file d'attente des Manifestes.
-- **Mise à jour de la Stack** : Les versions de React, Vite, TypeScript et Tailwind ont été maintenues à jour vers leurs dernières versions stables (React 19.2, Vite 7, TS 5.9, Tailwind 4.1).
-- **Couverture de Tests** : Réactivation et extension de la suite de tests unitaires et de composants. 77 tests passent désormais sur l'ensemble du projet, couvrant les utilitaires de données critiques et les pages principales.
+- **Migration vers `useLiveQuery` (Dexie)** : Une grande partie de l'état "Données" a été migrée hors de Redux vers des hooks réactifs basés sur Dexie (Collections, Annotations, Tags, Modèles, Historique).
+- **Simplification de Redux** : Le store Redux a été allégé pour ne conserver que les événements système et la file d'attente des Manifestes.
 
 ## Documents Détaillés
 
 L'ensemble des recommandations est détaillé dans les fichiers suivants :
 
 1. **[01-Architecture-and-Structure.md](./01-Architecture-and-Structure.md)** (Updated)
-   - Analyse de l'architecture globale et mise à jour de la stack technique.
-   - Suggestions pour l'organisation modulaire des composants (toujours d'actualité).
+   - Analyse de l'architecture globale, stack technique et adoption de `FunctionResult`.
 
 2. **[02-Code-Quality-and-Best-Practices.md](./02-Code-Quality-and-Best-Practices.md)**
    - Amélioration de la robustesse du typage et nettoyage du code.
 
-3. **[03-Performance-Optimization.md](./03-Performance-Optimization.md)**
-   - Stratégies pour le chargement des images et l'optimisation du rendu React.
+3. **[03-Performance-Optimization.md](./03-Performance-Optimization.md)** (Updated)
+   - Stratégies pour le chargement des images, l'état du store et l'optimisation du rendu React.
 
 4. **[04-State-Management.md](./04-State-Management.md)** (Updated)
-   - Détail de la transition Redux -> `useLiveQuery`.
+   - Détail de la transition Redux -> `useLiveQuery` et gestion fonctionnelle des erreurs.
 
 5. **[05-UI-UX-Improvements.md](./05-UI-UX-Improvements.md)**
    - Accessibilité et feedback visuel.
@@ -69,15 +67,19 @@ L'ensemble des recommandations est détaillé dans les fichiers suivants :
 9. **[09-Unit-Tests-Documentation.md](./09-Unit-Tests-Documentation.md)** (Fait)
    - Documentation détaillée des tests implémentés, de la configuration globale et de la stratégie de mocking.
 
-10. **[10-Optimizations-Status.md](./10-Optimizations-Status.md)** (Nouveau - Juin 2026)
+10. **[10-Optimizations-Status.md](./10-Optimizations-Status.md)** (Updated - Septembre 2026)
     - Bilan complet des optimisations prévues versus réalisées, avec plan d'action détaillé pour les chantiers restants.
 
+11. **[12-Dependency-Injection-Awilix.md](./12-Dependency-Injection-Awilix.md)**
+    - Analyse de l'opportunité d'Awilix IoC (conclusion : maintien du modèle fonctionnel léger).
+
+12. **[13-Result-Pattern.md](./13-Result-Pattern.md)** (Fait)
+    - Analyse et intégration du Result Pattern (`FunctionResult`) au sein du projet.
 
 ## Prochaines Étapes Prioritaires
 
-1. **Restructuration des composants** : Appliquer la proposition du document 07 pour améliorer la scalabilité.
-2. **Optimisation de `CanvasCard` et du chargement des vignettes** : Implémenter `React.memo` et un système de cache/lazy-loading dans `useThumbnail`.
-3. **Exclusion de `redux-logger` en Production** : Conditionner l'ajout du middleware logger dans `store.ts`.
-4. **Nettoyage de Redux/Saga** : Continuer à migrer les Workers et les Manifestes pour supprimer totalement Redux-Saga à terme.
-5. **Tests E2E** : Commencer l'implémentation de tests de bout en bout avec Playwright comme suggéré dans le document 06.
-
+1. **Tests & CI (Vitest)** : Implémenter le mock `ResizeObserver` dans `vitest.setup.ts` pour corriger les 8 échecs dus à `@dnd-kit/dom`.
+2. **Optimisation de `CanvasCard`** : Implémenter `React.memo` et stabiliser les callbacks pour éviter les re-rendus dans les grandes galeries.
+3. **Restructuration des composants** : Appliquer la proposition du document 07 ("Feature-First").
+4. **Nettoyage Redux/Saga** : Migrer la file d'attente des Manifestes pour supprimer totalement Redux-Saga à terme.
+5. **Tests E2E** : Déployer les scénarios Playwright critiques.

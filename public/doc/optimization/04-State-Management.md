@@ -26,6 +26,9 @@ Utilisé pour les états globaux simples (ex: configuration, sessions temporaire
 ### 4. État Système : Redux Toolkit
 Redux est maintenu pour la gestion des événements (`events`) et la file d'attente des Manifestes. L'essentiel de la logique des Workers a été extrait de Redux pour utiliser le polling/subs de `useJobRealtime`.
 
+### 5. Gestion des Erreurs et des Retours : Result Pattern (`FunctionResult`)
+Les repositories IndexedDB et les hooks de données (`hooks/data`) retournent désormais un type discriminé `FunctionResult<T, E> = { ok: true, value: T } | { ok: false, error: E }` (défini dans `src/utils/functionResult.ts`). Cela supprime le besoin de `try/catch` sauvages et préserve le typage strict des erreurs du domaine (`EntityNotFoundError`, `DBError`, `StatusChangeError`).
+
 ## Bonnes Pratiques Maintenues
 
 ### Sélecteurs
@@ -33,4 +36,5 @@ L'utilisation de sélecteurs mémosés (Reselect) reste recommandée pour transf
 
 ### Context API
 Le Context API est utilisé pour les états locaux de pages complexes (ex: `AnnotationContext`, `CollectionContext`).
+
 

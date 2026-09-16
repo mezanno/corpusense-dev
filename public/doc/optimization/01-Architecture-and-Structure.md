@@ -14,6 +14,7 @@ Le projet est une application React moderne utilisant Vite comme bundler. L'arch
 - **Data Fetching**: React Query 5 (External APIs)
 - **Routing**: React Router 7.1
 - **Testing**: Vitest + React Testing Library
+- **Error Handling**: Result Pattern (`FunctionResult<T, E>`) dans `src/utils/functionResult.ts` généralisé sur la DAL (IndexedDB Repositories, Hooks, Sagas).
 - **Internationalisation**: i18next
 
 ## Structure des Dossiers
@@ -22,18 +23,20 @@ La structure `src` est organisée comme suit :
 
 - `components/`: Composants UI (en attente de restructuration feature-first).
 - `pages/`: Vues principales de l'application.
-- `state/`: Gestion d'état (Redux, Zustand).
+- `state/`: Gestion d'état (Redux Toolkit allégé, Zustand).
 - `hooks/`: Hooks personnalisés, incluant la DAL réactive (`hooks/data`).
-- `data/`: Modèles et Repositories (DAL).
+- `data/`: Modèles, Schémas Zod et Repositories IndexedDB (`data/repositories/indexeddb`).
 
 ## Points d'Amélioration et État d'Avancement
 
-### 1. Consolidation de la Gestion d'État (EN COURS)
+### 1. Consolidation de la Gestion d'État et Gestion des Erreurs (FAIT / EN COURS)
 
-La migration vers une approche **Local-First** via `useLiveQuery` est bien avancée.
+La migration vers une approche **Local-First** via `useLiveQuery` et le **Result Pattern** est stabilisée.
 
-- **Réussite** : Les collections, annotations et tags sont désormais gérés via des hooks réactifs sur IndexedDB. La gestion des Workers a été migrée vers `useJobRealtime` (Supabase + Polling).
-- **Reste à faire** : Migrer la file d'attente d'import des Manifestes pour vider totalement Redux-Saga.
+- **Réussite** : Les collections, annotations, tags, modèles et historiques sont gérés via des hooks réactifs Dexie. La gestion des Workers utilise `useJobRealtime` avec des statuts d'exécution fins (`POSTING`, `POSTED`, suivi de durée realtime).
+- **Gestion d'Erreurs Typées** : La couche DAL utilise `FunctionResult<T, E>` évitant la perte de typage lors des captures d'exceptions.
+- **Injection de dépendances** : Suite à l'évaluation du document **[12-Dependency-Injection-Awilix.md](./12-Dependency-Injection-Awilix.md)**, le conteneur IoC Awilix n'a pas été retenu afin d'éviter la sur-ingénierie dans l'écosystème React/Dexie ; le pattern d'injection par factories et hooks est maintenu.
+- **Reste à faire** : Migrer la file d'attente d'import des Manifestes pour éteindre totalement Redux-Saga.
 
 ### 2. Organisation des Composants (À FAIRE)
 
@@ -44,3 +47,4 @@ Le dossier `components` reste plat et commence à être difficile à maintenir.
 ### 3. Gestion des Environnements (TERMINÉ)
 
 La configuration Vite a été stabilisée pour supporter les tests et le multi-thread via les Workers.
+

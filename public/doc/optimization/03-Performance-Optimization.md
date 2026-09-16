@@ -22,11 +22,7 @@ Vite est configuré avec des `manualChunks`.
 - **Recommandation**: Utiliser `React.memo` pour les composants purement présentationnels qui sont rendus fréquemment dans des listes (comme `GridCell` ou `CanvasCard`) pour éviter les re-rendus inutiles si les props ne changent pas.
 - **Action**: Vérifier les re-rendus avec le React DevTools Profiler.
 
-### 4. Logger en Production
-Le middleware `redux-logger` semble être inclus sans condition stricte.
-- **Recommandation**: S'assurer qu'il est exclu du build de production pour éviter de ralentir l'application et de fuiter des données dans la console.
-  ```typescript
-  if (process.env.NODE_ENV !== 'production') {
-    middleware.push(logger);
-  }
-  ```
+### 4. Logger en Production (TERMINÉ)
+- **Statut** : `redux-logger` n'est plus configuré dans `src/state/store.ts`.
+- **Résultat** : Le store Redux est propre et exempt de middlewares de logging inutiles en production, éliminant les baisses de performance et les fusions de logs dans la console.
+
