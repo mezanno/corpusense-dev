@@ -16,7 +16,7 @@ import { Link } from 'react-router-dom';
 import ManifestThumbnail from './ManifestThumbnail';
 import ManifestThumbnailLoop from './ManifestThumbnailFloatingView';
 
-const ManifestGrid = ({ currendManifestId }: { currendManifestId: string }) => {
+const ListOfManifests = ({ currendManifestId }: { currendManifestId: string }) => {
   const { t } = useTranslation();
   const { remoteSources, localSources } = useLiveSources();
 
@@ -137,4 +137,4 @@ const ManifestGrid = ({ currendManifestId }: { currendManifestId: string }) => {
   );
 };
 
-export default ManifestGrid;
+export default ListOfManifests;

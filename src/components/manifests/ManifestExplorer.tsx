@@ -1,8 +1,8 @@
 import { SourceWithContent } from '@/data/models/source/source';
 import { Manifest } from '@iiif/presentation-3';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../ui/resizable';
+import ListOfManifests from './ListOfManifests';
 import ManifestDetails from './ManifestDetails';
-import ManifestGrid from './ManifestGrid';
 
 const ManifestExplorer = ({
   source,
@@ -15,7 +15,7 @@ const ManifestExplorer = ({
     <div className='h-full w-full'>
       <ResizablePanelGroup direction='vertical' className='gap-2'>
         <ResizablePanel minSize={33}>
-          <ManifestGrid currendManifestId={source.id} />
+          <ListOfManifests currendManifestId={source.id} />
         </ResizablePanel>
         <ResizableHandle withHandle className='w-1 cursor-col-resize bg-dark-slate-gray' />
         <ResizablePanel minSize={33}>
