@@ -9,6 +9,7 @@ import { AddSourceDTO } from '@/data/models/source/source.dto';
 import { DBError } from '@/data/utils/errors';
 import { extractCanvasById, getThumbnailBlob } from '@/data/utils/manifest';
 import { FunctionResult } from '@/utils/functionResult';
+import { base64ToBlob, blobToBase64 } from '@/utils/images';
 import {
   getManifestFromConvertedFile,
   reconstructManifestFromConvertedFile,
@@ -65,12 +66,21 @@ export class IndexedDBSourceRepository implements SourceRepository {
     }
   }
 
-  async addSourceWithContent(source: SourceWithContent): Promise<FunctionResult<boolean, DBError>> {
-    const { content, ...sourceWithoutContent } = source;
+  async addSourceWithContentAndThumbnail(
+    source: SourceWithContentAndThumbnail,
+  ): Promise<FunctionResult<boolean, DBError>> {
+    const { content, thumbnailBase64, ...sourceWithoutContent } = source;
+    const thumbnailBlobResult = base64ToBlob(thumbnailBase64);
     try {
-      await db.transaction('rw', db.sources, db.sourceContents, async () => {
+      await db.transaction('rw', db.sources, db.sourceContents, db.storedBlobs, async () => {
         await db.sources.add(sourceWithoutContent);
         await db.sourceContents.add(content);
+        if (thumbnailBlobResult.ok) {
+          await db.storedBlobs.add({
+            id: sourceWithoutContent.thumbnailBlobId,
+            blob: thumbnailBlobResult.value,
+          });
+        }
       });
 
       return FunctionResult.ok(true);
@@ -137,9 +147,10 @@ export class IndexedDBSourceRepository implements SourceRepository {
     if (!storedBlobResult.ok) {
       return storedBlobResult;
     }
+    const thumbnailBase64 = await blobToBase64(storedBlobResult.value.blob);
     return FunctionResult.ok({
       ...sourceWithContentResult.value,
-      thumbnailBlob: storedBlobResult.value,
+      thumbnailBase64,
     });
   }
 

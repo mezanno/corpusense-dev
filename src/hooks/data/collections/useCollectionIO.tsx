@@ -1,4 +1,5 @@
 import { Result } from '@/data/models/result/result';
+import { SourceWithContentAndThumbnail } from '@/data/models/source/source';
 import {
   getAnnotationRepository,
   getCollectionRepository,
@@ -58,10 +59,11 @@ export const useCollectionIO = (setters: ProgressLoggerSetters) => {
       const sourceIdsResult = await collectionRepository.getSourceIdsByCollectionId(collection.id);
       if (sourceIdsResult.ok && sourceIdsResult.value.length > 0) {
         const sourceRepository = getSourceRepository();
-        const sources = [];
+        const sources: SourceWithContentAndThumbnail[] = [];
         for (let j = 0; j < sourceIdsResult.value.length; j++) {
           const sourceId = sourceIdsResult.value[j];
-          const sourceResult = await sourceRepository.getSourceWithContentById(sourceId);
+          const sourceResult =
+            await sourceRepository.getSourceWithContentAndThumbnailById(sourceId);
           if (sourceResult.ok) {
             sources.push(sourceResult.value);
           } else {

@@ -4,7 +4,7 @@ import { CollectionElementSchema, LegacyCollectionElementSchema } from '../colle
 import { DataModelSchema } from '../dataModel/dataModel';
 import { ObjectWithStringIdSchema } from '../objectWithStringId';
 import { ResultSchema } from '../result/result';
-import { SourceWithContentSchema } from '../source/source';
+import { SourceWithContentAndThumbnailSchema } from '../source/source';
 import { TagSchema } from '../tag';
 import { TimeStampSchema } from '../timeStampSchema';
 import { WorkerSchema } from '../worker/worker';
@@ -33,7 +33,7 @@ export type Collection = z.infer<typeof CollectionSchema>;
 
 export const ExportedCollectionSchema = z.object({
   collection: CollectionSchema,
-  sources: z.array(SourceWithContentSchema),
+  sources: z.array(SourceWithContentAndThumbnailSchema),
   tags: z.array(TagSchema).optional(),
   annotations: z.array(z.custom<AnnotationDTO>()).optional(),
   model: DataModelSchema.optional(),

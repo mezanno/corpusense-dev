@@ -62,7 +62,7 @@ export const SourceWithContentSchema = SourceSchema.extend({
 export type SourceWithContent = z.infer<typeof SourceWithContentSchema>;
 
 export const SourceWithContentAndThumbnailSchema = SourceWithContentSchema.extend({
-  thumbnailBlob: StoredBlobSchema,
+  thumbnailBase64: z.string(),
 });
 
 export type SourceWithContentAndThumbnail = z.infer<typeof SourceWithContentAndThumbnailSchema>;

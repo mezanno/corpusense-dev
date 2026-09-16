@@ -109,7 +109,7 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
       } else {
         return {
           collection: parseResult.data,
-          sources,
+          sources: [], //TODO: we could return the sources here, but we don't need them for now, so we can leave it empty
           annotations,
           model,
           workers,
@@ -190,7 +190,7 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
         for (let i = 0; i < sources.length; i++) {
           const source = sources[i];
           addLog(t('log_importing_source', { sourceId: source.id, collectionId: collection.id }));
-          const addSourceResult = await sourceRepository.addSourceWithContent(source);
+          const addSourceResult = await sourceRepository.addSourceWithContentAndThumbnail(source);
           FunctionResult.match(addSourceResult, {
             ok: () => {
               addLog(
