@@ -20,6 +20,7 @@ import { getErrorMessage } from '@/utils/utils';
 import FileSaver from 'file-saver';
 import { json2csv } from 'json-2-csv';
 import * as XLSX from 'xlsx';
+import { flattenForExcel, sanitizeFilenamePart } from './excel.utils';
 import { OpenAICompatibleClient } from './openai/OpenAICompatibleClient';
 import { WorkerCategory } from './WorkerCategory';
 
@@ -243,49 +244,68 @@ export async function exportResult(results: Result[], formats: string[]) {
   const collectionId = results[0].scope.collectionId;
   const collectionResult = await collectionRepository.getById(collectionId);
   const collectionName = collectionResult.ok ? collectionResult.value.name : undefined;
+  const collectionNamePart = sanitizeFilenamePart(collectionName ?? collectionId);
 
-  const filename = `mistral_export_${collectionName ?? collectionId}_${new Date().toLocaleDateString()}`;
+  // Utiliser YYYY-MM-DD évite notamment les "/" dans les noms de fichiers
+  // avec les locales françaises.
+  const datePart = new Date().toISOString().slice(0, 10);
+  const filename = `mistral_export_${collectionNamePart}_${datePart}`;
 
   const allTheData = await extractData(results);
 
-  if (formats.includes('xlsx')) {
-    const flattenedData: Record<string, unknown>[] = [];
-    allTheData.forEach((item) => {
-      if (item !== undefined && typeof item === 'object') {
-        const flattenedItem: Record<string, unknown> = { ...item };
-        Object.keys(flattenedItem).forEach((key) => {
-          if (Array.isArray(flattenedItem[key])) {
-            flattenedItem[key] = (flattenedItem[key] as unknown[]).join('; ');
-          } else if (typeof flattenedItem[key] === 'object' && flattenedItem[key] !== null) {
-            flattenedItem[key] = JSON.stringify(flattenedItem[key]);
-          }
-        });
-        flattenedData.push(flattenedItem);
-      }
-    });
+  // -------------------------------------------------------------------------
+  // XLSX
+  // -------------------------------------------------------------------------
 
+  if (formats.includes('xlsx')) {
+    const flattenedData = flattenForExcel(allTheData);
     const worksheet = XLSX.utils.json_to_sheet(flattenedData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Mistral Data');
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+    });
+
     FileSaver.saveAs(
       new Blob([excelBuffer], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
       }),
-      filename + '.xlsx',
+      `${filename}.xlsx`,
     );
   }
+
+  // -------------------------------------------------------------------------
+  // JSON
+  // -------------------------------------------------------------------------
 
   if (formats.includes('json')) {
     FileSaver.saveAs(
-      new Blob([JSON.stringify(allTheData)], { type: 'text/plain;charset=utf-8' }),
-      filename + '.json',
+      new Blob([JSON.stringify(allTheData, null, 2)], {
+        type: 'application/json;charset=utf-8',
+      }),
+      `${filename}.json`,
     );
   }
 
+  // -------------------------------------------------------------------------
+  // CSV
+  // -------------------------------------------------------------------------
+
   if (formats.includes('csv')) {
-    const csv = json2csv((allTheData as object[]).filter(Boolean));
-    FileSaver.saveAs(new Blob([csv], { type: 'text/plain;charset=utf-8' }), filename + '.csv');
+    const csvData = allTheData.filter(
+      (item): item is object => item !== null && typeof item === 'object',
+    );
+
+    const csv = json2csv(csvData);
+
+    FileSaver.saveAs(
+      new Blob([csv], {
+        type: 'text/csv;charset=utf-8',
+      }),
+      `${filename}.csv`,
+    );
   }
 }
