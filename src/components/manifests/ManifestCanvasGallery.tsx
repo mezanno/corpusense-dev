@@ -6,9 +6,9 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Selecto, { OnSelect } from 'react-selecto';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import CanvasCard from './CanvasCard';
+import ManifestCanvasGalleryItem from './ManifestCanvasGalleryItem';
 
-const CanvasGallery = ({
+const ManifestCanvasGallery = ({
   sourceWithContent,
   canvasToDisplay,
   setCanvasToDisplay,
@@ -154,7 +154,7 @@ const CanvasGallery = ({
                                   transform: `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`,
                                 }}
                               >
-                                <CanvasCard
+                                <ManifestCanvasGalleryItem
                                   canvas={canvas}
                                   index={index}
                                   sourceId={sourceWithContent.id}
@@ -187,4 +187,4 @@ const CanvasGallery = ({
   );
 };
 
-export default CanvasGallery;
+export default ManifestCanvasGallery;

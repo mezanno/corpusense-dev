@@ -8,7 +8,7 @@ import { CanvasSelectionProvider } from '@/components/reducers/CanvasSelectionCo
 import { useManifestPageContext } from '@/components/reducers/ManifestPageContext';
 import useKeyboard from '@/hooks/ui/useKeyboard';
 import { useState } from 'react';
-import CanvasGallery from '../components/CanvasGallery';
+import ManifestCanvasGallery from '../components/manifests/ManifestCanvasGallery';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../components/ui/resizable';
 
 const ManifestExplorerPage = () => {
@@ -76,7 +76,7 @@ const ManifestExplorerPage = () => {
           <>
             <ResizablePanel order={2} id='gallery-panel' className='panel' minSize={25}>
               <CanvasSelectionProvider canvasesLoaded={manifest.items}>
-                <CanvasGallery
+                <ManifestCanvasGallery
                   setCanvasToDisplay={setCanvasToDisplay}
                   canvasToDisplay={canvasToDisplay}
                   sourceWithContent={sourceWithContent}

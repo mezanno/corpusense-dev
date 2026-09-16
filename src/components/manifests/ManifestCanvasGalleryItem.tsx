@@ -9,7 +9,7 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
   ContextMenuTrigger,
-} from './ui/context-menu';
+} from '../ui/context-menu';
 
 import { getLabel } from '@/data/utils/canvas';
 import { useCollections } from '@/hooks/data/collections/useCollections';
@@ -20,9 +20,9 @@ import { truncateMiddle } from '@/utils/utils';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import { ScrollArea } from './ui/scroll-area';
+import { ScrollArea } from '../ui/scroll-area';
 
-interface CanvasCardProps {
+interface ManifestCanvasGalleryItemProps {
   index: number;
   canvas: Canvas;
   sourceId: string;
@@ -32,7 +32,7 @@ interface CanvasCardProps {
   setCanvasToDisplay: (canvas: Canvas) => void;
 }
 
-const CanvasCard = ({
+const ManifestCanvasGalleryItem = ({
   index,
   canvas,
   sourceId,
@@ -40,7 +40,7 @@ const CanvasCard = ({
   thumbHeight,
   setCanvasToDisplay,
   canvasToDisplay,
-}: CanvasCardProps) => {
+}: ManifestCanvasGalleryItemProps) => {
   const { t } = useTranslation();
   const { collections, addSelectionToCollection } = useCollections();
   const {
@@ -220,4 +220,4 @@ const CanvasCard = ({
   );
 };
 
-export default CanvasCard;
+export default ManifestCanvasGalleryItem;
