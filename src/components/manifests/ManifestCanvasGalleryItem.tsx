@@ -1,5 +1,4 @@
 import { Canvas } from '@iiif/presentation-3';
-import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -17,9 +16,9 @@ import useThumbnail from '@/hooks/data/sources/useThumbnail';
 import useDialog from '@/hooks/ui/useDialog';
 import { useCanvasSelection } from '@/hooks/useCanvasSelection';
 import { truncateMiddle } from '@/utils/utils';
-import { useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import AutoSizer from 'react-virtualized-auto-sizer';
+import Loading from '../Loading';
 import { ScrollArea } from '../ui/scroll-area';
 
 interface ManifestCanvasGalleryItemProps {
@@ -55,58 +54,75 @@ const ManifestCanvasGalleryItem = ({
 
   const { openNewCollectionDialog } = useDialog();
   const [search, setSearch] = useState<string>('');
+  const [loadedThumbUrl, setLoadedThumbUrl] = useState<string | undefined>(undefined);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   const filteredCollections = useMemo(() => {
     return collections.filter((col) => col.name.toLowerCase().includes(search.toLowerCase()));
   }, [collections, search]);
-  const { thumbnail, error } = useThumbnail({ canvas, sourceId });
 
-  const handleSetSelectionStart = () => {
+  const { thumbnail, isLoading, error } = useThumbnail({ canvas, sourceId });
+
+  const thumbUrl = thumbnail?.[0]?.id;
+  const isImgLoaded = thumbUrl !== undefined && loadedThumbUrl === thumbUrl;
+
+  const handleSetSelectionStart = useCallback(() => {
     setSelectionStart(index);
-  };
+  }, [index, setSelectionStart]);
 
-  const handleSetSelectionEnd = () => {
+  const handleSetSelectionEnd = useCallback(() => {
     setSelectionEnd(index);
-  };
+  }, [index, setSelectionEnd]);
 
-  const handleResetSelection = () => {
+  const handleResetSelection = useCallback(() => {
     setSelection([]);
-  };
+  }, [setSelection]);
 
-  const handleAddSelectionToCollection = (collectionId: string | undefined) => {
-    void (async () => {
-      if (collectionId === undefined) return;
+  const handleAddSelectionToCollection = useCallback(
+    (collectionId: string | undefined) => {
+      void (async () => {
+        if (collectionId === undefined) return;
 
-      await addSelectionToCollection({
-        selection: getSelectedCanvases(),
-        collectionId,
-        sourceId,
-      });
-    })();
-  };
+        await addSelectionToCollection({
+          selection: getSelectedCanvases(),
+          collectionId,
+          sourceId,
+        });
+      })();
+    },
+    [addSelectionToCollection, getSelectedCanvases, sourceId],
+  );
 
-  const handleOnClick = () => {
+  const handleOnClick = useCallback(() => {
     setCanvasToDisplay(canvas);
-  };
+  }, [canvas, setCanvasToDisplay]);
 
-  const handleCopyToClipboard = () => {
+  const handleCopyToClipboard = useCallback(() => {
     if (canvas.items !== undefined) {
       const body = canvas.items?.[0]?.items?.[0]?.body;
       if (body !== undefined && typeof body !== 'string' && 'id' in body && body.id !== undefined) {
         void navigator.clipboard.writeText(body.id);
       }
     }
-  };
+  }, [canvas.items]);
 
-  const handleCreateCollection = () => {
+  const handleCreateCollection = useCallback(() => {
     openNewCollectionDialog({ selection: getSelectedCanvases(), sourceId });
-  };
+  }, [openNewCollectionDialog, getSelectedCanvases, sourceId]);
 
   const idDisplayed = canvasToDisplay?.id === canvas?.id;
   const match = canvas.id.match(/f\d+/);
   const canvasItemId = match ? match[0] : '';
+  const itemIsSelected = isSelected(index);
 
-  //TODO : il faut corriger le aria-label pour qu'il prenne une chaine de caractère
+  const handleImgLoad = useCallback(() => {
+    setLoadedThumbUrl(thumbUrl);
+  }, [thumbUrl]);
+
+  const handleImgError = useCallback(() => {
+    setLoadedThumbUrl(undefined);
+  }, []);
+
   return (
     <>
       {/* modal={false} : fix a bug with the Dialog+ContextMenu : https://github.com/radix-ui/primitives/issues/1836 */}
@@ -114,7 +130,7 @@ const ManifestCanvasGalleryItem = ({
         <div className='no-select flex h-full w-full justify-center' draggable={false}>
           <ContextMenuTrigger>
             <div
-              className={`group flex h-fit w-fit cursor-pointer flex-col items-center rounded-md p-1 shadow transition duration-200 hover:scale-105 ${idDisplayed ? 'bg-saffron-400' : 'bg-saffron-900'} ${isSelected(index) ? 'ring-3 ring-saffron-300' : ''} selectable-item`}
+              className={`group flex h-fit w-fit cursor-pointer flex-col items-center rounded-md p-1 shadow transition duration-200 hover:scale-105 ${idDisplayed ? 'bg-saffron-400' : 'bg-saffron-900'} ${itemIsSelected ? 'ring-3 ring-saffron-300' : ''} selectable-item`}
               style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
               onClick={handleOnClick}
               data-index={index}
@@ -124,20 +140,26 @@ const ManifestCanvasGalleryItem = ({
               {error !== null ? (
                 <div className='text-sm text-red-400'>{error}</div>
               ) : (
-                thumbnail !== null && (
-                  <div className='w-fit flex-1'>
-                    <AutoSizer disableWidth>
-                      {({ height }) => (
-                        <Thumbnail
-                          thumbnail={thumbnail}
-                          style={{ width: 'auto', height: `${height}px`, objectFit: 'contain' }}
-                          aria-label='canvas thumbnail'
-                          draggable={false}
-                        />
-                      )}
-                    </AutoSizer>
-                  </div>
-                )
+                <div className='relative flex h-full w-full flex-1 items-center justify-center overflow-hidden p-1'>
+                  {(!isImgLoaded || isLoading || thumbnail === null) && (
+                    <div className='absolute inset-0 z-10 flex items-center justify-center rounded-md bg-saffron-900 p-2'>
+                      <Loading />
+                    </div>
+                  )}
+                  {thumbUrl !== undefined && (
+                    <img
+                      ref={imgRef}
+                      src={thumbUrl}
+                      alt={canvas.label ? getLabel(canvas) : 'canvas thumbnail'}
+                      loading='lazy'
+                      decoding='async'
+                      onLoad={handleImgLoad}
+                      onError={handleImgError}
+                      className={`max-h-full max-w-full object-contain transition-opacity duration-200 ${isImgLoaded && !isLoading ? 'opacity-100' : 'opacity-0'}`}
+                      draggable={false}
+                    />
+                  )}
+                </div>
               )}
               <div className='flex w-full justify-between p-1 text-xs'>
                 {canvas.label !== undefined && canvas.label !== null && (
@@ -220,4 +242,4 @@ const ManifestCanvasGalleryItem = ({
   );
 };
 
-export default ManifestCanvasGalleryItem;
+export default memo(ManifestCanvasGalleryItem);
