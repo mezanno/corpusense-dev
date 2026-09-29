@@ -30,18 +30,17 @@ vi.stubGlobal(
 
 // Stubs pour FileSystem API (browser-only)
 vi.stubGlobal('FileSystemHandle', class FileSystemHandle {});
-const StubbedFileSystemHandle = (globalThis as { FileSystemHandle: new () => object })
-  .FileSystemHandle;
 vi.stubGlobal(
   'FileSystemDirectoryHandle',
-  class FileSystemDirectoryHandle extends StubbedFileSystemHandle {},
+  class FileSystemDirectoryHandle extends globalThis.FileSystemHandle {},
 );
 vi.stubGlobal(
   'FileSystemFileHandle',
-  class FileSystemFileHandle extends StubbedFileSystemHandle {},
+  class FileSystemFileHandle extends globalThis.FileSystemHandle {},
 );
 
 //Nécessaire pour faire fonctionner Annotorious
+/* tslint:disable-next-line */
 // global.ResizeObserver = class {
 //   observe() {}
 //   unobserve() {}
