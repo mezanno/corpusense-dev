@@ -1,5 +1,5 @@
 import { CollectionDetails } from '@/data/models/collection/collection';
-import { getCollectonLiveRepository } from '@/data/repositories/indexeddb/dbFactory';
+import { getCollectionLiveRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { getFile } from '@/data/utils/canvas';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
@@ -22,7 +22,7 @@ type Props = {
 export const CollectionProvider = ({ children }: Props) => {
   const [collectionId, setCollectionId] = useState<string | null>(null);
   const [openedIds, setOpenedIds] = useState<string[]>([]);
-  const collectionLiveRepository = useMemo(() => getCollectonLiveRepository(), []);
+  const collectionLiveRepository = useMemo(() => getCollectionLiveRepository(), []);
   const [localUrlObjectsMap, setLocalUrlObjectsMap] = useState<Record<string, string>>({});
 
   const openedCollections = useLiveQuery(

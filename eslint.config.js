@@ -18,7 +18,7 @@ export default tseslint.config(
   reactPlugin.configs.flat.recommended,
   reactPlugin.configs.flat['jsx-runtime'],
   {
-    ignores: ['node_modules', 'dist', 'build', 'coverage', 'public'],
+    ignores: ['node_modules', 'dist', 'dev-dist', 'build', 'coverage', 'public', 'scripts'],
   },
   {
     settings: {
@@ -35,7 +35,7 @@ export default tseslint.config(
       // 'no-console': 'warn', // eslint rule
       'react/jsx-no-useless-fragment': 'error', // React rule
       'react-hooks/exhaustive-deps': 'off', // hooks rule
-      '@typescript-eslint/no-unused-vars': 'off', // typescript rul
+      '@typescript-eslint/no-unused-vars': 'off', // typescript rule
       '@typescript-eslint/no-shadow': 'error', // typescript rule
       // '@typescript-eslint/explicit-module-boundary-types': 'error', // Oblige à typer les exports
       '@typescript-eslint/no-explicit-any': 'error', // Interdit `any`

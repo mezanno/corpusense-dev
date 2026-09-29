@@ -1,5 +1,5 @@
 import { Collection } from '@/data/models/collection/collection';
-import { getCollectonLiveRepository } from '@/data/repositories/indexeddb/dbFactory';
+import { getCollectionLiveRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
@@ -29,7 +29,7 @@ export const CollectionInspectorProvider = ({ children, collectionId }: Props) =
   const [canvasToDisplay, setCanvasToDisplay] = useState<CanvasWithSourceId | null>(null);
   const currentCanvasId = canvasToDisplay ? canvasToDisplay.canvas.id : -1;
 
-  const collectionRepository = useMemo(() => getCollectonLiveRepository(), []);
+  const collectionRepository = useMemo(() => getCollectionLiveRepository(), []);
 
   const getCollectionByIdQuery = useMemo(
     () => collectionRepository.getById(collectionId),

@@ -77,7 +77,7 @@ const LoginForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
             <FormItem>
               <FormLabel>{t('form_label_email')}</FormLabel>
               <FormControl>
-                <Input placeholder='votreadresse@email.fr' type='email' {...field} />
+                <Input placeholder='votre.adresse@email.fr' type='email' {...field} />
               </FormControl>
               <FormDescription>{t('form_descrition_email')}</FormDescription>
               <FormMessage />

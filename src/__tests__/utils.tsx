@@ -1,16 +1,16 @@
 import { rootReducer } from '@/state';
 import { RootState } from '@/state/store';
 import { configureStore } from '@reduxjs/toolkit';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router-dom';
 import createSagaMiddleware from 'redux-saga';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { AlertDialogProvider } from '@/components/reducers/AlertDialogContext';
 import { CollectionProvider } from '@/components/reducers/CollectionContext';
-import { WorkerProvider } from '@/components/reducers/WorkerContext';
 import { ConnectedUserProvider } from '@/components/reducers/ConnectedUserContext';
+import { WorkerProvider } from '@/components/reducers/WorkerContext';
 import { ExperimentalProvider } from '@/hooks/useExperimental';
 
 const testQueryClient = new QueryClient({

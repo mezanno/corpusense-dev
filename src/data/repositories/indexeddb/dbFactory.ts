@@ -42,7 +42,7 @@ export function getCollectionRepository() {
   return new IndexedDBCollectionRepository();
 }
 
-export function getCollectonLiveRepository() {
+export function getCollectionLiveRepository() {
   return new IndexedDBCollectionLiveRepository();
 }
 

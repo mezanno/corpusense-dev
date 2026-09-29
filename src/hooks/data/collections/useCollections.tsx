@@ -2,7 +2,7 @@ import { Collection, CollectionDetails } from '@/data/models/collection/collecti
 import {
   getAnnotationRepository,
   getCollectionRepository,
-  getCollectonLiveRepository,
+  getCollectionLiveRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { generateFirstAnnotation } from '@/data/utils/annotations';
 import { generateCollectionContent } from '@/data/utils/collections';
@@ -18,7 +18,7 @@ import { useAppDispatch } from '../../hooks';
 
 export const useCollections = () => {
   const appDispatch = useAppDispatch();
-  const collectionLiveRepository = useMemo(() => getCollectonLiveRepository(), []);
+  const collectionLiveRepository = useMemo(() => getCollectionLiveRepository(), []);
   const collectionRepository = useMemo(() => getCollectionRepository(), []);
 
   const collections = useLiveQuery(

@@ -1,4 +1,4 @@
-import { getCollectonLiveRepository } from '@/data/repositories/indexeddb/dbFactory';
+import { getCollectionLiveRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { Canvas } from '@iiif/presentation-3';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useMemo } from 'react';
@@ -9,7 +9,7 @@ export type CanvasWithSourceId = {
 };
 
 export const useCollectionContent = (collectionId: string) => {
-  const collectionRepository = useMemo(() => getCollectonLiveRepository(), []);
+  const collectionRepository = useMemo(() => getCollectionLiveRepository(), []);
 
   const getCollectionByIdQuery = useMemo(
     () => collectionRepository.getById(collectionId),
