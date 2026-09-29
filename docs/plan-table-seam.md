@@ -1,7 +1,7 @@
 # Plan: data-access — quick fixes, real tests, banked Table seam
 
 Status: **reduced scope** (was: full Table/Provider refactor; see Contingency appendix).
-Branch: `feat/deep-table-seam`. Vocabulary: `CONTEXT.md` + `/codebase-design` glossary.
+Branch: `develop` (plan landed 2026-09-29; former `feat/table-seam-plan` branch retired). Vocabulary: `CONTEXT.md` + `/codebase-design` glossary.
 
 ## Scope decision (settled 2026-10-01)
 
@@ -42,7 +42,7 @@ One home for the status law currently implemented 4× (`indexeddb/workers.ts:94-
 - The small-repo count crosses ~12 and the pass-through tax slows agent work measurably.
 
 ## How to resume a future session
-1. `git checkout feat/deep-table-seam`; read `CONTEXT.md`, this file, `docs/architecture-review-2026-09-29.html`.
+1. `git checkout develop`; read `CONTEXT.md`, this file, `docs/architecture-review-2026-09-29.html`.
 2. `npx tsc --noEmit -p tsconfig.app.json && npx vitest run` to locate the frontier.
 3. Resume at the first unchecked item in Phase 1, or start Phase 2 if Phase 1 is done.
 4. Honour the scope decision above: don't re-inflate this plan without a reactivation trigger.
