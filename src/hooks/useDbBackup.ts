@@ -6,7 +6,7 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 // Matches both ExportProgress and ImportProgress from dexie-export-import (same shape)
-export interface DbOperationProgress {
+interface DbOperationProgress {
   totalTables: number;
   completedTables: number;
   totalRows: number | undefined;

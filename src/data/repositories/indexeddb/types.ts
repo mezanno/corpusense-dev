@@ -3,10 +3,8 @@ import { AnnotationDTO } from '@/data/models/annotations/annotation.dto';
 import { Collection, CollectionDetails } from '@/data/models/collection/collection';
 import { CollectionCreateDTO } from '@/data/models/collection/collection.dto';
 import { CollectionElement } from '@/data/models/collectionElement';
-import { ConvertedFile } from '@/data/models/convertedFile';
 import { DataModel } from '@/data/models/dataModel/dataModel';
 import { FSHandle } from '@/data/models/fSHandle';
-import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/metadata';
 import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
 import { NamedEntity } from '@/data/models/namedEntity';
 import { Project } from '@/data/models/project';
@@ -21,13 +19,12 @@ import {
   StoredBlob,
 } from '@/data/models/source/source';
 import { AddSourceDTO } from '@/data/models/source/source.dto';
-import { StoredManifestDetails } from '@/data/models/storedManifest';
 import { Tag } from '@/data/models/tag';
 import { Task, Worker, WorkerStatus } from '@/data/models/worker/worker';
 import { DBError } from '@/data/utils/errors';
 import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import { FunctionResult } from '@/utils/functionResult';
-import { Canvas, Manifest } from '@iiif/presentation-3';
+import { Canvas } from '@iiif/presentation-3';
 import { EntityNotFoundError } from '../EntityNotFoundError';
 import { StatusChangeError } from './workers';
 
@@ -97,25 +94,6 @@ export interface CollectionRepository {
     collectionId: string,
     canvasId: string,
   ): Promise<FunctionResult<Collection, EntityNotFoundError>>;
-}
-
-export interface ItemMetadataRepository {
-  addAll(metadata: ItemMetadata[]): Promise<void>;
-  getByArk(ark: string): Promise<ItemMetadata[]>;
-}
-
-export interface ManifestRepository {
-  getCanvasById(
-    manifestId: string,
-    canvasId: string,
-  ): Promise<FunctionResult<Canvas, EntityNotFoundError>>;
-  getCanvasesByIds(
-    manifestId: string,
-    canvasId: string[],
-  ): Promise<FunctionResult<Canvas[], EntityNotFoundError>>;
-  getById(manifestId: string): Promise<FunctionResult<Manifest, EntityNotFoundError>>;
-  getDetailsByManifestIds(manifestIds: string[]): Promise<StoredManifestDetails[]>;
-  getMetadata(manifestId: string): Promise<ItemMetadataAttribute[]>;
 }
 
 export interface SourceRepository {
@@ -226,20 +204,6 @@ export interface WorkerRepository {
 export interface FSHandleRepository {
   getAll(): Promise<FSHandle[]>;
   put(handle: FSHandle): Promise<void>;
-}
-
-export interface ConvertedFileRepository {
-  getById(id: string): Promise<FunctionResult<ConvertedFile, EntityNotFoundError>>;
-  getByFolderName(folderName: string): Promise<FunctionResult<ConvertedFile, EntityNotFoundError>>;
-
-  add(file: ConvertedFile): Promise<void>;
-
-  update(
-    id: string,
-    changes: Partial<Omit<ConvertedFile, 'thumbnailBlob' | 'outputDirectoryHandle'>>,
-  ): Promise<void>;
-
-  delete(id: string): Promise<void>;
 }
 
 export interface ModifierChainRepository {

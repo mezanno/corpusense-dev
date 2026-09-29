@@ -8,7 +8,7 @@ import {
 } from '@xyflow/react';
 import { PlusCircle } from 'lucide-react';
 
-export type ModifierChainEdgeProps = {
+type ModifierChainEdgeProps = {
   modifierSourceId: string;
   onInsertAfter: (modifierId: string) => void;
 };

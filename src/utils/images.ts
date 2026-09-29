@@ -101,4 +101,4 @@ function base64ToBlob(base64: string): FunctionResult<Blob, Error> {
   }
 }
 
-export { base64ToBlob, blobToBase64, canvasToBase64, cropImage, loadImageFromUrl };
+export { base64ToBlob, blobToBase64, canvasToBase64, cropImage };

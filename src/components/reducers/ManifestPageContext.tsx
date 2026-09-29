@@ -16,7 +16,7 @@ type ManifestPageContextValue = {
   setCanvasToDisplay: (canvas: Canvas | null) => void;
 };
 
-export const ManifestPageContext = createContext<ManifestPageContextValue | undefined>(undefined);
+const ManifestPageContext = createContext<ManifestPageContextValue | undefined>(undefined);
 
 type Props = {
   children: React.ReactNode;

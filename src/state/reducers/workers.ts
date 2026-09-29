@@ -29,7 +29,7 @@ export interface StartWorkerProcessPayload {
   params: PluginParams;
 }
 
-export const workerSlice = createSlice({
+const workerSlice = createSlice({
   name: 'worker',
   initialState: workerInitialState,
   reducers: {

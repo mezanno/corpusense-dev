@@ -9,7 +9,7 @@ import { TagSchema } from '../tag';
 import { TimeStampSchema } from '../timeStampSchema';
 import { WorkerSchema } from '../worker/worker';
 
-export const CollectionDetailsSchema = TimeStampSchema.extend({
+const CollectionDetailsSchema = TimeStampSchema.extend({
   name: z.string(),
   about: z.string().optional(),
   tags: z.array(z.string()),
@@ -21,7 +21,7 @@ export const CollectionDetailsSchema = TimeStampSchema.extend({
 
 export type CollectionDetails = z.infer<typeof CollectionDetailsSchema>;
 
-export const CollectionContentSchema = ObjectWithStringIdSchema.extend({
+const CollectionContentSchema = ObjectWithStringIdSchema.extend({
   content: z.array(CollectionElementSchema),
 });
 
@@ -48,13 +48,11 @@ export type ExportedCollection = z.infer<typeof ExportedCollectionSchema>;
   This schema is used to validate the legacy collection that were used in the past.
   It is kept for backward compatibility and should be removed in the future when all collections have been migrated to the new schema.
 */
-export const LegacyCollectionContentSchema = ObjectWithStringIdSchema.extend({
+const LegacyCollectionContentSchema = ObjectWithStringIdSchema.extend({
   content: z.array(LegacyCollectionElementSchema),
 });
 
-export const LegacyCollectionSchema = CollectionDetailsSchema.extend(
-  LegacyCollectionContentSchema.shape,
-);
+const LegacyCollectionSchema = CollectionDetailsSchema.extend(LegacyCollectionContentSchema.shape);
 
 export const LegacyExportedCollectionSchema = z.object({
   collection: LegacyCollectionSchema,

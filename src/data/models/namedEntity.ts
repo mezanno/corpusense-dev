@@ -1,11 +1,11 @@
 import z from 'zod';
 
-export const NamedEntitySelectorSchema = z.object({
+const NamedEntitySelectorSchema = z.object({
   annotationId: z.string(),
   indexes: z.array(z.number()), // indexes of the words in the text of the annotation
 });
 
-export const NamedEntitySchema = z.object({
+const NamedEntitySchema = z.object({
   id: z.string(),
   dataFieldId: z.string(),
   value: z.string(),

@@ -1,8 +1,8 @@
 import { BaseError } from '@/utils/BaseError';
 import { FunctionResult } from '@/utils/functionResult';
 import { AnnotationPage, Canvas, Manifest } from '@iiif/presentation-3';
-import { Annotation, ElementType } from '../models/annotations/annotation';
-import { getAnnotationText, getAnnotationType } from '../models/annotations/annotation.utils';
+import { ElementType } from '../models/annotations/annotation';
+import { getAnnotationText } from '../models/annotations/annotation.utils';
 import { IIIF_CONTEXT } from '../models/converters/iiif';
 import { EntityNotFoundError } from '../repositories/EntityNotFoundError';
 import {
@@ -11,11 +11,10 @@ import {
   getResultRepository,
   getTagRepository,
 } from '../repositories/indexeddb/dbFactory';
-import { contains } from './annotations';
 import { EmptyCollectionError } from './errors';
 import { convertResultToIIIFAnnotation } from './result';
 
-export interface ManifestExport {
+interface ManifestExport {
   name: string;
   manifest: Manifest;
 }
@@ -126,33 +125,6 @@ const generateAnnotationPage = async (canvasId: string, collectionId: string) =>
   return await convertResultToIIIFAnnotation(result.value);
 };
 
-const generateTextForAnnotation = async (annotation: Annotation) => {
-  const type = getAnnotationType(annotation);
-
-  if (type === ElementType.TEXT_REGION) {
-    const canvasId = annotation.canvasId;
-    const collectionId = annotation.collectionId;
-    if (canvasId !== undefined && collectionId !== undefined) {
-      const annotations = await getAnnotationRepository().getByScope({
-        canvasId,
-        collectionId,
-      });
-      let text = '';
-      for (let i = 0; i < annotations.length; i++) {
-        if (contains(annotation, annotations[i])) {
-          const t = getAnnotationText(annotations[i]);
-          if (t !== undefined && t.length > 0) {
-            text = text.concat(t).concat('\n');
-          }
-        }
-      }
-      return text;
-    }
-  }
-
-  return getAnnotationText(annotation);
-};
-
 const generateTextFromCanvas = async (canvasId: string, collectionId: string) => {
   const annotations = await getAnnotationRepository().getByScope({
     canvasId,
@@ -261,12 +233,9 @@ const generateTextForCollection = async (
 };
 
 export {
-  generateAnnotationPage,
-  generateCanvas,
   generateManifestFromCollection,
   generateNumberedTextForCollection,
   generateNumberedTextFromCanvas,
-  generateTextForAnnotation,
   generateTextForCollection,
   generateTextFromCanvas,
   generateTextWithAnnotationIdFromCanvas,

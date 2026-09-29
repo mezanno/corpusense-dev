@@ -1,6 +1,6 @@
 import z from 'zod';
 
-export const HistorySchema = z.object({
+const HistorySchema = z.object({
   url: z.string(),
 });
 

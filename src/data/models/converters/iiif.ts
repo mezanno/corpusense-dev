@@ -12,7 +12,7 @@ import { createAnnotation } from '../annotations/annotation.factory';
 import { convertToElementTypeEnum } from '../annotations/annotation.utils';
 
 export const IIIF_CONTEXT = 'http://iiif.io/api/presentation/3/context.json';
-export const URL_ANNOTATIONPAGE = 'annotationpage/corpusense';
+const URL_ANNOTATIONPAGE = 'annotationpage/corpusense';
 
 /**
  * Converts W3C annotations to IIIF annotations. The annotations are supposed to be

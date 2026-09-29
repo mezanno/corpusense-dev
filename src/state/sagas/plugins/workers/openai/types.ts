@@ -1,4 +1,4 @@
-export interface LLMMessage {
+interface LLMMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
 }

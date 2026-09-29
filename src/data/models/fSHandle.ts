@@ -1,6 +1,6 @@
 import z from 'zod';
 
-export const FSHandleSchema = z.object({
+const FSHandleSchema = z.object({
   id: z.string(),
   handle: z.instanceof(FileSystemDirectoryHandle),
 });

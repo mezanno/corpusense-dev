@@ -4,8 +4,8 @@ import { Annotation, ElementType } from './annotation';
 import { AnnotationCreateDTO, AnnotationDTO, AnnotationWithIdCreateDTO } from './annotation.dto';
 import { getAnnotationType, getAnnotationValue } from './annotation.utils';
 
-export const URL_CLASSIFYING = '/class';
-export const URL_TAGGING = '/tag';
+const URL_CLASSIFYING = '/class';
+const URL_TAGGING = '/tag';
 export const changeType = (annotation: Annotation, newType: ElementType): Annotation => {
   return {
     ...annotation,

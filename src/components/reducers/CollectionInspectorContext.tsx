@@ -16,9 +16,9 @@ type CollectionInspectorContextValue = {
   handlePrevious: () => void;
 };
 
-export const CollectionInspectorContext = createContext<
-  CollectionInspectorContextValue | undefined
->(undefined);
+const CollectionInspectorContext = createContext<CollectionInspectorContextValue | undefined>(
+  undefined,
+);
 
 type Props = {
   children: React.ReactNode;

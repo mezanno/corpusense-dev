@@ -1,7 +1,6 @@
 import i18n from '@/i18n';
 import { useFSHandleStore } from '@/state/zustand/useFSHandleStore';
-import { Canvas, IIIFExternalWebResource, ImageService } from '@iiif/presentation-3';
-import { TileSource } from 'openseadragon';
+import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 
 const getLabel = (canvas: Canvas): string => {
   const label = canvas.label;
@@ -85,38 +84,6 @@ const getFileFromHandle = async (filename: string, handle: FileSystemDirectoryHa
   return await fileHandle.getFile();
 };
 
-const getObjectUrl = async (filepath: string, handle: FileSystemDirectoryHandle) => {
-  return URL.createObjectURL(await getFile(filepath, handle));
-};
-
-//TODO! refactor plus propre
-const getTileSource = async (
-  canvas: Canvas,
-  handle?: FileSystemDirectoryHandle,
-): Promise<TileSource[]> => {
-  const image = getImage(canvas);
-
-  let source: TileSource[] = [];
-  if (image?.service?.length != null && image.service.length > 0) {
-    const service = image.service[0] as ImageService;
-    if (service !== undefined) {
-      const id = service['@id'] ?? service.id;
-      if (id !== undefined) {
-        source = [`${id}/info.json`] as unknown as TileSource[];
-      }
-    }
-  } else {
-    if (image?.id !== undefined && !image.id.startsWith('http') && handle !== undefined) {
-      const url = await getObjectUrl(image.id, handle);
-      source = [{ type: 'image', url: url }] as unknown as TileSource[];
-    } else {
-      source = [{ type: 'image', url: image.id }] as unknown as TileSource[];
-    }
-  }
-
-  return source;
-};
-
 const toGallicaUrl = (iiifUrl: string) => {
   return iiifUrl.replace(
     /https:\/\/openapi\.bnf\.fr\/iiif\/presentation\/v3\/(ark:\/12148\/[^/]+)\/canvas.*/,
@@ -124,41 +91,4 @@ const toGallicaUrl = (iiifUrl: string) => {
   );
 };
 
-const imageToBase64 = async (image: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        resolve(reader.result); // data:image/...;base64,...
-      } else {
-        reject(new Error('Conversion en base64 échouée'));
-      }
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(image);
-  });
-};
-
-const imageUrlToBase64 = async (url: string): Promise<string> => {
-  const response = await fetch(url);
-  const blob = await response.blob();
-
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-};
-
-export {
-  getFile,
-  getImage,
-  getImageForThumbnail,
-  getLabel,
-  // getObjectUrl,
-  getTileSource,
-  imageToBase64,
-  imageUrlToBase64,
-  toGallicaUrl,
-};
+export { getFile, getImage, getImageForThumbnail, getLabel, toGallicaUrl };

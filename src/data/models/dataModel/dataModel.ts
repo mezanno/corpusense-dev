@@ -1,6 +1,6 @@
 import z from 'zod';
 
-export const DataFieldSchema = z
+const DataFieldSchema = z
   .object({
     id: z.string(),
     name: z.string(),

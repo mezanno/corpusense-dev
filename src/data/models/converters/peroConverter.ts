@@ -7,7 +7,7 @@ import { peroLineSchema, peroResultSchema } from './peroSchema';
 export type PeroResult = z.infer<typeof peroResultSchema>;
 type PeroLine = z.infer<typeof peroLineSchema>;
 
-export function convertPeroLineToAnnotation(
+function convertPeroLineToAnnotation(
   line: PeroLine,
   canvasId: string,
   collectionId: string,

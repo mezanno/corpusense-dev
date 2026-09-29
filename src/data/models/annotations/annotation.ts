@@ -8,9 +8,9 @@ export enum ElementType {
   TEMP = 'TEMP',
 }
 
-export const ElementTypeSchema = z.enum(ElementType);
+const ElementTypeSchema = z.enum(ElementType);
 
-export const AnnotationSchema = z.object({
+const AnnotationSchema = z.object({
   canvasId: z.string(),
   collectionId: z.string(),
   order: z.number(),

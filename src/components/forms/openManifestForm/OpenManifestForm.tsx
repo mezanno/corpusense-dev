@@ -5,7 +5,7 @@ import Loading from '../../Loading';
 import AddManifestCard from './AddManifestCard';
 import LoadManifestCard from './LoadManifestCard';
 
-export type OpenManifestFormProps = FormProps<string> & {
+type OpenManifestFormProps = FormProps<string> & {
   existingSource?: SourceWithContent;
 };
 

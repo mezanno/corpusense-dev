@@ -7,7 +7,7 @@ import z from 'zod';
 export type WorkerConfigurationParams = {
   [key: string]: { description: string; defaultValue?: string };
 };
-export type WorkerPluginInfo = {
+type WorkerPluginInfo = {
   displayName?: string;
   description?: string;
   category?: string;
@@ -23,9 +23,9 @@ export type WorkerPlugin = {
   runtimeParametersSchema?: z.ZodTypeAny;
 };
 
-export type WorkerRunFunction = (task: Task, worker: Worker) => Promise<WorkerResponse>; //saga or async function : if we need to call an effect (eg: call, put, select), we have to use a saga
-export type WorkerExtractDataFunction = (results: Result[]) => Promise<unknown[]>;
-export type WorkerExportFunction = (results: Result[], formats: string[]) => void;
+type WorkerRunFunction = (task: Task, worker: Worker) => Promise<WorkerResponse>; //saga or async function : if we need to call an effect (eg: call, put, select), we have to use a saga
+type WorkerExtractDataFunction = (results: Result[]) => Promise<unknown[]>;
+type WorkerExportFunction = (results: Result[], formats: string[]) => void;
 type WorkerModule = {
   default: WorkerRunFunction;
   exportResult?: WorkerExportFunction;
@@ -39,14 +39,14 @@ type WorkerModule = {
   pluginConfigurationParams?: WorkerConfigurationParams;
   pluginRuntimeParameters?: z.ZodTypeAny;
 };
-export type WorkerProcessResultFunction = (
+type WorkerProcessResultFunction = (
   result: unknown,
   task: Task,
   workerCategory?: string,
 ) => Promise<WorkerResponse>;
 
 export type ImporterPlugin = { import: ImportFunction };
-export type ImportFunction = (url: string) => Promise<Manifest>;
+type ImportFunction = (url: string) => Promise<Manifest>;
 type ImporterModule = {
   default: ImportFunction;
   pluginName: string;

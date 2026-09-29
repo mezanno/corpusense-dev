@@ -11,7 +11,7 @@ import { Slider } from '../ui/slider';
 import { Toggle } from '../ui/toggle';
 import { CanvasViewerMode } from './CanvasViewer';
 
-export const CanvasViewerToolbar = ({
+const CanvasViewerToolbar = ({
   collectionId,
   canvas,
   mode,

@@ -6,7 +6,7 @@ import z, { ZodObject, ZodRawShape } from 'zod';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import ModifierForm from './ModifierForm';
 
-export type ModifierNodeProps<TSchema extends ZodObject<ZodRawShape>> = {
+type ModifierNodeProps<TSchema extends ZodObject<ZodRawShape>> = {
   modifier: Modifier<TSchema>;
   initialValues: z.infer<TSchema>;
   onDelete: (modifierId: string) => void;

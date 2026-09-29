@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const ConvertedFileSchema = z
+const ConvertedFileSchema = z
   .object({
     id: z.string(),
     title: z.string(),

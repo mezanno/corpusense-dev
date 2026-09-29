@@ -13,7 +13,7 @@ type CollectionContextValue = {
   getLocalObjectUrl: (path: string, handle: FileSystemDirectoryHandle) => Promise<string>;
 };
 
-export const CollectionContext = createContext<CollectionContextValue | undefined>(undefined);
+const CollectionContext = createContext<CollectionContextValue | undefined>(undefined);
 
 type Props = {
   children: React.ReactNode;

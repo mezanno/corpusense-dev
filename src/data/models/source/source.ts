@@ -1,11 +1,9 @@
 import { Manifest } from '@iiif/presentation-3';
 import z from 'zod';
 
-export const SourceTypeSchema = z.enum(['local', 'remote']);
+const SourceTypeSchema = z.enum(['local', 'remote']);
 
-export type SourceType = z.infer<typeof SourceTypeSchema>;
-
-export const StoredBlobSchema = z
+const StoredBlobSchema = z
   .object({
     id: z.string(),
     blob: z.instanceof(Blob),
@@ -14,7 +12,7 @@ export const StoredBlobSchema = z
 
 export type StoredBlob = z.infer<typeof StoredBlobSchema>;
 
-export const SourceSchema = z
+const SourceSchema = z
   .object({
     id: z.string(),
     name: z.string(),
@@ -37,7 +35,7 @@ export const LocalFileSchema = z
   })
   .strict();
 
-export const SourceContentSchema = z.discriminatedUnion('type', [
+const SourceContentSchema = z.discriminatedUnion('type', [
   z.object({
     id: z.string(),
     type: z.literal('remote'),
@@ -55,7 +53,7 @@ export const SourceContentSchema = z.discriminatedUnion('type', [
 
 export type SourceContent = z.infer<typeof SourceContentSchema>;
 
-export const SourceWithContentSchema = SourceSchema.extend({
+const SourceWithContentSchema = SourceSchema.extend({
   content: SourceContentSchema,
 });
 

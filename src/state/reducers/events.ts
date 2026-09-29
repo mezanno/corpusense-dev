@@ -11,7 +11,7 @@ export const eventsInitialState: EventsState = {
   allEvents: [],
 };
 
-export const eventsSlice = createSlice({
+const eventsSlice = createSlice({
   name: 'events',
   initialState: eventsInitialState,
   reducers: {

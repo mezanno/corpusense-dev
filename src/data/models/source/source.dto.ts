@@ -1,7 +1,7 @@
 import z from 'zod';
 import { LocalFileSchema, ManifestSchema } from './source';
 
-export const AddSourceDTOSchema = z.discriminatedUnion('type', [
+const AddSourceDTOSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('remote'),
     name: z.string(),

@@ -2,7 +2,7 @@ import { Action, combineReducers, Reducer } from '@reduxjs/toolkit';
 import eventsReducer from './reducers/events';
 import workersReducer from './reducers/workers';
 
-export const appReducer = combineReducers({
+const appReducer = combineReducers({
   workers: workersReducer,
   events: eventsReducer,
 });

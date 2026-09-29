@@ -50,34 +50,6 @@ const OpenAIErrorResponseSchema = z.object({
     .optional(),
 });
 
-const OpenAIChatCompletionResponseSchema = z.object({
-  id: z.string().optional(),
-  object: z.string().optional(),
-  created: z.number().optional(),
-  model: z.string().optional(),
-  choices: z
-    .array(
-      z.object({
-        index: z.number().optional(),
-        message: z
-          .object({
-            role: z.string().optional(),
-            content: z.string().nullable().optional(),
-          })
-          .optional(),
-        finish_reason: z.string().nullable().optional(),
-      }),
-    )
-    .optional(),
-  usage: z
-    .object({
-      prompt_tokens: z.number().optional(),
-      completion_tokens: z.number().optional(),
-      total_tokens: z.number().optional(),
-    })
-    .optional(),
-});
-
 const OpenAIChatCompletionChunkSchema = z.object({
   id: z.string().optional(),
   object: z.string().optional(),
@@ -98,8 +70,6 @@ const OpenAIChatCompletionChunkSchema = z.object({
     )
     .optional(),
 });
-
-export type OpenAIChatCompletionResponse = z.infer<typeof OpenAIChatCompletionResponseSchema>;
 
 type OpenAIChatCompletionChunk = z.infer<typeof OpenAIChatCompletionChunkSchema>;
 
@@ -540,7 +510,7 @@ export class LLMRequestError extends Error {
   }
 }
 
-export class LLMResponseError extends Error {
+class LLMResponseError extends Error {
   constructor(message: string) {
     super(message);
 

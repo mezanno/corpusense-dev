@@ -2,20 +2,20 @@ import z from 'zod';
 
 //TODO! il va falloir utiliser un discriminant pour le type de scope, sinon on ne pourra pas faire de union type avec zod
 
-export const CollectionScopeSchema = z
+const CollectionScopeSchema = z
   .object({
     collectionId: z.string(),
   })
   .strict();
 
-export const CanvasScopeSchema = z
+const CanvasScopeSchema = z
   .object({
     collectionId: z.string(),
     canvasId: z.string(),
   })
   .strict();
 
-export const AnnotationScopeSchema = z
+const AnnotationScopeSchema = z
   .object({
     collectionId: z.string(),
     canvasId: z.string(),

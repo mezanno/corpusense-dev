@@ -1,4 +1,3 @@
-import { WordRect } from '@/components/reducers/MarkupContext';
 import { Annotation } from '@/data/models/annotations/annotation';
 import { DataField } from '@/data/models/dataModel/dataModel';
 import { NamedEntity } from '@/data/models/namedEntity';
@@ -19,7 +18,17 @@ import { uniq } from 'lodash';
 import { useMemo } from 'react';
 import { v4 as uuid } from 'uuid';
 
-export interface AddEntityPayload {
+// previously imported from the (removed) MarkupContext; konva-free structural equivalent
+type WordRect = {
+  line: number;
+  rect: { x: number; y: number; width: number; height: number };
+  dataFieldId?: string;
+  word: string;
+  annotationId: string;
+  annotationWordIndex: number; // index of the word in the annotation
+};
+
+interface AddEntityPayload {
   rects: WordRect[];
   type: DataField;
 }

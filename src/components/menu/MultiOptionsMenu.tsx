@@ -26,7 +26,7 @@ interface MultiOptionsMenuItem {
   category?: string;
 }
 
-export interface MultiOptionsMenuParams {
+interface MultiOptionsMenuParams {
   name: string;
   icon: React.ReactNode;
   info: string;

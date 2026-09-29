@@ -8,7 +8,7 @@ import { containsArkIdentifier, fetchManifestFromURL, isManifestUrl } from '@/ut
 import { Manifest } from '@iiif/presentation-3';
 import { useCallback } from 'react';
 
-export class ManifestInputError extends BaseError {
+class ManifestInputError extends BaseError {
   constructor(context: { input: string }) {
     super(`Manifest input is not valid: ${context.input}`);
   }

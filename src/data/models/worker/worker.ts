@@ -16,9 +16,9 @@ export enum WorkerStatus {
   COMPLETED_WITH_ERRORS = 'completed_with_errors', // Worker has been completed but with errors
 }
 
-export const WorkerStatusSchema = z.enum(WorkerStatus);
+const WorkerStatusSchema = z.enum(WorkerStatus);
 
-export const TaskSchema = z
+const TaskSchema = z
   .object({
     id: z.number(),
     scope: ScopeSchema,
@@ -46,7 +46,7 @@ export const WorkerSchema = WorkerCreateDTOSChema.extend({
 
 export type Worker = z.infer<typeof WorkerSchema>;
 
-export const WorkerResponseSchema = z
+const WorkerResponseSchema = z
   .object({
     status: WorkerStatusSchema,
     statusMessage: z.string().optional(),
