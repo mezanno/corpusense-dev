@@ -1,7 +1,7 @@
-import { BaseError } from '@/utils/BaseError';
+import { NotFoundError } from '@/utils/NotFoundError';
 
-export class EntityNotFoundError extends BaseError {
-  constructor(context: { entity: string; id: string }) {
-    super(`${context.entity} with id ${context.id} not found`);
-  }
-}
+/**
+ * @deprecated Prefer {@link NotFoundError} (src/utils/NotFoundError.ts).
+ * Kept as an alias during the Table-seam migration; delete once all importers move.
+ */
+export class EntityNotFoundError extends NotFoundError {}
