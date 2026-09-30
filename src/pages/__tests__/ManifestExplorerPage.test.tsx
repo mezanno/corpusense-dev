@@ -30,7 +30,8 @@ describe('ManifestExplorerPage', () => {
       { preloadedState: getPreloadedState() },
     );
 
-    expect(screen.getByText(/Bienvenue sur Corpusense/)).toBeInTheDocument();
+    // The i18n test mock echoes translation keys; asserting the heading proves Welcome rendered
+    expect(screen.getByRole('heading', { name: 'title' })).toBeInTheDocument();
   });
 
   it('affiche les détails et la galerie quand un manifest est chargé', () => {
