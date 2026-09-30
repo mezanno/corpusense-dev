@@ -24,6 +24,6 @@ CorpuSense repose sur une **architecture hybride Local-First**. Les données mé
 ## 🟢 Flux 3 : Orchestration Asynchrone & Workers (Redux + Sagas + Realtime)
 
 1. L'IHM déclenche une tâche d'arrière-plan en dispatchant une action Redux (ex: `startWorkerRequest`).
-2. Le middleware Redux-Saga intercepte l'action, instancie le plugin approprié (`mistral.ts`, `tesseract.ts`, `surya.ts`, etc.) et fait évoluer le statut du worker (`POSTING`, `POSTED`, `INPROGRESS`).
+2. Le middleware Redux-Saga intercepte l'action, instancie le plugin approprié (`mistral.ts`, `openai.ts`, `mistralOcr.ts`, `peroocr.ts`, `layoutExtraction.ts`, `customWorker.ts` — découverts par glob dans `state/sagas/plugins/workers/`) et fait évoluer le statut du worker (`POSTING`, `POSTED`, `INPROGRESS`). Les anciens plugins `tesseract`/`surya` sont retirés du chargement (dossier `workers/old/`, suppression prévue).
 3. Les résultats produits sont enregistrés directement dans les Repositories IndexedDB via `FunctionResult`.
 4. Une notification d'événement/toast est émise sur le store Redux (`eventsReducer`), et la vue réactive se met à jour automatiquement via IndexedDB.

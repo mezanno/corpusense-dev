@@ -44,6 +44,11 @@ An ordered sequence of transformations applied to a set of Annotations, editable
 
 ### Data access
 
+> **Status: banked, not shipped.** The four terms below describe the deferred Table-seam design
+> (`docs/plan-table-seam.md`, Contingency appendix). Today's code is Dexie repositories behind
+> `dbFactory.ts` factories. Do not treat these as current architecture until a reactivation
+> trigger fires.
+
 **Table**:
 The deep module for accessing one entity store: a small verb surface with not-found, DB-error, and partial-update behaviour absorbed inside.
 _Avoid_: repository (reserved for aggregates), DAO

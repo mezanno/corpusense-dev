@@ -11,21 +11,19 @@ Elle se base sur les bonnes pratiques React (React Testing Library + Vitest) et 
 
 ---
 
-## 1. Etat actuel (juillet 2026)
+## 1. Etat actuel (30 septembre 2026)
 
-Constat mesure sur la base existante :
+Constat mesure sur la base existante (mesures fraiches : `tsc -b`, `npx eslint .`, `npx vitest run`) :
 
-- suite Vitest executee : **24 fichiers de test**, **77 tests** ;
-- resultat actuel : **18 fichiers OK / 6 en echec**, **64 tests OK / 13 en echec** ;
-- outils presents : Vitest, React Testing Library, jest-dom, vitest-webgl-canvas-mock ;
-- outils absents a ce jour : configuration Playwright, configuration MSW ;
-- CI actuelle : workflow de deploiement GitHub Pages uniquement, sans job de tests/lint sur Pull Request.
+- suite Vitest executee : **22 fichiers de test**, **70 tests** ;
+- resultat actuel : **21 fichiers OK / 1 skippe** (`ManifestDetails.test.tsx`, un seul `it.todo`), **69 tests OK / 1 todo / 0 echec** ;
+- la `ResizeObserver` stub etait commentee dans `vitest.setup.ts` et empechait 8 fichiers de se charger : restauree le 2026-09-30 (voir `docs/review-2026-09-30.md`) ; le mock i18n de test exporte desormais `Trans` en plus de `useTranslation` ;
+- tsc : vert ; ESLint : 46 erreurs / 2 warnings, toutes dans `src/`, mecaniques (backlog recense dans le rapport de revue) ;
+- outils presents : Vitest, React Testing Library, jest-dom, vitest-webgl-canvas-mock, fake-indexeddb ;
+- outils absents a ce jour : configuration Playwright, configuration MSW, semgrep, tests d'architecture (dependency-cruiser / eslint-plugin-boundaries) ;
+- CI actuelle : workflow de deploiement GitHub Pages uniquement, sans job de tests/lint sur Pull Request (a creer, cf. section 4).
 
-Exemples de points de fragilite observes :
-
-- tests de pages qui ne montent pas tous les providers requis (erreurs de contexte) ;
-- tests couplant trop fort le contenu de traduction a l'assertion ;
-- ecarts entre attentes de tests et comportement metier actuel sur certaines fonctions utilitaires.
+Les points de fragilite observes en juillet 2026 (tests de pages sans providers, assertions couplees aux traductions, attentes designovees du comportement metier) ont ete resolus par la remise a plat du harness de tests de septembre 2026.
 
 ---
 
@@ -99,9 +97,9 @@ Regles :
 
 ## 5. Roadmap de mise a niveau
 
-### Priorite 1 - Stabiliser l'existant
+### Priorite 1 - Stabiliser l'existant ✅ (fait le 2026-09-30)
 
-- Corriger les 13 tests en echec avant d'augmenter la surface de tests.
+- ✅ Les 13 tests en echec ont ete resolus en restaurant le mock `ResizeObserver` dans `vitest.setup.ts` (et en completant le mock i18n de test) — suite verte complete, cf. `docs/review-2026-09-30.md`.
 - Ajouter des helpers de rendu (`renderWithProviders`) complets pour pages dependantes de contextes.
 - Revoir les tests de pages sensibles a i18n pour reduire les faux positifs/faux negatifs.
 

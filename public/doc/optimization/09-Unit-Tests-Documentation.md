@@ -13,7 +13,8 @@ To ensure a stable and predictable testing environment, several global mocks are
 - **UI Components (Clover IIIF)**: Components from `@samvera/clover-iiif/primitives` (Label, Metadata, Summary, Thumbnail) are mocked to render their content into simple `div` elements with `data-testid` attributes. This prevents CSSOM errors (`insertRule` failures) while allowing tests to assert on the actual data passed to these components.
 - **Supabase**: The `@/utils/config` Supabase client is mocked globally to prevent real network calls and provide a controlled environment for authentication-related logic.
 - **`matchMedia` Polyfill**: Added via `vi.stubGlobal('matchMedia', ...)` to support components from `shadcn-ui` and `sonner` that rely on viewport detection. Note: Using `vi.stubGlobal` is required instead of direct `globalThis` assignment to avoid TypeScript build errors (`TS7017`) in strict environments like GitHub CI.
-- **i18next**: Mocked to return translation keys directly, simplifying assertions and avoiding localization dependencies in unit tests.
+- **`ResizeObserver` stub** (`vi.stubGlobal`, restored September 2026): required by `@dnd-kit` and Annotorious. When it was commented out, **8 test files silently failed to load** (`ReferenceError: ResizeObserver is not defined`) — the suite reported failures that were really load errors. Keep this stub.
+- **i18next**: The test alias (`vite.config.ts` → `src/__tests__/react-i18next.ts`) mocks `useTranslation` to return translation **keys** directly, simplifying assertions and avoiding localization dependencies in unit tests. It must also export **`Trans`** (added September 2026): components using `<Trans>` (e.g. `Welcome.tsx`) rendered `undefined` children when the mock omitted it, failing at render time with "Element type is invalid". The mock echoes the key and interpolates the first `components` placeholder (e.g. `<strong>`).
 
 ### Handling Global Mocking for CI/TypeScript
 
@@ -22,11 +23,14 @@ When mocking global browser APIs (like `matchMedia` or `ResizeObserver`) in `vit
 This causes build-time errors in GitHub Actions or any environment running `tsc` because the built-in `globalThis` interface doesn't include these properties. Instead, use Vitest's utility:
 
 ```typescript
-vi.stubGlobal('matchMedia', vi.fn().mockImplementation(query => ({
-  matches: false,
-  media: query,
-  // ... rest of the interface
-})));
+vi.stubGlobal(
+  'matchMedia',
+  vi.fn().mockImplementation((query) => ({
+    matches: false,
+    media: query,
+    // ... rest of the interface
+  })),
+);
 ```
 
 ### Test Utilities (`src/__tests__/utils.tsx`)
@@ -133,3 +137,14 @@ For future tests, the following pattern has proven most robust:
 1. **Mock the Hook, not the Provider**: If a component uses a custom hook (e.g., `useManifests`), mock that hook directly in the test file using `vi.mock`.
 2. **Use `renderWithProviders`**: Always use the helper to ensure a consistent environment.
 3. **Mock Fragment Providers**: For layout-level tests, mock providers to simply return `{children}` to avoid heavy lifecycle logic during simple UI tests.
+
+---
+
+## 5. Current Baseline (2026-09-30)
+
+Measured with `npx vitest run` on `develop` after the harness repair (see `docs/review-2026-09-30.md`):
+
+- **21 test files passing, 1 skipped** (`ManifestDetails.test.tsx` contains only a single `it.todo`), **69 tests passing, 1 todo, 0 failures**;
+- Before the repair: 8 files could not even load (39 tests collected). After restoring the `ResizeObserver` stub and completing the i18n mock, the collected count rose to 70;
+- `ManifestExplorerPage.test.tsx` asserts the Welcome state via the echoed key (`getByRole('heading', { name: 'title' })`) rather than translated text — consistent with the key-echoing mock convention the rest of the suite relies on;
+- Known gaps ahead: repositories (use the sanctioned `fake-indexeddb` stack), sagas, worker plugins, and `useJobRealtime` are still untested.
