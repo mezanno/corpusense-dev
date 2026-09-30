@@ -22,9 +22,9 @@
     "ui": "vitest ui"
   },
   "dependencies": {
-    "@annotorious/annotorious": "^3.7.18",
-    "@annotorious/openseadragon": "^3.7.18",
-    "@annotorious/react": "^3.7.18",
+    "@annotorious/annotorious": "^3.9.3",
+    "@annotorious/openseadragon": "^3.9.3",
+    "@annotorious/react": "^3.9.3",
     "@dnd-kit/dom": "^0.5.0",
     "@dnd-kit/react": "^0.5.0",
     "@emailjs/browser": "^4.4.1",
