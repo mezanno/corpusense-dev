@@ -99,6 +99,15 @@ export default defineConfig(({ mode }) => {
     test: {
       globals: true, // Activer les fonctions globales comme 'describe', 'it', etc.
       environment: 'jsdom', // Utiliser jsdom pour simuler un environnement de navigateur
+      server: {
+        deps: {
+          // openseadragon est un module CJS importé avec des exports nommés par
+          // @annotorious/openseadragon (@annotorious/react aussi en transitif).
+          // Externalisé, Node ne résout pas les exports nommés ('Point'); on force
+          // l'inline pour que Vite applique son interop CJS.
+          inline: [/@annotorious\//, 'openseadragon'],
+        },
+      },
       setupFiles: process.env.NODE_ENV === 'test' ? ['./vitest.setup.ts'] : [], // Ne charge le fichier de configuration que pour les tests
       coverage: {
         provider: 'v8',

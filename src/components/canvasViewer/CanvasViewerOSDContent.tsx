@@ -71,7 +71,6 @@ const CanvasViewerOSDContent = ({
   const hover = useHover();
   const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
   const { removeAnnotationsByIds } = useAnnotationActions();
-  // const [options, setOptions] = useState<OpenSeadragon.Options | null>(null);
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>();
   const { error, source } = useTileSource({ canvas, sourceId });
   const viewerKey = `${canvas.id}:${sourceId}`;
