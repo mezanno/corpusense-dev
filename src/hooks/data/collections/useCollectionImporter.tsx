@@ -170,7 +170,12 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
       }
 
       try {
-        await collectionRepository.add(collection);
+        const collectionWithTimeStamps = {
+          ...collection,
+          createdAt: collection.createdAt ?? new Date().toISOString(),
+          updatedAt: collection.updatedAt ?? new Date().toISOString(),
+        };
+        await collectionRepository.add(collectionWithTimeStamps);
         addLog(t('log_collection_created', { id: collection.id }), 'success');
       } catch (e) {
         if (typeof e === 'object' && e !== null && 'name' in e && e.name === 'ConstraintError') {
