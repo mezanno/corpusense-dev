@@ -3,6 +3,7 @@ import useBlob from '@/hooks/data/sources/useBlob';
 import useSource from '@/hooks/data/sources/useSource';
 import useSources from '@/hooks/data/sources/useSources';
 import useDialog from '@/hooks/ui/useDialog';
+import useIsDarkImage from '@/hooks/ui/useIsDarkImage';
 import useAppNavigation from '@/hooks/useAppNavigation';
 import { cn } from '@/lib/utils';
 import { ClipboardCopy, Clock, Cloud, Layers, Pen, Trash2, UploadCloud } from 'lucide-react';
@@ -23,6 +24,7 @@ export function ManifestCard({ source, isHighlighted }: ManifestCardProps) {
   const { removeSourceFromLibrary } = useSources();
   const { thumbUrl } = useBlob(source.thumbnailBlobId);
   const { sourceWithContent } = useSource(source.id);
+  const isDarkImage = useIsDarkImage(thumbUrl);
 
   const handleRemoveRemoteSource: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.stopPropagation();
@@ -72,7 +74,12 @@ export function ManifestCard({ source, isHighlighted }: ManifestCardProps) {
       }}
     >
       <CardContent
-        className='flex min-h-0 flex-1 flex-col items-end justify-end rounded-t-xl bg-white/50 p-2'
+        className={cn(
+          'flex min-h-0 flex-1 flex-col items-end justify-end rounded-t-xl p-2',
+          isDarkImage
+            ? 'bg-dark-slate-gray-500/60 text-eggshell-900'
+            : 'bg-eggshell-800/60 text-dark-slate-gray-500',
+        )}
         title={source.name}
       >
         <h3 className='font-bold wrap-anywhere'>{source.name}</h3>
