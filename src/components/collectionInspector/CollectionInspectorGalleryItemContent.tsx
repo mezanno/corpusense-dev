@@ -5,12 +5,10 @@ import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionConten
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import useConvertedFileIO from '@/hooks/data/convertedFiles/useConvertedFileIO';
 import useThumbnail from '@/hooks/data/sources/useThumbnail';
-import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import 'gridstack/dist/gridstack.min.css';
 import { CircleX, SpellCheck, SpellCheck2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import AutoSizer from 'react-virtualized-auto-sizer';
 import Loading from '../Loading';
 import { useWorkerContext } from '../reducers/WorkerContext';
 
@@ -35,6 +33,7 @@ const CollectionInspectorGalleryItemContent = ({
 }) => {
   const { t } = useTranslation();
   const { isWorkerOrTaskRunning } = useWorkerContext();
+  const [loadedThumbUrl, setLoadedThumbUrl] = useState<string | undefined>(undefined);
   const scope = useMemo(
     () => ({ collectionId, canvasId: canvasWithSourceId.canvas.id }),
     [collectionId, canvasWithSourceId.canvas.id],
@@ -46,9 +45,19 @@ const CollectionInspectorGalleryItemContent = ({
   const { removeElementFromCollection } = useCollections();
   const { requestPermission } = useConvertedFileIO();
 
-  const { thumbnail, error } = useThumbnail(canvasWithSourceId);
+  const { thumbnail, isLoading, error } = useThumbnail(canvasWithSourceId);
+  const thumbUrl = thumbnail?.[0]?.id;
 
   const [deleting, setDeleting] = useState(false);
+
+  const handleImgLoad = useCallback(() => {
+    setLoadedThumbUrl(thumbUrl);
+  }, [thumbUrl]);
+
+  const handleImgError = useCallback(() => {
+    setLoadedThumbUrl(undefined);
+  }, []);
+  const isImgLoaded = thumbUrl !== undefined && loadedThumbUrl === thumbUrl;
 
   if (deleting) {
     return null;
@@ -114,21 +123,26 @@ const CollectionInspectorGalleryItemContent = ({
         )}
       </div>
       {error !== null ? (
-        <div className='text-sm wrap-anywhere text-red-400'>{error}</div>
-      ) : thumbnail !== null ? (
-        <div className='w-fit flex-1'>
-          <AutoSizer disableWidth>
-            {({ height }) => (
-              <Thumbnail
-                thumbnail={thumbnail}
-                style={{ width: 'auto', height: `${height}px`, objectFit: 'contain' }}
-                aria-label='canvas thumbnail'
-              />
-            )}
-          </AutoSizer>
-        </div>
+        <div className='text-sm text-red-400'>{error}</div>
       ) : (
-        <Loading />
+        <div className='relative flex h-full w-full flex-1 items-center justify-center overflow-hidden p-1'>
+          {(!isImgLoaded || isLoading || thumbnail === null) && (
+            <div className='absolute inset-0 z-10 flex items-center justify-center rounded-md bg-saffron-900 p-2'>
+              <Loading />
+            </div>
+          )}
+          {thumbUrl !== undefined && (
+            <img
+              src={thumbUrl}
+              loading='lazy'
+              decoding='async'
+              onLoad={handleImgLoad}
+              onError={handleImgError}
+              className={`max-h-full max-w-full object-contain transition-opacity duration-200 ${isImgLoaded && !isLoading ? 'opacity-100' : 'opacity-0'}`}
+              draggable={false}
+            />
+          )}
+        </div>
       )}
       <div className='flex w-full justify-between p-1 text-xs'>
         {canvasWithSourceId.canvas.label !== undefined &&
