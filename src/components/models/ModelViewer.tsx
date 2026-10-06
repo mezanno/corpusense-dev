@@ -2,7 +2,15 @@ import { DataField, DataModel } from '@/data/models/dataModel/dataModel';
 import { useModelIO } from '@/hooks/data/models/useModelIO';
 import { useModels } from '@/hooks/data/models/useModels';
 import useDialog from '@/hooks/ui/useDialog';
-import { CircleArrowDown, CircleArrowUp, CirclePlus, CircleX, Eye, Save } from 'lucide-react';
+import {
+  CircleArrowDown,
+  CircleArrowUp,
+  CirclePlus,
+  CircleX,
+  Eye,
+  GalleryHorizontalEnd,
+  Save,
+} from 'lucide-react';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
@@ -23,7 +31,7 @@ const baseColor = '#a4d6f6';
 const ModelViewer = ({ modelId }: { modelId: string }) => {
   const { t } = useTranslation();
   const { openDialog } = useAlertDialogContext();
-  const { openModelPreviewDialog } = useDialog();
+  const { openModelPreviewDialog, openModelUsageList } = useDialog();
   const model = useModels().getModelById(modelId);
   const { saveModel } = useModelIO();
   const [fields, setFields] = useState(model?.fields ?? []);
@@ -137,6 +145,13 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
           title={t('btn_model_preview')}
         >
           <Eye />
+        </button>
+        <button
+          className='soft-button'
+          onClick={() => openModelUsageList(model)}
+          title={t('btn_model_preview')}
+        >
+          <GalleryHorizontalEnd />
         </button>
       </div>
 

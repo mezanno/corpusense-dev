@@ -20,6 +20,7 @@ import SelectLlmForm from '@/components/forms/SelectLlmForm';
 import StartWorkerForm from '@/components/forms/StartWorkerForm';
 import UpdateSourceNameForm from '@/components/forms/UpdateSourceNameForm';
 import UploadSourceForm, { UploadSourceFormParams } from '@/components/forms/UploadSourceForm';
+import ModelUsageList from '@/components/models/ModelUsageList';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import ModelPreview from '@/components/textviewer/ModelPreview';
 import { CollectionDetails } from '@/data/models/collection/collection';
@@ -282,6 +283,14 @@ const useDialog = () => {
     });
   };
 
+  const openModelUsageList = (model: DataModel) => {
+    openDialog({
+      title: t('title_model_usage'),
+      description: t('info_model_usage'),
+      children: <ModelUsageList modelId={model.id} />,
+    });
+  };
+
   const openSaveModifierChainDialog = (
     modifiers: AnyModifier[],
     modifiersValues: Record<string, unknown>,
@@ -416,6 +425,7 @@ const useDialog = () => {
     openImportModelDialog,
     openCreateModelDialog,
     openModelPreviewDialog,
+    openModelUsageList,
     openContactUsDialog,
     openDuplicateLayoutDialog,
     openRemoveAnnotationsDialog,
