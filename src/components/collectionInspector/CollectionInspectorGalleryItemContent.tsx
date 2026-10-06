@@ -137,7 +137,7 @@ const CollectionInspectorGalleryItemContent = ({
           )}
         <span className='text-dark-slate-gray-300 italic'>{canvasItemId}</span>
       </div>
-      <div className='absolute inset-0 flex items-center justify-center'>
+      <div className='pointer-events-none absolute inset-0 flex items-center justify-center'>
         <WorkerStatusIcon scope={scope} />
       </div>
     </div>
