@@ -37,9 +37,11 @@ export const convertResultToIIIFAnnotation = async (result: Result): Promise<Ann
   }
 
   const dataSchema = z.array(
-    z.object({
-      position: z.array(z.number()),
-    }),
+    z
+      .object({
+        position: z.array(z.number()),
+      })
+      .loose(),
   );
 
   const dataValidation = dataSchema.safeParse(
@@ -54,6 +56,8 @@ export const convertResultToIIIFAnnotation = async (result: Result): Promise<Ann
 
   const entityAnnotations: Annotation[] = [];
   dataParsedArray.forEach((item) => {
+    console.log(item);
+
     const positions = item.position;
     const annotationsForItem: Annotation[] = lineAnnotations.filter((_, index) =>
       positions.includes(index),
@@ -72,7 +76,7 @@ export const convertResultToIIIFAnnotation = async (result: Result): Promise<Ann
               maxX: 200,
               maxY: 100,
               type: ElementType.TEXT_LINE,
-              value: JSON.stringify(item),
+              value: stringValue,
             }),
             order: 0,
           }
@@ -81,6 +85,7 @@ export const convertResultToIIIFAnnotation = async (result: Result): Promise<Ann
     const mergedAnnotationUpdated = changeValue(mergedAnnotation, stringValue);
     entityAnnotations.push(mergedAnnotationUpdated);
   });
+  console.log('entityAnnotations: ', entityAnnotations);
 
-  return convertW3CAnnotationsToIIIF(entityAnnotations);
+  return convertW3CAnnotationsToIIIF(entityAnnotations, ['tagging']);
 };

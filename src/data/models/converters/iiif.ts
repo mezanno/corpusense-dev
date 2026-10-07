@@ -19,10 +19,14 @@ const URL_ANNOTATIONPAGE = 'annotationpage/corpusense';
  * from the same canvas.
  * The function will throw an error if the annotations are empty or if the canvasId is undefined.
  * @param annotations W3C annotations to convert
+ * @param purposes Optional array of purposes to filter the annotations by. If provided, only annotations with a purpose in this array will be converted.
  * @returns IIIF annotation page
  * @throws Error if the annotations are empty or if the canvasId is undefined
  */
-export function convertW3CAnnotationsToIIIF(annotations: Annotation[]): AnnotationPage {
+export function convertW3CAnnotationsToIIIF(
+  annotations: Annotation[],
+  purposes?: string[],
+): AnnotationPage {
   if (annotations.length === 0) {
     throw new Error('Error during convertion from W3CAnnotations to IIIF: annotations is empty');
   }
@@ -40,7 +44,12 @@ export function convertW3CAnnotationsToIIIF(annotations: Annotation[]): Annotati
     const bounds = w3cAnnotation.target.selector.geometry.bounds;
     const bodies = w3cAnnotation.bodies;
     for (let b = 0; b < bodies.length; b++) {
-      if (bodies[b].purpose === 'tagging' || bodies[b].purpose === 'classifying') {
+      const purpose = bodies[b].purpose;
+      if (
+        purposes === undefined ||
+        purpose === undefined ||
+        (purposes.length > 0 && purposes.includes(purpose))
+      ) {
         const body = bodies[b];
         const iifAnnotation = {
           '@context': IIIF_CONTEXT,

@@ -106,13 +106,22 @@ const generateCanvas = async (
 };
 
 const generateAnnotationPage = async (canvasId: string, collectionId: string) => {
-  const result = await getResultRepository().getByScopeAndWorkerName(
+  let result = await getResultRepository().getByScopeAndWorkerName(
     {
       collectionId,
       canvasId,
     },
     'openai',
   );
+  if (!result.ok) {
+    result = await getResultRepository().getByScopeAndWorkerName(
+      {
+        collectionId,
+        canvasId,
+      },
+      'mistral',
+    );
+  }
 
   const lineAnnotations = await getAnnotationRepository().getByScopeAndTypes(
     { canvasId, collectionId },
