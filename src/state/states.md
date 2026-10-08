@@ -31,7 +31,7 @@ System events / toasts.
 ## Not in Redux
 
 - Worker/Task data and statuses: IndexedDB + `useLiveQuery` + `useJobRealtime` (see
-  `docs/plan-worker-status-law.md` for the status-law consolidation).
+  `docs/roadmap.md` R1 for the status-law consolidation).
 - Manifests, collections, annotations, tags, models, history: `useLiveQuery` hooks in
   `src/hooks/data/`.
 - File-system handles: zustand (`zustand/useFSHandleStore.ts`).

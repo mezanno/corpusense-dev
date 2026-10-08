@@ -59,7 +59,7 @@ export default tseslint.config(
     },
   },
   {
-    // Whitelists de docs/plan-error-boundaries.md — chaque ligne est un verdict de l'audit,
+    // Whitelists de docs/DECISIONS.md (D-002) — chaque ligne est un verdict de l'audit,
     // pas une exception de confort. Retirer une ligne sans retirer le verdict associé.
     rules: { 'no-restricted-syntax': 'off' },
     files: [

@@ -4,7 +4,7 @@ import { BaseError, Jsonable } from '@/utils/BaseError';
 /*
  * Erreurs de la frontière plugins (importers IIIF et workers distants).
  *
- * Frontière externe assumée (cf. docs/plan-error-boundaries.md, étagère 5) : HTTP et APIs LLM
+ * Frontière externe assumée (cf. docs/DECISIONS.md, D-002) : HTTP et APIs LLM
  * sont des incidents non traitables à l'appel, donc l'exception est l'idiome naturel. Elles ne
  * sont jamais levées au-dessus du boundary qui les capture une seule fois :
  * - importers  → `utils/manifest.fetchManifestFromURL` (convertit en `ManifestFetchError`)

@@ -50,7 +50,7 @@ Guides fonctionnels détaillés :
 - Gestion d'erreurs typées via Result Pattern (`FunctionResult<T, E>`) dans la DAL
 - Store Redux Toolkit allégé (événements et notifications system UI)
 - Logique asynchrone & orchestrateur de workers (Redux-Saga + Supabase Realtime)
-- Plugins modulaires pour imports et traitements d'IA/OCR (Mistral, OpenAI, Tesseract, Pero, Surya)
+- Plugins modulaires pour imports et traitements d'IA/OCR (Mistral, OpenAI-compatible, Pero OCR, extraction de layout)
 
 ### Fichiers clés
 
@@ -72,15 +72,17 @@ Guides fonctionnels détaillés :
 - src/data/models : modèles de données et schémas Zod
 - src/data/repositories : accès aux données IndexedDB
 - public/locales : traductions i18n
-- public/doc : documentation utilisateur, architecture et optimisations
+- public/doc : documentation utilisateur servie par l'application
+- docs : documentation technique (spécifications, décisions, sécurité, roadmap)
 
 ### Documentation technique interne
 
-- Documentation technique complète : [public/doc/TECHNICAL_DOCUMENTATION.md](./public/doc/TECHNICAL_DOCUMENTATION.md)
-- Architecture : [public/doc/architecture.md](./public/doc/architecture.md)
-- Modèles de données : [public/doc/data-models.md](./public/doc/data-models.md)
-- Statut des optimisations : [public/doc/optimization/10-Optimizations-Status.md](./public/doc/optimization/10-Optimizations-Status.md)
-- Résumé de l'audit & recommandations : [public/doc/optimization/summary.md](./public/doc/optimization/summary.md)
+- Index et politique de documentation : [docs/README.md](./docs/README.md)
+- Spécification d'architecture : [docs/architecture.md](./docs/architecture.md)
+- Guide développeur : [docs/developpement.md](./docs/developpement.md)
+- Décisions d'architecture (ADR) : [docs/DECISIONS.md](./docs/DECISIONS.md)
+- Registre de sécurité : [docs/securite.md](./docs/securite.md)
+- Feuille de route : [docs/roadmap.md](./docs/roadmap.md)
 
 ## Technologies utilisées
 
@@ -206,4 +208,3 @@ Guide : public/doc/howto.md
 
 - Les données métier sont stockées localement via IndexedDB (Dexie).
 - Un script de build génère des métadonnées de version : scripts/generate-env.js.
-- Un proxy local de test existe : proxy.js.

@@ -116,6 +116,4 @@ export const clearDatabase = async () => {
   await Dexie.delete('mezanno');
 };
 
-Dexie.debug = true;
-
 export { db };
