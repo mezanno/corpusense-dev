@@ -74,7 +74,6 @@ export default tseslint.config(
       'src/hooks/data/collections/useCollectionImporter.tsx', // throw-to-boundary : seule `.message` est lue
       'src/hooks/data/convertedFiles/useRepository.tsx', // idem (+2 préconditions de configuration)
       'src/hooks/data/sources/useThumbnail.tsx', // idem (error_no_thumbnail)
-      'src/hooks/data/models/useModelIO.tsx', // idem (Invalid model structure)
       'src/hooks/usePdfConverter.ts', // idem (error_no_file_selected)
       'src/utils/__tests__/utils.test.ts', // épingle getErrorMessage : fabrique un Error nu volontairement
     ],

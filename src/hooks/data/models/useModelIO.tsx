@@ -1,5 +1,6 @@
 import { DataModel, DataModelSchema } from '@/data/models/dataModel/dataModel';
 import { getModelRepository } from '@/data/repositories/indexeddb/dbFactory';
+import { InvalidModelStructureError } from '@/data/utils/errors';
 import { useAppDispatch } from '@/hooks/hooks';
 import i18n from '@/i18n';
 import { pushError, pushInfo } from '@/state/reducers/events';
@@ -44,7 +45,7 @@ export const useModelIO = () => {
     try {
       const validation = DataModelSchema.safeParse(data);
       if (!validation.success) {
-        throw new Error('Invalid model structure');
+        throw new InvalidModelStructureError({ issues: validation.error.message });
       }
       const model = validation.data;
 

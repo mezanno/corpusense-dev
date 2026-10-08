@@ -31,6 +31,12 @@ export class InvalidBase64Error extends BaseError {
   }
 }
 
+export class InvalidModelStructureError extends BaseError {
+  constructor(context: { issues?: string } = {}) {
+    super('Invalid model structure', { context });
+  }
+}
+
 export class InvalidManifestError extends BaseError {
   constructor(context: { manifestId?: string } = {}) {
     super(i18n.t('error_invalid_manifest_input'), { context });

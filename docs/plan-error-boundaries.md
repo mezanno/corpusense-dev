@@ -105,8 +105,9 @@ Répartition des captures (une seule par erreur) : importers → `utils/manifest
    `FilePermissionDeniedError` ; 1 classe écrite : `InvalidBase64Error` à `images.ts:100`). **6a** — règle
    `no-restricted-syntax` + whitelist de 14 lignes collées dans `eslint.config.js` ; `npx eslint src` sort
    zéro erreur `no-restricted-syntax` (sonde recalibrée le 2026-10-08 : les 5 sites attendus, puis zéro
-   après 6b). L'option `useModelIO.tsx:47` n'est pas prise. Dette lint préexistante (48 erreurs d'autres
-   règles) inchangée, hors périmètre.
+   après 6b). Option prise : `useModelIO.tsx:47` → `InvalidModelStructureError` (message inchangé, les
+   issues zod passent en `context`), la ligne de whitelist correspondante retirée — 13 lignes. Dette lint
+   préexistante (48 erreurs d'autres règles) inchangée, hors périmètre.
 
 ## Étagère 6 — plan d'exécution
 
@@ -137,8 +138,9 @@ autres logent dans des fichiers whitelisted et ne se trouvent qu'au grep.
 Vérifications : `npx tsc --noEmit -p tsconfig.app.json && npx vitest run` — aucun test n'asserte ces
 messages (seuls les converters et les clés i18n de `data/utils` sont épinglés par un `toThrow`).
 
-Option si le temps reste : `hooks/data/models/useModelIO.tsx:47` (« Invalid model structure ») mérite une
-classe comme `RemoteManifestInvalidError` ; ce n'est que la neuvième ligne du même motif.
+Option prise (2026-10-08) : `hooks/data/models/useModelIO.tsx:47` (« Invalid model structure ») converti en
+`InvalidModelStructureError` (`data/utils/errors.ts`, message inchangé, issues zod en `context`) ; la ligne
+de whitelist du fichier, devenue morte, est retirée. Ce n'était que la neuvième ligne du même motif.
 
 ### 6a — la règle (1 commit)
 
@@ -179,7 +181,8 @@ Dans `eslint.config.js`, après les blocs existants, avant celui des `**/*.js` :
 },
 ```
 
-**Whitelist au fichier, jamais au sous-arbre.** `src/hooks/data/**` serait tentant et serait un angle mort :
+**Whitelist au fichier, jamais au sous-arbre.** (`useModelIO.tsx` figurait dans le bloc collé ; sa ligne a
+été retirée depuis — l'option 6b ci-dessus l'a rendu propre.) Le principe demeure : `src/hooks/data/**` serait tentant et serait un angle mort :
 la règle ne mordrait plus sur aucun code nouveau des ~30 fichiers de ce répertoire. Cinq lignes de plus dans
 le bloc, et le verdict reste attaché au fichier qui le mérite. (`components/reducers/**` reste un glob : ses
 8 sites y sont tous le même garde-fou de provider, et un quatrième context y dirait la même chose.)
@@ -206,8 +209,9 @@ Une fois 6b passé : `npx eslint src` doit sortir **zéro** erreur `no-restricte
 sortie, et il est mécanique. Les ~50 erreurs _des autres règles_ qui préexistent dans `src` ne sont pas du
 ressort de ce plan : les mentionner dans le message de commit, comme à l'étagère 4.
 
-Contrôle arithmétique : 41 sites de construction mesurés, 8 convertis par 6b, 33 couverts par les 14 lignes
-de whitelist, plus `BaseError.ts` pour le sélecteur de classe.
+Contrôle arithmétique : 41 sites de construction mesurés, 9 convertis (8 par 6b, plus l'option
+`useModelIO.tsx:47`), 32 couverts par les 13 lignes de whitelist, plus `BaseError.ts` pour le sélecteur de
+classe.
 
 ### Ce que le garde-fou ne couvre pas (à ne pas vendre comme couvert)
 
