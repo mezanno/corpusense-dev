@@ -15,11 +15,11 @@ const useSource = (sourceId: string) => {
       const sourceRepository = getSourceRepository();
       const sourceResult = await sourceRepository.getById(sourceId);
       if (!sourceResult.ok) {
-        throw new Error(sourceResult.error.message);
+        throw sourceResult.error;
       }
       const contentResult = await sourceRepository.getContentById(sourceId);
       if (!contentResult.ok) {
-        throw new Error(contentResult.error.message);
+        throw contentResult.error;
       }
       return {
         ...sourceResult.value,

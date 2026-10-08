@@ -203,7 +203,7 @@ export const useAnnotationActions = () => {
     const collectionRepository = getCollectionRepository();
     const canvasesResult = await collectionRepository.getCanvasesByCollectionId(collectionId);
     if (!canvasesResult.ok) {
-      throw new Error(`Collection ${collectionId} not found`);
+      throw canvasesResult.error;
     }
 
     const canvases = canvasesResult.value;

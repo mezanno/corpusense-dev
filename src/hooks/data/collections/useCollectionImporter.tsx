@@ -52,7 +52,7 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
           const loadedManifestResult = await fetchManifest(id);
 
           if (!loadedManifestResult.ok) {
-            throw new Error(`Manifest ${id} not found`);
+            throw loadedManifestResult.error;
           }
           return { id, loadedManifest: loadedManifestResult.value };
         }),
