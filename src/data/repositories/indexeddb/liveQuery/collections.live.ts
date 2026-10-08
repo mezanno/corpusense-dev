@@ -14,11 +14,13 @@ export class IndexedDBCollectionLiveRepository implements CollectionLiveReposito
     return () => db.collections.where('id').anyOf(ids).toArray();
   }
 
-  getById(id: string): () => Promise<Collection> {
+  getById(id: string): () => Promise<Collection | undefined> {
     return async () => {
       const details = await db.collections.get(id);
       if (details === undefined) {
-        throw new Error(`Collection with id ${id} not found`);
+        // en live query, une collection absente est un état transitoire (loading/missing),
+        // pas une erreur : les consumers gardent la garde sur `undefined`.
+        return undefined;
       }
       const content = await db.collectionContents.get(id);
 

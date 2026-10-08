@@ -14,14 +14,13 @@ import { Canvas } from '@iiif/presentation-3';
 export interface CollectionLiveRepository {
   getAllDetails(): () => Promise<CollectionDetails[]>;
   getAllDetailsByIds(ids: string[]): () => Promise<CollectionDetails[]>;
-  getById(id: string): () => Promise<Collection>;
+  getById(id: string): () => Promise<Collection | undefined>;
   getCanvasesByCollectionId(
     collectionId: string,
   ): () => Promise<{ canvas: Canvas; sourceId: string }[]>;
 }
 
 export interface ModelLiveRepository {
-  getById(id: string): () => Promise<DataModel>;
   getAll(): () => Promise<DataModel[]>;
 }
 
@@ -48,7 +47,6 @@ export interface NamedEntityLiveRepository {
 }
 
 export interface WorkerLiveRepository {
-  getById(id: string): () => Promise<Worker>;
   getAll(): () => Promise<Worker[]>;
   hasResult(scope: CanvasScope | CollectionScope, workerNames: string[]): () => Promise<boolean>;
 }
