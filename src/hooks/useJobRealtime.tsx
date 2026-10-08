@@ -4,6 +4,7 @@ import { WorkerStatus } from '@/data/models/worker/worker';
 import { getWorkerRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { deleteFile } from '@/state/sagas/plugins/workers/supabase/utils';
 import { JobRow, supabase } from '@/utils/config';
+import { getErrorMessage } from '@/utils/utils';
 import {
   REALTIME_SUBSCRIBE_STATES,
   RealtimeChannel,
@@ -92,7 +93,10 @@ const useJobRealtime = () => {
           } catch (error) {
             console.error(`Error in processResult for plugin ${job.plugin_name}:`, error);
             taskStatus = WorkerStatus.ERROR;
-            statusMessage = 'Result processing failed';
+            // Le message porté par l'erreur typée du plugin est plus cause que le constat
+            // « processing failed » : c'est lui qui doit survivre jusqu'au statut persisté.
+            statusMessage =
+              getErrorMessage(error) || `Result processing failed for ${job.plugin_name}`;
           }
         }
       } else if (job.status === 'failed') {

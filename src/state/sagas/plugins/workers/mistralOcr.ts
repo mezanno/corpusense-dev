@@ -20,6 +20,7 @@ import FileSaver from 'file-saver';
 import { json2csv } from 'json-2-csv';
 import * as XLSX from 'xlsx';
 import z from 'zod';
+import { PluginApiError, PluginResponseValidationError } from '../errors';
 import { WorkerCategory } from './WorkerCategory';
 
 export const pluginName = 'mistralocr';
@@ -188,16 +189,22 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       });
 
       if (!response.ok) {
-        throw new Error(await response.text());
+        throw new PluginApiError({
+          plugin: pluginName,
+          status: response.status,
+          statusText: response.statusText,
+          body: await response.text(),
+        });
       }
 
       const result = z.safeParse(MistralResponseSchema, await response.json());
       if (!result.success) {
         // console.log(z.treeifyError(result.error));
 
-        throw new Error(
-          `Mistral response validation failed: ${JSON.stringify(z.treeifyError(result.error))}`,
-        );
+        throw new PluginResponseValidationError({
+          plugin: pluginName,
+          details: JSON.stringify(z.treeifyError(result.error)),
+        });
       }
       const responseData = result.data;
       console.log('Response from Mistral:', responseData);

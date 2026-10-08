@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { BaseError } from '@/utils/BaseError';
+
 import { LLMClient, LLMRequest, LLMResponse } from './types';
 
 interface OpenAICompatibleClientOptions {
@@ -478,39 +480,44 @@ export class OpenAICompatibleClient implements LLMClient {
   }
 }
 
-export class LLMRequestError extends Error {
+/**
+ * Erreurs du client LLM : elles prolongent `BaseError` pour que le boundary des workers
+ * (sagas/workers.ts) lise le même vocabulaire que les erreurs des importers, et retrouve
+ * dans `context` le statut HTTP et le code renvoyés par l'API.
+ */
+export class LLMRequestError extends BaseError {
   readonly status?: number;
   readonly code?: string | number;
   readonly type?: string;
   readonly retryable: boolean;
-  readonly cause?: unknown;
 
   constructor(
     message: string,
-    options?: {
+    options: {
       status?: number;
       code?: string | number;
       type?: string;
       retryable?: boolean;
       cause?: unknown;
-    },
+    } = {},
   ) {
-    super(message);
+    const { status, code, type, retryable = false } = options;
+
+    super(message, {
+      cause: options.cause,
+      context: { status, code, type, retryable },
+    });
 
     this.name = 'LLMRequestError';
 
-    this.status = options?.status;
-    this.code = options?.code;
-    this.type = options?.type;
-    this.retryable = options?.retryable ?? false;
-
-    if (options?.cause !== undefined) {
-      this.cause = options.cause;
-    }
+    this.status = status;
+    this.code = code;
+    this.type = type;
+    this.retryable = retryable;
   }
 }
 
-class LLMResponseError extends Error {
+class LLMResponseError extends BaseError {
   constructor(message: string) {
     super(message);
 

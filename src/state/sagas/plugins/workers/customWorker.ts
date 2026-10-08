@@ -14,6 +14,7 @@ import { supabase } from '@/utils/config';
 import { getErrorMessage } from '@/utils/utils';
 import FileSaver from 'file-saver';
 import z from 'zod';
+import { InvalidTaskScopeError, JobPostError } from '../errors';
 import { uploadCanvasImage } from './supabase/utils';
 import { WorkerCategory } from './WorkerCategory';
 
@@ -90,7 +91,15 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
           })
           .select();
         if (supabaseError || data === null) {
-          throw supabaseError;
+          throw new JobPostError({
+            plugin: pluginName,
+            workerId: worker.id,
+            taskId: task.id,
+            cause:
+              supabaseError !== null
+                ? getErrorMessage(supabaseError)
+                : 'job insert returned no row',
+          });
         }
         return {
           status: WorkerStatus.POSTED,
@@ -141,7 +150,11 @@ export async function processResult(
 
 async function processLayoutResult(result: LayoutResult, task: Task): Promise<WorkerResponse> {
   if (!isCanvasScope(task.scope)) {
-    throw new Error(i18n.t('error_task_invalid_scope'));
+    throw new InvalidTaskScopeError({
+      plugin: pluginName,
+      taskId: task.id,
+      scope: toString(task.scope),
+    });
   }
 
   const annotationRepository = getAnnotationRepository();

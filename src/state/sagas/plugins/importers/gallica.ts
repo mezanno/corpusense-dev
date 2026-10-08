@@ -1,15 +1,22 @@
 import { ManifestSchema } from '@/data/models/source/source';
+import { getErrorMessage } from '@/utils/utils';
 import { Manifest } from '@iiif/presentation-3';
-import i18n from 'i18next';
+import { manifestHttpError, RemoteManifestInvalidError } from '../errors';
 
 export const pluginName = 'bnf.fr';
+
+const toOpenApiUrl = (url: string): string =>
+  url.replace('gallica.bnf.fr/iiif', 'openapi.bnf.fr/iiif/presentation/v3');
 
 const gallicaImporter = async (url: string): Promise<Manifest> => {
   console.log('gallicaImporter: ', url);
   try {
-    const urlV3 = url.replace('gallica.bnf.fr/iiif', 'openapi.bnf.fr/iiif/presentation/v3');
-    return await fetchUrl(urlV3);
+    return await fetchUrl(toOpenApiUrl(url));
   } catch (error) {
+    // Repli sur l'URL d'origine : l'échec de l'API ouverte n'est pas celui du manifeste.
+    console.warn(
+      `Gallica openapi endpoint failed, falling back to source URL: ${getErrorMessage(error)}`,
+    );
     return await fetchUrl(url);
   }
 };
@@ -24,20 +31,12 @@ const fetchUrl = async (url: string): Promise<Manifest> => {
   if (response.ok) {
     const validation = ManifestSchema.safeParse(await response.json());
     if (!validation.success) {
-      throw new Error(i18n.t('error_invalid_manifest', { url }));
+      throw new RemoteManifestInvalidError({ url });
     }
     return validation.data;
   }
   console.log(`Error fetching manifest: ${response.status} - ${response.statusText}`);
-  if (response.status === 404) {
-    throw new Error(i18n.t('error_404_manifest', { url }));
-  } else if (response.status === 403) {
-    throw new Error(i18n.t('error_403_manifest', { url }));
-  } else {
-    throw new Error(
-      i18n.t('error_loading_manifest', { error: `${response.status} ${response.statusText}` }),
-    );
-  }
+  throw manifestHttpError(url, response);
 };
 
 export default gallicaImporter;
