@@ -100,10 +100,13 @@ Répartition des captures (une seule par erreur) : importers → `utils/manifest
    404/403/autre que les deux importers dupliquaient ; `JobPostError` nomme plugin, worker et tâche au
    point exact du pont D6 (insert `cs_jobs`) ; `LLMRequestError`/`LLMResponseError` subclassent
    désormais `BaseError` (mêmes champs, plus de vocabulaire unique au boundary).
-6. ⬜ Garde-fou ESLint + résidu. **Évaluée** (voir la note ci-dessus) : le mécanisme est tranché, il reste
-   l'exécution. Deux commits, dans cet ordre — **6b** d'abord (8 sites à convertir : la whitelist se trouve
-   réduite dès le premier jour), puis **6a** (la règle + la whitelist honnête). Détail, configuration et
-   liste des sites : section « Étagère 6 — plan d'exécution » ci-dessous.
+6. ✅ Garde-fou ESLint + résidu (2026-10-08) : **6b** — 8 sites convertis (4 `throw result.error` : `useSource` ×2,
+   `useAnnotationActions`, `useCollectionImporter` ; 3 classes existantes : `NotFoundError` ×2,
+   `FilePermissionDeniedError` ; 1 classe écrite : `InvalidBase64Error` à `images.ts:100`). **6a** — règle
+   `no-restricted-syntax` + whitelist de 14 lignes collées dans `eslint.config.js` ; `npx eslint src` sort
+   zéro erreur `no-restricted-syntax` (sonde recalibrée le 2026-10-08 : les 5 sites attendus, puis zéro
+   après 6b). L'option `useModelIO.tsx:47` n'est pas prise. Dette lint préexistante (48 erreurs d'autres
+   règles) inchangée, hors périmètre.
 
 ## Étagère 6 — plan d'exécution
 
@@ -114,20 +117,20 @@ décoration, c'est le motif de l'étagère 4 appliqué où l'audit ne l'avait pa
 nommés par la sonde (cf. « Critère de sortie ») — la sortie du linter sert de case à cocher ; les trois
 autres logent dans des fichiers whitelisted et ne se trouvent qu'au grep.
 
-- [ ] `hooks/data/sources/useSource.tsx:18` → `throw sourceResult.error` ; `:22` → `throw contentResult.error`.
+- [x] `hooks/data/sources/useSource.tsx:18` → `throw sourceResult.error` ; `:22` → `throw contentResult.error`.
       (C'est mot pour mot l'anti-pattern corrigé dans `data/utils/result.ts` : `new Error(x.error.message)`
       jette la classe et le contexte à la poubelle. Un `useQuery<_, Error>` accepte toute sous-classe
       d'`Error`, donc `BaseError` convient au contrat react-query.)
-- [ ] `hooks/data/annotations/useAnnotationActions.tsx:206` → `throw canvasesResult.error`
+- [x] `hooks/data/annotations/useAnnotationActions.tsx:206` → `throw canvasesResult.error`
       (`NotFoundError({ entity: 'Collection', id: collectionId })` si l'on préfère nommer l'entité).
-- [ ] `hooks/data/collections/useCollectionImporter.tsx:55` → `throw loadedManifestResult.error`
+- [x] `hooks/data/collections/useCollectionImporter.tsx:55` → `throw loadedManifestResult.error`
       (le `addLog` qui précède garde le message à l'écran).
-- [ ] `hooks/data/models/useModels.tsx:48` → `new NotFoundError({ entity: 'Model', id: fromModelId })`.
-- [ ] `hooks/data/modifiers/useModifierChainLive.tsx:32` →
+- [x] `hooks/data/models/useModels.tsx:48` → `new NotFoundError({ entity: 'Model', id: fromModelId })`.
+- [x] `hooks/data/modifiers/useModifierChainLive.tsx:32` →
       `new NotFoundError({ entity: 'Modifier chain', id: chainId })` — message identique à l'actuel.
-- [ ] `hooks/data/convertedFiles/useRepository.tsx:110` → `FilePermissionDeniedError` (`data/utils/errors.ts`),
+- [x] `hooks/data/convertedFiles/useRepository.tsx:110` → `FilePermissionDeniedError` (`data/utils/errors.ts`),
       qui dit déjà mot pour mot la même phrase.
-- [ ] `utils/images.ts:100` → `FunctionResult.err(new InvalidBase64Error())`, classe à écrire dans
+- [x] `utils/images.ts:100` → `FunctionResult.err(new InvalidBase64Error())`, classe à écrire dans
       `data/utils/errors.ts`. **Le seul site du dépôt où un `Error` générique se fait passer pour un `err`
       typé** : le garde-fou de construction, lui, le verrait.
 

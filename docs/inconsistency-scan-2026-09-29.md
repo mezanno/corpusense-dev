@@ -50,6 +50,8 @@ Same name, split purpose, mirrored test names — easy to import the wrong one. 
 
 Redux (2 reducers + sagas), zustand (1 store, imported from a *data util* `src/data/utils/canvas.ts`), React Query (4 files), plus direct Dexie live-query hooks. No doc states which owns what — a refactoring risk. Related: 77 raw `throw new Error` coexist with the `FunctionResult`/`BaseError` discipline; sagas still own worker lifecycle (`plan-table-seam` wants them retired).
 
+> **Statut 2026-10-08** — la dette « ~77 `throw new Error` » est **close par règle, non par revue** : garde-fou `no-restricted-syntax` dans `eslint.config.js` (sélecteur de construction + sélecteurs de classe), whitelist au fichier = verdict de l'audit, exécutable dans `docs/plan-error-boundaries.md` (étagères 1-6).
+
 ## 7. 🆕 Dead / stray artifacts
 
 - `src/state/sagas/plugins/workers/old/` — 6 legacy worker files (surya\*, tesseract, edwin). The plugin loader globs `./workers/*.ts` only, so these are **loaded by nothing**.
