@@ -11,3 +11,11 @@ export class DBError extends BaseError {
     super(`Database error: ${context.message}`);
   }
 }
+
+export class SourceAlreadyInProjectError extends BaseError {
+  constructor(context: { projectId: string; sourceId: string }) {
+    super(`Source ${context.sourceId} already exists in project ${context.projectId}`, {
+      context,
+    });
+  }
+}

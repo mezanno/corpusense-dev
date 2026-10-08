@@ -59,6 +59,7 @@ const useLiveSources = () => {
 
     const trulyUnusedSourceIds = unusedSourceIds.filter((id) => !collectionSourceIds.includes(id));
     const sourceRepository = getSourceRepository();
+    // en sweep de nettoyage, une source déjà absente (err NotFoundError) n'est pas un échec
     await Promise.all(trulyUnusedSourceIds.map((id) => sourceRepository.deleteById(id)));
   };
 

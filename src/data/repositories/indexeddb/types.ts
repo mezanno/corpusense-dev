@@ -21,9 +21,10 @@ import {
 import { AddSourceDTO } from '@/data/models/source/source.dto';
 import { Tag } from '@/data/models/tag';
 import { Task, Worker, WorkerStatus } from '@/data/models/worker/worker';
-import { DBError } from '@/data/utils/errors';
+import { DBError, SourceAlreadyInProjectError } from '@/data/utils/errors';
 import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import { FunctionResult } from '@/utils/functionResult';
+import { NotFoundError } from '@/utils/NotFoundError';
 import { Canvas } from '@iiif/presentation-3';
 import { EntityNotFoundError } from '../EntityNotFoundError';
 import { StatusChangeError } from './workers';
@@ -131,7 +132,7 @@ export interface SourceRepository {
     },
   ): Promise<void>;
 
-  deleteById(sourceId: string): Promise<void>;
+  deleteById(sourceId: string): Promise<FunctionResult<void, NotFoundError>>;
   deleteAll(): Promise<void>;
 
   getPendingMigrationCount(): Promise<number>;
@@ -228,5 +229,8 @@ export interface ProjectRepository {
 
   add(project: Project): Promise<void>;
 
-  addSource(projectId: string, sourceId: string): Promise<void>;
+  addSource(
+    projectId: string,
+    sourceId: string,
+  ): Promise<FunctionResult<void, NotFoundError | SourceAlreadyInProjectError>>;
 }

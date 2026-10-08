@@ -14,6 +14,7 @@ import {
   getManifestFromConvertedFile,
   reconstructManifestFromConvertedFile,
 } from '@/utils/manifest';
+import { NotFoundError } from '@/utils/NotFoundError';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
 import { v4 as uuid } from 'uuid';
@@ -208,15 +209,16 @@ export class IndexedDBSourceRepository implements SourceRepository {
     }
   }
 
-  async deleteById(sourceId: string): Promise<void> {
-    await db.transaction('rw', db.storedBlobs, db.sources, db.sourceContents, async () => {
+  async deleteById(sourceId: string): Promise<FunctionResult<void, NotFoundError>> {
+    return await db.transaction('rw', db.storedBlobs, db.sources, db.sourceContents, async () => {
       const source = await db.sources.get(sourceId);
       if (!source) {
-        throw new Error(`Source with id ${sourceId} not found`);
+        return FunctionResult.err(new NotFoundError({ entity: 'Source', id: sourceId }));
       }
       await db.storedBlobs.delete(source.thumbnailBlobId);
       await db.sources.delete(sourceId);
       await db.sourceContents.delete(sourceId);
+      return FunctionResult.ok(undefined);
     });
   }
 

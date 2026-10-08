@@ -1,5 +1,7 @@
 import { Project } from '@/data/models/project';
+import { SourceAlreadyInProjectError } from '@/data/utils/errors';
 import { FunctionResult } from '@/utils/functionResult';
+import { NotFoundError } from '@/utils/NotFoundError';
 import { EntityNotFoundError } from '../EntityNotFoundError';
 import { db } from './db';
 import { ProjectRepository } from './types';
@@ -21,16 +23,20 @@ export class IndexedDBProjectRepository implements ProjectRepository {
     await db.projects.add(project);
   }
 
-  async addSource(projectId: string, sourceId: string): Promise<void> {
+  async addSource(
+    projectId: string,
+    sourceId: string,
+  ): Promise<FunctionResult<void, NotFoundError | SourceAlreadyInProjectError>> {
     const result = await this.getById(projectId);
     if (!result.ok) {
-      throw new Error(`Project with id ${projectId} not found`);
+      return result;
     }
     const project = result.value;
     if (project.sources.includes(sourceId)) {
-      throw new Error(`Source with id ${sourceId} already exists in project ${projectId}`);
+      return FunctionResult.err(new SourceAlreadyInProjectError({ projectId, sourceId }));
     }
     project.sources.push(sourceId);
     await db.projects.put(project);
+    return FunctionResult.ok(undefined);
   }
 }

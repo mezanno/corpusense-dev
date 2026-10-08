@@ -2,11 +2,14 @@ import { SourceWithContent } from '@/data/models/source/source';
 import { EntityNotFoundError } from '@/data/repositories/EntityNotFoundError';
 import { getSourceRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { getThumbnailBlob } from '@/data/utils/manifest';
+import { pushError } from '@/state/reducers/events';
 import { BaseError } from '@/utils/BaseError';
 import { FunctionResult } from '@/utils/functionResult';
 import { containsArkIdentifier, fetchManifestFromURL, isManifestUrl } from '@/utils/manifest';
+import { getErrorMessage } from '@/utils/utils';
 import { Manifest } from '@iiif/presentation-3';
 import { useCallback } from 'react';
+import { useAppDispatch } from '../../hooks';
 
 class ManifestInputError extends BaseError {
   constructor(context: { input: string }) {
@@ -15,9 +18,14 @@ class ManifestInputError extends BaseError {
 }
 
 const useSources = () => {
+  const appDispatch = useAppDispatch();
   const removeSourceFromLibrary = async (sourceId: string) => {
     const sourceRepository = getSourceRepository();
-    await sourceRepository.deleteById(sourceId);
+    const result = await sourceRepository.deleteById(sourceId);
+    if (!result.ok) {
+      appDispatch(pushError(getErrorMessage(result.error)));
+    }
+    return result;
   };
 
   const fetchManifest = useCallback(

@@ -1,8 +1,12 @@
 import { getProjectRepository } from '@/data/repositories/indexeddb/dbFactory';
+import { pushError } from '@/state/reducers/events';
+import { getErrorMessage } from '@/utils/utils';
 import { useMemo } from 'react';
 import { v4 as uuid } from 'uuid';
+import { useAppDispatch } from '../../hooks';
 
 const useProjectsIO = () => {
+  const appDispatch = useAppDispatch();
   const projectRespository = useMemo(() => getProjectRepository(), []);
 
   const getProjectById = async (id: string) => {
@@ -23,7 +27,11 @@ const useProjectsIO = () => {
   };
 
   const addSourceToProject = async (projectId: string, sourceId: string) => {
-    await projectRespository.addSource(projectId, sourceId);
+    const result = await projectRespository.addSource(projectId, sourceId);
+    if (!result.ok) {
+      appDispatch(pushError(getErrorMessage(result.error)));
+    }
+    return result;
   };
 
   return {
