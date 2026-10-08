@@ -54,14 +54,14 @@ const CollectionTable = () => {
             (table.getIsSomePageRowsSelected() && 'indeterminate')
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(value === true)}
-          aria-label='Select all'
+          aria-label={t('aria_label_select_all')}
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(value === true)}
-          aria-label='Select row'
+          aria-label={t('aria_label_select_row')}
         />
       ),
     },

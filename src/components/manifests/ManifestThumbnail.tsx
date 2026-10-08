@@ -1,7 +1,9 @@
 import useBlob from '@/hooks/data/sources/useBlob';
 import { FileImage } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const ManifestThumbnail = ({ thumbnailBlobId }: { thumbnailBlobId: string }) => {
+  const { t } = useTranslation();
   const { thumbUrl } = useBlob(thumbnailBlobId);
 
   if (thumbUrl === null) {
@@ -14,9 +16,9 @@ const ManifestThumbnail = ({ thumbnailBlobId }: { thumbnailBlobId: string }) => 
   return (
     <img
       src={thumbUrl}
-      alt='thumbnail'
+      alt={t('aria_label_thumbnail')}
       style={{ objectFit: 'contain' }}
-      aria-label='thumbnail'
+      aria-label={t('aria_label_thumbnail')}
       className='h-full w-full'
     />
   );

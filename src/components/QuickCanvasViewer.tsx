@@ -10,9 +10,11 @@ import {
 import { useCollectionContent } from '@/hooks/data/collections/useCollectionContent';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import CanvasViewer from './canvasViewer/CanvasViewer';
 
 const CanvasSelector = ({ collectionId }: { collectionId: string }) => {
+  const { t } = useTranslation();
   const { canvases } = useCollectionContent(collectionId);
   const [selectedElement, setSelectedElement] = useState<string>(canvases[0]?.canvas.id || '');
 
@@ -22,11 +24,11 @@ const CanvasSelector = ({ collectionId }: { collectionId: string }) => {
     <>
       <Select value={selectedElement} onValueChange={(value) => setSelectedElement(value)}>
         <SelectTrigger className='w-[200px]'>
-          <SelectValue placeholder='Select a canvas' />
+          <SelectValue placeholder={t('form_placeholder_select_canvas')} />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            <SelectLabel>Canvas</SelectLabel>
+            <SelectLabel>{t('label_canvas')}</SelectLabel>
             {canvases.map((elt, index) => (
               <SelectItem key={elt.canvas.id} value={index.toString()}>
                 {elt.canvas.id}
@@ -46,13 +48,14 @@ const CanvasSelector = ({ collectionId }: { collectionId: string }) => {
 };
 
 const QuickCanvasViewer = () => {
+  const { t } = useTranslation();
   const { collections } = useCollections();
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | undefined>(
     collections[0]?.id,
   );
 
   if (collections.length === 0) {
-    return <div>No collections available</div>;
+    return <div>{t('info_no_collections_available')}</div>;
   }
 
   return (
@@ -62,11 +65,11 @@ const QuickCanvasViewer = () => {
         onValueChange={(value) => setSelectedCollectionId(value)}
       >
         <SelectTrigger className='w-[200px]'>
-          <SelectValue placeholder='Select a collection' />
+          <SelectValue placeholder={t('form_placeholder_select_collection')} />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            <SelectLabel>Collection</SelectLabel>
+            <SelectLabel>{t('label_collection')}</SelectLabel>
             {collections.map((collection) => (
               <SelectItem key={collection.id} value={collection.id}>
                 {collection.name}

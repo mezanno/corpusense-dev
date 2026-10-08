@@ -8,10 +8,12 @@ import { CanvasSelectionProvider } from '@/components/reducers/CanvasSelectionCo
 import { useManifestPageContext } from '@/components/reducers/ManifestPageContext';
 import useKeyboard from '@/hooks/ui/useKeyboard';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import ManifestCanvasGallery from '../components/manifests/ManifestCanvasGallery';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../components/ui/resizable';
 
 const ManifestExplorerPage = () => {
+  const { t } = useTranslation();
   const [metadataVisible, _setMetadataVisible] = useState(true);
   const {
     isLoading,
@@ -90,7 +92,7 @@ const ManifestExplorerPage = () => {
         <ResizablePanel id='canvas-panel' order={3} minSize={30} className='panel'>
           <section
             className='flex h-full w-full flex-col items-center justify-center'
-            aria-label='canvas viewer'
+            aria-label={t('aria_label_canvas_viewer')}
           >
             {canvasToDisplay === null ? (
               <NothingToShow />

@@ -97,7 +97,7 @@ export function ManifestCard({ source, isHighlighted }: ManifestCardProps) {
                 title={sourceWithContent.content.githubManifestUrl}
                 onClick={handleCopyToClipBoard}
               >
-                <Cloud size={14} /> <span className='truncate'>This is online!</span>
+                <Cloud size={14} /> <span className='truncate'>{t('info_manifest_online')}</span>
                 <ClipboardCopy size={14} />
               </div>
             )}

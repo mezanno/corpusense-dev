@@ -202,7 +202,7 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
                             onValueChange={(value) => updateFields(index, { type: value })}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder={'Type de données'} />
+                              <SelectValue placeholder={t('form_placeholder_data_type')} />
                             </SelectTrigger>
                             <SelectContent>
                               {options.map((option) => (

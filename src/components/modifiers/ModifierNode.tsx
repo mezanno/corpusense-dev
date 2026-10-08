@@ -2,6 +2,7 @@ import { Modifier } from '@/data/models/modifiers/Modifier';
 import { modifierRegistry } from '@/data/models/modifiers/ModifierFactory';
 import { Handle, Node, NodeProps, Position, useNodeConnections } from '@xyflow/react';
 import { PlusCircle, Trash } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import z, { ZodObject, ZodRawShape } from 'zod';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import ModifierForm from './ModifierForm';
@@ -19,6 +20,7 @@ type ModifierNodeProps<TSchema extends ZodObject<ZodRawShape>> = {
 type ModifierNodeType = Node<ModifierNodeProps<ZodObject<ZodRawShape>>>;
 
 const ModifierNode = ({ id, data }: NodeProps<ModifierNodeType>) => {
+  const { t } = useTranslation();
   const { modifier, onDelete, onChange, onTypeChange, initialValues } = data;
   const connections = useNodeConnections({ id });
 
@@ -54,12 +56,12 @@ const ModifierNode = ({ id, data }: NodeProps<ModifierNodeType>) => {
         <div className='flex w-full justify-between'>
           <Select value={modifier.type} onValueChange={(value) => onTypeChange(modifier.id, value)}>
             <SelectTrigger>
-              <SelectValue placeholder='modifier' />
+              <SelectValue placeholder={t('form_placeholder_modifier')} />
             </SelectTrigger>
             <SelectContent>
               {Object.entries(modifierRegistry).map(([key, entry]) => (
                 <SelectItem key={key} value={key}>
-                  {entry.label}
+                  {t(entry.label)}
                 </SelectItem>
               ))}
             </SelectContent>

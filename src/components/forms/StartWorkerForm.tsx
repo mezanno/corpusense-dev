@@ -5,6 +5,7 @@ import { FormProps } from '@/hooks/ui/useDialog';
 import { startWorkerProcessRequest } from '@/state/reducers/workers';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormProvider, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import z from 'zod';
 import { Checkbox } from '../ui/checkbox';
 import { FormControl, FormField, FormItem, FormLabel } from '../ui/form';
@@ -16,6 +17,7 @@ type StartWorkerFormProps = FormProps & {
 };
 
 const StartWorkerForm = ({ workerName, scope, formRef }: StartWorkerFormProps) => {
+  const { t } = useTranslation();
   const appDispatch = useAppDispatch();
 
   const plugin = workerPlugins[workerName];
@@ -75,7 +77,7 @@ const StartWorkerForm = ({ workerName, scope, formRef }: StartWorkerFormProps) =
       );
     }
 
-    return <div>Unsupported field type</div>;
+    return <div>{t('error_unsupported_field_type')}</div>;
   };
 
   const onSubmit = (data: z.infer<typeof paramSchema>) => {

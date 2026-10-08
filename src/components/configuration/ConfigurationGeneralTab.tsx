@@ -114,7 +114,7 @@ const ConfigurationGeneralTab = () => {
       </div>
 
       <div className='mt-2 gap-2 border p-1'>
-        <strong>Backup / Restore</strong>
+        <strong>{t('title_backup_restore')}</strong>
         <div>{t('info_backup_restore')}</div>
         <div className='mt-2 flex gap-2'>
           <button className='soft-button' onClick={exportDatabase} disabled={isBusy}>

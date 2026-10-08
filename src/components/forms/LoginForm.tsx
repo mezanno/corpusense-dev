@@ -77,7 +77,7 @@ const LoginForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
             <FormItem>
               <FormLabel>{t('form_label_email')}</FormLabel>
               <FormControl>
-                <Input placeholder='votre.adresse@email.fr' type='email' {...field} />
+                <Input placeholder={t('form_placeholder_email')} type='email' {...field} />
               </FormControl>
               <FormDescription>{t('form_descrition_email')}</FormDescription>
               <FormMessage />
@@ -91,7 +91,7 @@ const LoginForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
             <FormItem>
               <FormLabel>{t('form_label_password')}</FormLabel>
               <FormControl>
-                <Input placeholder='mot de passe' {...field} type='password' />
+                <Input placeholder={t('form_label_password')} {...field} type='password' />
               </FormControl>
               <FormDescription>{t('form_description_password')}</FormDescription>
               <FormMessage />

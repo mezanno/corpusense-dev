@@ -254,10 +254,10 @@ const LayoutSideBar = () => {
                   <DropdownMenuContent side='right'>
                     {user ? (
                       <DropdownMenuItem onClick={() => handleLogout()}>
-                        Se déconnecter
+                        {t('btn_logout')}
                       </DropdownMenuItem>
                     ) : (
-                      <DropdownMenuItem onClick={openLoginDialog}>Se connecter</DropdownMenuItem>
+                      <DropdownMenuItem onClick={openLoginDialog}>{t('btn_login')}</DropdownMenuItem>
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>

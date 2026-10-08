@@ -61,8 +61,8 @@ describe('ManifestExplorerPage', () => {
       { preloadedState },
     );
 
-    expect(screen.getByRole('region', { name: 'manifest details' })).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: 'canvas viewer' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'aria_label_manifest_details' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'aria_label_canvas_viewer' })).toBeInTheDocument();
   });
 
   it('affiche Loading quand isLoading est vrai', () => {

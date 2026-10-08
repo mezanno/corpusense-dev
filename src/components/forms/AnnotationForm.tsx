@@ -86,7 +86,7 @@ const AnnotationForm = ({
   return (
     <section
       className='panel h-full w-full flex-col space-y-1 shadow-[-8px_0_10px_-8px_rgba(0,0,0,0.3)]'
-      aria-label='annotation form'
+      aria-label={t('aria_label_annotation_form')}
     >
       <div className='flex w-full flex-col text-right text-sm font-light'>
         <span>{annotation.id}</span>
@@ -159,7 +159,7 @@ const AnnotationForm = ({
                   >
                     <FormControl className='bg-white'>
                       <SelectTrigger>
-                        <SelectValue placeholder='Select a type' />
+                        <SelectValue placeholder={t('form_placeholder_select_type')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>

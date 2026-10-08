@@ -67,7 +67,7 @@ const ListOfManifests = ({ currendManifestId }: { currendManifestId: string }) =
   return (
     <section
       className='relative flex h-full w-full flex-col rounded-md bg-white/50 p-2'
-      aria-label='manifest grid'
+      aria-label={t('aria_label_manifest_grid')}
     >
       <span className='flex gap-2'>
         <Database />

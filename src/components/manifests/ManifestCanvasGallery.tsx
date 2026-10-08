@@ -85,7 +85,7 @@ const ManifestCanvasGallery = ({
   const selectionCount = getSelectionCount();
 
   return (
-    <section className='center h-full w-full p-4' aria-label='canvas gallery'>
+    <section className='center h-full w-full p-4' aria-label={t('aria_label_canvas_gallery')}>
       {canvases.length == 0 ? (
         <div role='alert'>{t('info_empty_manifest')}</div>
       ) : (

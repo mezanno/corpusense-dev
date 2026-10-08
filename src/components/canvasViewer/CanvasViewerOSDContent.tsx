@@ -205,7 +205,7 @@ const CanvasViewerOSDContent = ({
               )}
             >
               <OpenSeadragonViewer
-                aria-label='canvas viewer'
+                aria-label={t('aria_label_canvas_viewer')}
                 className='h-full w-full'
                 options={options}
               />

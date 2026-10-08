@@ -53,7 +53,7 @@ const LoadModifierChainForm = ({
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl className='w-full'>
                   <SelectTrigger>
-                    <SelectValue placeholder='Choisissez un modèle' />
+                    <SelectValue placeholder={t('form_placeholder_modifierchain')} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent className='w-full'>

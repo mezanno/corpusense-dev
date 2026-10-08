@@ -44,7 +44,7 @@ const WorkerTable = (props: WorkerTableProps) => {
     {
       accessorFn: (row: Worker) => row.id,
       accessorKey: 'id',
-      header: 'ID',
+      header: t('table_col_title_id'),
       cell: ({ row }) => {
         const id: string = row.getValue('id');
         return <div className='font-mono'>{id.substring(0, 8)}</div>;

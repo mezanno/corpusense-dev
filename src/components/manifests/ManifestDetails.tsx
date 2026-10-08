@@ -34,7 +34,7 @@ const ManifestDetails = ({
   return (
     <section
       className='flex h-full w-full flex-col items-center justify-center space-y-2 rounded-md bg-white/50 p-2'
-      aria-label='manifest details'
+      aria-label={t('aria_label_manifest_details')}
     >
       <div className='flex h-full w-full flex-col items-center space-y-2'>
         <h2 className='text-lg font-bold'>{t('title_currently_open')}</h2>
