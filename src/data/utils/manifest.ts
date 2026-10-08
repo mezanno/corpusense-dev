@@ -1,12 +1,13 @@
 import i18n from '@/i18n';
 import { Canvas, Manifest } from '@iiif/presentation-3';
 import { Cozy } from 'cozy-iiif';
+import { CanvasNotFoundError, InvalidManifestError } from './errors';
 
 export const extractManifestDetails = (manifest: Manifest) => {
   const parsed = Cozy.parse(manifest);
 
   if (parsed.type !== 'manifest') {
-    throw new Error(i18n.t('error_invalid_manifest_input'));
+    throw new InvalidManifestError({ manifestId: manifest.id });
   }
   const name =
     parsed.resource.getSummary() ??
@@ -20,7 +21,7 @@ export const extractManifestDetails = (manifest: Manifest) => {
 export const extractCanvasById = (manifest: Manifest, canvasId: string): Canvas => {
   const canvas = manifest.items?.find((item) => item.id === canvasId);
   if (!canvas) {
-    throw new Error(i18n.t('error_canvas_not_found'));
+    throw new CanvasNotFoundError({ canvasId });
   }
   return canvas;
 };

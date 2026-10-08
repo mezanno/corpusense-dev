@@ -10,30 +10,38 @@ import {
   getCollectionRepository,
 } from '../repositories/indexeddb/dbFactory';
 import { mergeMultipleAnnotations } from './annotations';
+import { ResultConversionError } from './errors';
 
 export const convertResultToIIIFAnnotation = async (result: Result): Promise<AnnotationPage> => {
   //AnnotationPage
   if (!isCanvasScope(result.scope)) {
-    throw new Error(`Result scope is not a canvas scope`);
+    throw new ResultConversionError({
+      resultId: result.id,
+      reason: 'Result scope is not a canvas scope',
+    });
   }
   const { canvasId, collectionId } = result.scope;
   const collectionResult = await getCollectionRepository().getById(collectionId);
   if (!collectionResult.ok) {
-    throw new Error(`Collection with id ${collectionId} not found`);
+    throw collectionResult.error;
   }
   const collection = collectionResult.value;
   const modelId = collection.modelId;
   if (modelId === undefined) {
-    throw new Error(`No model found for collection ${collection.name}`);
+    throw new ResultConversionError({
+      resultId: result.id,
+      reason: `No model found for collection ${collection.name}`,
+    });
   }
 
   const lineAnnotations = await getAnnotationRepository().getByScopeAndTypes(result.scope, [
     ElementType.TEXT_LINE,
   ]);
   if (lineAnnotations.length === 0) {
-    throw new Error(
-      `No line annotations found for canvas ${canvasId} in collection ${collectionId}`,
-    );
+    throw new ResultConversionError({
+      resultId: result.id,
+      reason: `No line annotations found for canvas ${canvasId} in collection ${collectionId}`,
+    });
   }
 
   const dataSchema = z.array(
@@ -48,9 +56,10 @@ export const convertResultToIIIFAnnotation = async (result: Result): Promise<Ann
     typeof result.value === 'string' ? JSON.parse(result.value) : result.value,
   );
   if (!dataValidation.success) {
-    throw new Error(
-      `Result value is not a valid array of objects with position property: ${dataValidation.error.message}`,
-    );
+    throw new ResultConversionError({
+      resultId: result.id,
+      reason: `Result value is not a valid array of objects with position property: ${dataValidation.error.message}`,
+    });
   }
   const dataParsedArray = dataValidation.data;
 

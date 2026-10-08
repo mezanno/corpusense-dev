@@ -1,4 +1,3 @@
-import i18n from '@/i18n';
 import { ImageAnnotation, ShapeType } from '@annotorious/annotorious';
 import { Canvas } from '@iiif/presentation-3';
 import { Rect } from 'openseadragon';
@@ -7,6 +6,7 @@ import { Annotation, ElementType } from '../models/annotations/annotation';
 import { createAnnotation, createBodies } from '../models/annotations/annotation.factory';
 import { getAnnotationType, getAnnotationValue } from '../models/annotations/annotation.utils';
 import { getImage } from './canvas';
+import { MissingImageDimensionsError, NothingToMergeError } from './errors';
 
 /**
  * This function checks if the annotation is contained in the annotationContainer
@@ -52,7 +52,7 @@ const containsAtLeast2Corners = (
 const generateRegionAnnotationForCanvas = (canvas: Canvas, collectionId: string) => {
   const image = getImage(canvas);
   if (image.width === undefined || image.height === undefined) {
-    throw new Error(i18n.t('error_image_dimensions'));
+    throw new MissingImageDimensionsError({ canvasId: canvas.id });
   }
   return createAnnotation({
     canvasId: canvas.id,
@@ -285,7 +285,7 @@ export const scaleAnnotation = (annotation: Annotation, annotationScale: number)
 */
 export const mergeMultipleAnnotations = (annotations: Annotation[]): Annotation => {
   if (annotations.length === 0) {
-    throw new Error('No annotations to merge');
+    throw new NothingToMergeError();
   }
   //TODO make a polygon that contains all the rectangles instead of a rectangle that contains all the rectangles
   const mergedAnnotation = annotations.reduce((acc, annotation) =>

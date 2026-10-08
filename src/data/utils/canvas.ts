@@ -1,6 +1,11 @@
 import i18n from '@/i18n';
 import { useFSHandleStore } from '@/state/zustand/useFSHandleStore';
 import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
+import {
+  FilePermissionDeniedError,
+  MalformedFilepathError,
+  MissingCanvasImageError,
+} from './errors';
 
 const getLabel = (canvas: Canvas): string => {
   const label = canvas.label;
@@ -34,7 +39,7 @@ const getLabel = (canvas: Canvas): string => {
 const getImage = (canvas: Canvas): IIIFExternalWebResource => {
   const image = canvas.items?.[0]?.items?.[0].body as IIIFExternalWebResource;
   if (image === undefined) {
-    throw new Error(i18n.t('error_image_not_found'));
+    throw new MissingCanvasImageError({ canvasId: canvas.id });
   }
   return image;
 };
@@ -55,7 +60,7 @@ const getImageForThumbnail = (canvas: Canvas, maxWidth: number = 150): IIIFExter
 const getFile = async (filepath: string, handle: FileSystemDirectoryHandle) => {
   const pathParts = filepath.split('/');
   if (pathParts.length < 2) {
-    throw new Error(i18n.t('error_malformed_filepath', { path: filepath }));
+    throw new MalformedFilepathError({ filepath });
   }
   const folderName = pathParts[0];
   try {
@@ -78,7 +83,7 @@ const getFileFromHandle = async (filename: string, handle: FileSystemDirectoryHa
     perm = await handle.requestPermission({ mode: 'read' }); //request permission if we don't have it
   }
   if (perm !== 'granted') {
-    throw new Error('No permission to read the manifest directory');
+    throw new FilePermissionDeniedError({ directory: handle.name });
   }
   const fileHandle = await handle.getFileHandle(filename);
   return await fileHandle.getFile();

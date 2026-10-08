@@ -8,6 +8,7 @@ import {
 } from '@/data/repositories/indexeddb/dbFactory';
 import { Annotation, ElementType } from '../models/annotations/annotation';
 import { isCanvasScope } from '../models/scope/scope.utils';
+import { UnknownModifierTypeError } from './errors';
 
 export type ModifierChainData = {
   modifiers: AnyModifier[];
@@ -19,14 +20,14 @@ const getModifiersAndValues = async (id: string): Promise<ModifierChainData> => 
   const modifierChainRepository = getModifierChainRepository();
   const modifierResult = await modifierChainRepository.getById(id);
   if (!modifierResult.ok) {
-    throw new Error(`Modifier chain with id "${id}" not found`);
+    throw modifierResult.error;
   }
   const modifierDTO = modifierResult.value;
 
   const modifiers = modifierDTO.modifiers.map((dto) => {
     const factory = modifierRegistry[dto.type];
     if (factory === undefined || factory === null) {
-      throw new Error(`No factory found for modifier type: ${dto.type}`);
+      throw new UnknownModifierTypeError({ type: dto.type });
     }
     const modifier = factory.create();
     modifier.id = dto.id; // Assigner l'ID du DTO au modifier créé
