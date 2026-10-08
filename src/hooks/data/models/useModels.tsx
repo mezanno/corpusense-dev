@@ -4,6 +4,7 @@ import {
   getModelLiveRepository,
   getModelRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
+import { NotFoundError } from '@/utils/NotFoundError';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useMemo } from 'react';
 import { v4 as uuid } from 'uuid';
@@ -45,7 +46,7 @@ export const useModels = () => {
     if (fromModelId !== undefined) {
       try {
         const model = models.find((m) => m.id === fromModelId);
-        if (!model) throw new Error('Model not found');
+        if (!model) throw new NotFoundError({ entity: 'Model', id: fromModelId });
         fields = model.fields;
         prompt = model.prompt;
       } catch (error) {

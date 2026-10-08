@@ -1,5 +1,6 @@
 import { SourceWithContent } from '@/data/models/source/source';
 import { getSourceRepository } from '@/data/repositories/indexeddb/dbFactory';
+import { FilePermissionDeniedError } from '@/data/utils/errors';
 import { getErrorMessage } from '@/utils/utils';
 import { Octokit } from '@octokit/rest';
 import { useCallback, useState } from 'react';
@@ -107,7 +108,7 @@ const useRepository = () => {
     const handle = source.content.localFile.outputDirectoryHandle;
     const perm = await handle.queryPermission({ mode: 'read' });
     if (perm !== 'granted') {
-      throw new Error('No permission to read the output directory');
+      throw new FilePermissionDeniedError({ directory: handle.name });
     }
 
     try {
