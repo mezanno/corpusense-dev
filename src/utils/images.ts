@@ -1,3 +1,4 @@
+import { InvalidBase64Error } from '@/data/utils/errors';
 import { FunctionResult } from './functionResult';
 
 type Crop = {
@@ -97,7 +98,7 @@ function base64ToBlob(base64: string): FunctionResult<Blob, Error> {
 
     return FunctionResult.ok(new Blob([ab], { type: mimeString }));
   } catch (error) {
-    return FunctionResult.err(new Error('Invalid base64 string'));
+    return FunctionResult.err(new InvalidBase64Error());
   }
 }
 

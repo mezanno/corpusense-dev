@@ -25,6 +25,12 @@ export class SourceAlreadyInProjectError extends BaseError {
 // sagas/boundaries qui les capturent et les rapportent. Messages portés par la
 // classe pour rester traduits là où ils étaient affichés tels quels aujourd'hui.
 
+export class InvalidBase64Error extends BaseError {
+  constructor(context: { reason?: string } = {}) {
+    super('Invalid base64 string', { context });
+  }
+}
+
 export class InvalidManifestError extends BaseError {
   constructor(context: { manifestId?: string } = {}) {
     super(i18n.t('error_invalid_manifest_input'), { context });
