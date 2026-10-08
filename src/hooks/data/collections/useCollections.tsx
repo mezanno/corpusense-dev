@@ -1,8 +1,8 @@
 import { Collection, CollectionDetails } from '@/data/models/collection/collection';
 import {
   getAnnotationRepository,
-  getCollectionRepository,
   getCollectionLiveRepository,
+  getCollectionRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { generateFirstAnnotation } from '@/data/utils/annotations';
 import { generateCollectionContent } from '@/data/utils/collections';
@@ -184,7 +184,11 @@ export const useCollections = () => {
       appDispatch(pushError(getErrorMessage(collectionToRemoveResult.error)));
       return;
     }
-    await collectionRepository.deleteById(id);
+    const deleteResult = await collectionRepository.deleteById(id);
+    if (!deleteResult.ok) {
+      appDispatch(pushError(getErrorMessage(deleteResult.error)));
+      return;
+    }
     appDispatch(pushInfo(i18n.t('toast_collection_deleted')));
   };
 
@@ -195,7 +199,11 @@ export const useCollections = () => {
         appDispatch(pushError(getErrorMessage(collectionToRemoveResult.error)));
         continue;
       }
-      await collectionRepository.deleteById(id);
+      const deleteResult = await collectionRepository.deleteById(id);
+      if (!deleteResult.ok) {
+        appDispatch(pushError(getErrorMessage(deleteResult.error)));
+        continue;
+      }
       appDispatch(pushInfo(i18n.t('toast_collection_deleted')));
     }
   };

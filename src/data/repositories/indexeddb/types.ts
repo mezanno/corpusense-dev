@@ -87,9 +87,13 @@ export interface CollectionRepository {
     targetPosition: number,
   ): Promise<FunctionResult<void, EntityNotFoundError>>;
 
-  delete(collectionToRemove: Collection): Promise<{ workersIds: string[]; collectionId: string }>;
-  deleteMultiple(collectionsToRemoveIds: string[]): Promise<void>;
-  deleteById(collectionId: string): Promise<{ workersIds: string[]; collectionId: string }>;
+  delete(
+    collectionToRemove: Collection,
+  ): Promise<FunctionResult<{ workersIds: string[]; collectionId: string }, DBError>>;
+  deleteMultiple(collectionsToRemoveIds: string[]): Promise<FunctionResult<void, DBError>>;
+  deleteById(
+    collectionId: string,
+  ): Promise<FunctionResult<{ workersIds: string[]; collectionId: string }, DBError>>;
   deleteElement(
     collectionId: string,
     canvasId: string,

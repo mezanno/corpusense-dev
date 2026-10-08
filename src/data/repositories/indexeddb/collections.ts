@@ -318,13 +318,15 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
 
   async delete(
     collectionToRemove: Collection,
-  ): Promise<{ workersIds: string[]; collectionId: string }> {
+  ): Promise<FunctionResult<{ workersIds: string[]; collectionId: string }, DBError>> {
     return await this.deleteById(collectionToRemove.id);
   }
 
-  async deleteById(collectionId: string): Promise<{ workersIds: string[]; collectionId: string }> {
-    return await db
-      .transaction(
+  async deleteById(
+    collectionId: string,
+  ): Promise<FunctionResult<{ workersIds: string[]; collectionId: string }, DBError>> {
+    return await FunctionResult.fromPromise(
+      db.transaction(
         'rw',
         [db.collections, db.collectionContents, db.annotations, db.workers, db.results],
         async () => {
@@ -343,19 +345,27 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
           await db.collectionContents.delete(collectionId);
           return { workersIds, collectionId };
         },
-      )
-      .catch((error) => {
-        throw new Error(`Failed to delete collection with id ${collectionId}: ${error}`);
-      });
+      ),
+      (error) =>
+        new DBError({
+          message: `Failed to delete collection with id ${collectionId}: ${getErrorMessage(error)}`,
+        }),
+    );
   }
 
-  async deleteMultiple(collectionsToRemoveIds: string[]): Promise<void> {
+  async deleteMultiple(collectionsToRemoveIds: string[]): Promise<FunctionResult<void, DBError>> {
     for (const collectionId of collectionsToRemoveIds) {
       const result = await this.getById(collectionId);
-      if (result.ok) {
-        await this.deleteById(collectionId);
+      // une collection déjà absente n'est pas un échec de la suppression multiple
+      if (!result.ok) {
+        continue;
+      }
+      const deleteResult = await this.deleteById(collectionId);
+      if (!deleteResult.ok) {
+        return deleteResult;
       }
     }
+    return FunctionResult.ok(undefined);
   }
 
   async deleteElement(
