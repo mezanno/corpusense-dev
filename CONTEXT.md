@@ -11,8 +11,8 @@ A background processing unit that runs a queue of Tasks over a Scope (OCR, layou
 _Avoid_: job runner, process, engine
 
 **Task**:
-One entry of a Worker's queue, targeting a single canvas, with a status in the task status law (WAITING, INPROGRESS, POSTING, POSTED, COMPLETED, ERROR, …).
-_Avoid_: job (see Job), unit
+One entry of a Worker's queue, targeting a single canvas, with a status in the task status law (WAITING, POSTING, POSTED, INPROGRESS, COMPLETED, COMPLETED*WITH_ERRORS — see `docs/statuts.md`).
+\_Avoid*: job (see Job), unit
 
 **Job**:
 An externally posted computation tracked outside the app (Supabase `cs_jobs`), bridged back into a Task via the POSTING/POSTED statuses.

@@ -18,6 +18,7 @@ Règle : rien de technique ou d'interne dans `public/doc/` (c'est un répertoire
 | Document                               | Rôle                                                                                                                |
 | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | [architecture.md](./architecture.md)   | **Spécification de référence** : stack, couches, flux de données, modèle de données, routage, configuration, build. |
+| [statuts.md](./statuts.md)             | **Loi de statut** : alphabets worker/tâche/`cs_jobs`, invariants, transitions, flows d'interruption et de relaunch. |
 | [developpement.md](./developpement.md) | Guide pratique : démarrage, commandes de vérification, conventions, guides d'extension, pièges.                     |
 | [DECISIONS.md](./DECISIONS.md)         | Journal des décisions d'architecture (ADR) — le « pourquoi », avec déclencheurs de réouverture.                     |
 | [securite.md](./securite.md)           | Registre de sécurité vivant (menaces assumées, points ouverts vérifiés, priorités).                                 |

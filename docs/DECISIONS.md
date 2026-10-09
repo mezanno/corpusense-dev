@@ -112,13 +112,15 @@ _Statut : active_
 
 ## D-008 — Loi de statut du worker : un seul foyer (module pur)
 
-_Statut : planifiée, décisions ouvertes reportées · Proposition du 2026-09-29, reprise le 2026-10-08_
+_Statut : active — loi spécifiée · Proposition du 2026-09-29, reprise le 2026-10-08, loi consolidée le 2026-10-09 dans [statuts.md](./statuts.md)_
 
 **Contexte.** La loi de transition des statuts (tâches et workers) est implémentée **quatre fois** (repo `updateTaskStatus`, saga, `useJobRealtime`, UI — avec deux mappings d'icônes divergents) et dérive déjà : sweeper qui force `COMPLETED` sur des tâches jamais démarrées, plugins qui écrivent `POSTING`/`POSTED` directement dans le code.
 
 **Décision.** La loi aura un foyer unique : `workerStatusLaw.ts` — module pur près de l'enum, testable sans jsdom ni Dexie — avec une algèbre d'événements (`START · POST · JOB_ACCEPTED · RESULT_OK · RESULT_ERR · REQUEUE`), deux dérivations (`workerStatusOf(queue)`, `recoveredOf(worker)`), des prédicats de capacité pour l'UI, et un adaptateur `taskStatusOfJobStatus`. Refus de transition = `FunctionResult.err(StatusChangeError)`, conformément à D-002. Invariant visé : le realtime peut bouger les tâches, la dérivaison de file peut bouger le worker — plus personne ne modifie le statut directement (`patch()`).
 
-**Décisions encore ouvertes** (à trancher dans roadmap R1) : exhaustivité par liste blanche (D1), sémantique du sweeper (D2), verrou de la galerie par collection plutôt que par canvas (D3), table unique de présentation des statuts (D5). La scission d'enum `TaskStatus`/`WorkerStatus` (D4) est **différée** tant que les quatre copies existent.
+**Décisions closes par la loi consolidée** ([statuts.md](./statuts.md), 2026-10-09) : D1 exhaustivité (alphabets clos + mapping total, valeur inconnue = erreur typée), D2 sweeper (ne jamais fabriquer de succès : interruption → rejeu `WAITING`, timeout `POSTING` → `COMPLETED_WITH_ERRORS`), D4 scission `TaskStatus`/`WorkerStatus` (deux alphabets distincts dans la spec).
+
+**Décisions encore ouvertes** (hors loi, à trancher dans roadmap R1) : verrou de la galerie par collection plutôt que par canvas (D3), table unique de présentation des statuts (D5).
 
 **Conséquences.** C'est la condition préalable de D-006. `ALL` reste un filtre UI hors de la loi.
 
