@@ -18,7 +18,11 @@ export async function initI18n() {
       // Fallback locale used when a translation is
       // missing in the active locale. Again, use your
       // preferred locale here.
-      fallbackLng: 'fr-FR',
+      fallbackLng: 'fr',
+      // Les copies « fr-FR » de public/locales ont été supprimées au profit de
+      // « fr » (Q5) ; languageOnly charge « fr » quand le navigateur ou le
+      // localStorage réclame encore « fr-FR », sans route supplémentaire.
+      load: 'languageOnly',
       // supportedLngs: ['fr', 'en'],
       // Namespaces loaded on init; other namespaces can still be lazy-loaded via useTranslation(ns).
       ns: ['translation', 'welcome'],

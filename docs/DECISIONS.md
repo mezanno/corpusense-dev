@@ -145,7 +145,7 @@ _Statut : active · Formalisée en 2026, harnais réparé le 2026-09-30_
 - tests co-localisés dans `__tests__/` à côté du fichier source ;
 - `fake-indexeddb` pour tout test touchant un repository (D-004) ; le helper `createTestDb()` réinitialise la base Dexie entre les tests ;
 - harnais Vitest : stub `ResizeObserver` requis par `@dnd-kit`, mock i18n exportant `useTranslation` **et** `Trans` (les assertions ciblent les clés, que le mock renvoie à l'identique), mock WebGL fourni par `vitest-webgl-canvas-mock` ;
-- Vitest vérifié le 2026-10-12 : 25 fichiers réussis, 1 ignoré, 98 tests réussis et 1 todo. Baseline statique du 2026-10-08 : tsc vert, ESLint `src` : 48 erreurs / 2 warnings (backlog roadmap Q1).
+- Vitest vérifié le 2026-10-12 : 24 fichiers réussis, 1 ignoré, 96 tests réussis et 1 todo. Baseline statique du 2026-10-08 : tsc vert, ESLint `src` : 48 erreurs / 2 warnings (backlog roadmap Q1).
 
 **Conséquences.** Le mock i18n renvoie les clés à l'identique : les tests vérifient les clés, pas les phrases. Toute nouvelle dépendance qui touche IndexedDB en production se teste sur le vrai stack, pas en `vi.mock`.
 

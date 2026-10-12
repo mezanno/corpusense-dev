@@ -30,3 +30,4 @@ dist-ssr
 # vite config
 stats.html
 coverage
+tsconfig.tsbuildinfo
