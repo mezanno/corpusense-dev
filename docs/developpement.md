@@ -78,7 +78,7 @@ Autres scripts utiles : `npm run build` (generate-env → tsc -b → vite build)
 | Suivi jobs distribués                  | `src/hooks/useJobRealtime.tsx`, `src/utils/supabase.ts`       |
 | Configuration / clés API               | `src/utils/config.ts`, `src/components/configuration/`        |
 | Build, PWA, chunks                     | `vite.config.ts`                                              |
-| Déploiement                            | `.github/workflows/gh-pages.yml`                              |
+| Déploiement                            | `.github/workflows/deploy.yml`                                |
 
 ## 5. Pièges connus
 

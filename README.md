@@ -157,9 +157,9 @@ Cette section cible une personne qui ne souhaite pas contribuer au code.
 
 ### Option A (la plus simple) : déploiement automatique via GitHub Pages
 
-Le projet est configuré pour déployer automatiquement sur la branche gh-pages lors d'un push sur develop :
+Le projet est configuré pour déployer automatiquement via GitHub Pages lors d'un push sur develop (après validation complète) :
 
-- .github/workflows/gh-pages.yml
+- .github/workflows/deploy.yml (quality gate via ci.yml → build → deploy)
 
 Étapes :
 

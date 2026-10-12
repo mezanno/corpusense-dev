@@ -3,9 +3,9 @@ name: CI
 # Aucune permission par défaut : chaque job demande ce qu'il lui faut
 permissions: {}
 
-# Exécuté sur les PR, et appelé en réutilisable par gh-pages.yml avant le build.
+# Exécuté sur les PR, et appelé en réutilisable par deploy.yml avant le build.
 # Pas de déclencheur `push` : un push direct sur develop passe déjà par
-# gh-pages.yml, qui appelle ce workflow — une seule source de vérité, pas de double exécution.
+# deploy.yml, qui appelle ce workflow — une seule source de vérité, pas de double exécution.
 on:
   workflow_call:
   pull_request:

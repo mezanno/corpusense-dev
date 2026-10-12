@@ -195,7 +195,7 @@ Les clés API utilisateur (Mistral, OpenAI, GitHub PAT) ne passent **jamais** pa
 
 ```text
 npm run build → scripts/generate-env.js → tsc -b → vite build → dist/
-push develop → .github/workflows/gh-pages.yml → GitHub Pages (branche gh-pages)
+push develop → .github/workflows/deploy.yml → GitHub Pages (branche gh-pages)
 ```
 
 La PWA est générée par `vite-plugin-pwa`. `manualChunks` (vite.config.ts) isole les gros paquets (`@annotorious/*`, `@samvera/clover-iiif`). **Il n'existe pas de job CI de qualité** (lint/tests/tsc sur PR) — roadmap Q3.
