@@ -1,6 +1,6 @@
 # Guide développeur
 
-_Dernière vérification contre le code : 2026-10-08. Architecture : [architecture.md](./architecture.md)._
+_Dernière vérification contre le code : 2026-10-12. Architecture : [architecture.md](./architecture.md)._
 
 ## 1. Démarrage
 
@@ -31,7 +31,7 @@ Autres scripts utiles : `npm run build` (generate-env → tsc -b → vite build)
 - **Erreurs** : subclasser `BaseError` avec contexte JSON ; jamais `new Error` hors liste blanche ESLint (règle `no-restricted-syntax`, voir D-002). `NotFoundError`, pas l'alias déprécié `EntityNotFoundError`.
 - **Résultats attendus** : `FunctionResult<T, E>` aux frontières de commande ; l'absence est une valeur (`undefined`, `[]`), pas une erreur (D-002).
 - **Repository ≠ DAO** : le vocabulaire exact est dans `CONTEXT.md` ; tout accès passe par `dbFactory.ts`.
-- **Tests co-localisés** dans `__tests__/` à côté de la source ; composants testés via les rôles accessibles et `user-event` (D-010). Ce qui touche un repository se teste avec `fake-indexeddb` sur le vrai stack Dexie (D-004 ; dépendance et harnais à venir — roadmap R3.1).
+- **Tests co-localisés** dans `__tests__/` à côté de la source ; composants testés via les rôles accessibles et `user-event` (D-010). Ce qui touche un repository se teste avec `fake-indexeddb` sur le vrai stack Dexie, en réinitialisant la base via `createTestDb()` (D-004, R3.1).
 - **Nommage de fichiers** : PascalCase pour les composants, kebab-case autorisé uniquement dans `components/ui/` (fichiers shadcn régénérés).
 - **Zod** : toute entité persistée complexe a son schéma (`.strict()` là où c'est déjà le cas).
 - **i18n** : les chaînes UI passent par les clés ; le mock de test renvoie les clés à l'identique, donc les tests vérifient les clés.
@@ -41,7 +41,7 @@ Autres scripts utiles : `npm run build` (generate-env → tsc -b → vite build)
 
 - `vitest.setup.ts` : stub `ResizeObserver` (**requis** par `@dnd-kit/dom` — sans lui, 8 fichiers ne se chargent plus), stub `matchMedia`, mock WebGL via `vitest-webgl-canvas-mock`.
 - Mock i18n : `src/__tests__/react-i18next.ts` (alias du paquet réel via vite.config) exporte `useTranslation` **et** `Trans`.
-- Baseline mesurée 2026-10-08 : tsc vert ; 24 fichiers / 82 tests verts (1 fichier ignoré : `ManifestDetails.test.tsx`, un seul `it.todo`) ; ESLint `src` : 48 erreurs / 2 warnings (backlog roadmap Q1).
+- Vérification Vitest du 2026-10-12 : 25 fichiers réussis, 1 ignoré (`ManifestDetails.test.tsx`), 98 tests réussis et 1 `it.todo`. Baseline statique mesurée le 2026-10-08 : tsc vert ; ESLint `src` : 48 erreurs / 2 warnings.
 
 ## 4. Guides
 

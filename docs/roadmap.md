@@ -1,6 +1,6 @@
 # Feuille de route
 
-_Travail ouvert, consolidé à partir des plans exécutés partiellement (`plan-table-seam`, `plan-worker-status-law`), des revues datées (2026-09-29/30, 2026-10-08), du rapport d'architecture archivé et des documents d'optimisation (`optimization/`). Les décisions prises sont dans [DECISIONS.md](./DECISIONS.md). Dernière remise à niveau : 2026-10-09._
+_Travail ouvert, consolidé à partir des plans exécutés partiellement (`plan-table-seam`, `plan-worker-status-law`), des revues datées (2026-09-29/30, 2026-10-08), du rapport d'architecture archivé et des documents d'optimisation (`optimization/`). Les décisions prises sont dans [DECISIONS.md](./DECISIONS.md). Dernière remise à niveau : 2026-10-12._
 
 ## Chantiers structurants
 
@@ -12,13 +12,13 @@ _Travail ouvert, consolidé à partir des plans exécutés partiellement (`plan-
 
 ### R2 — Moteur de file headless, puis retraite de Redux-Saga (candidate 4, D-006)
 
-Extraire de `sagas/workers.ts` un `queueEngine.run(worker, plugin, ports)` (ports : repository, horloge injectée pour l'EMA, notifieur) ; saga, `useJobRealtime` et récupération au démarrage deviennent des adaptateurs fins. Corrige au passage la fuite d'attente du stop-listener (l'attente en cours n'est pas annulée à l'arrêt). Ne démarrer qu'une fois R1 terminé — la loi est ce que le moteur applique.
+R1 étant terminé, le prérequis est satisfait : extraire de `sagas/workers.ts` un `queueEngine.run(worker, plugin, ports)` (ports : repository, horloge injectée pour l'EMA, notifieur) ; saga, `useJobRealtime` et récupération au démarrage deviennent des adaptateurs fins. Corriger au passage la fuite d'attente du stop-listener (l'attente en cours n'est pas annulée à l'arrêt). La loi de statut centralisée est celle qu'appliquera le moteur.
 
 ### R3 — Repositories sur le vrai stack (D-004)
 
-1. Harnais `createTestDb()` (~45 lignes, `fake-indexeddb`, DB fraîche par fichier) — le fichier absent au plus fort rendement du dépôt.
+1. ✅ Harnais `createTestDb()` avec `fake-indexeddb` : réinitialise la base Dexie réelle entre les tests ; à généraliser aux autres repositories au fur et à mesure de leur couverture.
 2. `deleteByScope` retourne réellement les ids calculés (test d'abord, y compris le chemin `startsWithIgnoreCase` du scope collection).
-3. `updateTaskStatus` en transaction unique (fusionné avec R1.③-repo).
+3. ✅ `updateTaskStatus` applique la transition, la file et le statut dérivé du worker dans une transaction unique (livré avec R1).
 4. Aligner la signature `WorkerRepository.add` (`WorkerCreateDTO → Promise<Worker>`).
 5. `deleteByScopeAndType` : décider d'implémenter ou supprimer le paramètre fantôme `isTemp` (grep des call sites d'abord).
 6. Les 2 imports `@/App` depuis `src/data/**` supprimés (violations de couches réelles, cf. Q4).
@@ -41,10 +41,10 @@ Donner un foyer au concept « blob + sa forme base64 » (~40 lignes dupliquées 
 
 ## Qualité & outillage
 
-| ID  | Ouverture                  | Preuve (2026-10-08)                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ID  | Ouverture                  | Preuve                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | --- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Q1  | Backlog ESLint mécanique   | 48 erreurs / 2 warnings dans `src` : `strict-boolean-expressions` (12), `no-unsafe-member-access` (11, frontières non typées dont `supabase.ts`), règles react-hooks 19 (6+), `no-unnecessary-type-assertion` (4), etc. 8 suppressions `@ts-expect-error` à verrouiller en non-régression (ratchet).                                                                                                                  |
-| Q2  | Tests du cœur non testé    | Repositories (jamais exécutés, seulement mockés → R3.1), loi de statut (→ R1.①), saga workers (~420 lignes, testable en pilotant les effects), plugins, `useJobRealtime`, `excel.utils.ts`, `OpenAICompatibleClient` (~500 lignes). Ratio global : 82 tests / ~230 fichiers.                                                                                                                                          |
+| Q2  | Tests du cœur non testé    | R1 couvre la loi de statut, la migration v31 → v32 et les transitions du repository Worker sur Dexie + `fake-indexeddb` ; `createTestDb()` existe (R3.1). Au 2026-10-12 : 98 tests réussis / 1 todo, 25 fichiers réussis / 1 ignoré. Restent notamment les autres repositories, la saga workers (~420 lignes), les plugins, `useJobRealtime`, `excel.utils.ts` et `OpenAICompatibleClient` (~500 lignes). |
 | Q3  | Pas de CI de qualité       | Seul `gh-pages.yml` (déploiement) existe. Créer un job PR : `tsc -b`, `eslint .`, `prettier --check`, `vitest run` (+ `npm audit`), et le conditionner le déploiement.                                                                                                                                                                                                                                                |
 | Q4  | Pas de test d'architecture | Deux violations de couches réelles (R3.6). Options : `eslint-plugin-boundaries` (même process que le lint) ou test Vitest + madge + le contrôle par grep du critère de sortie de R1. Semgrep non installé (règles `p/typescript`, `p/react`, règles maison anti-`@/App`).                                                                                                                                             |
 | Q5  | Balayage de nettoyage      | `workers/old/` (6 fichiers + `tesseract.js` en dépendance runtime + `suryaConverter`/`suryaSchema` orphelins) ; `git rm --cached .env tsconfig.tsbuildinfo` ; retirer `@types/jest` ; supprimer `CanvasCard.test.tsx` (coquille vide, le composant n'existe plus) ; retirer `VITE_CANTALOUPE_URL` de `.env` (jamais lue) ; alias `locales/fr-FR` → `fr` (copies divergentes).                                         |

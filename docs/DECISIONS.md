@@ -68,7 +68,7 @@ _Statut : active · Décidée le 2026-10-01_
 **Décision.** Traiter le symptôme, pas la cause, sans nouvelle abstraction :
 
 - rétablir les contrats non tenus par l'interface **en direct**, sans nouvelle abstraction ;
-- tester le **vrai** stack Dexie sous Vitest grâce à `fake-indexeddb` — l'outil recommandé pour tout test touchant un repository (plus de `vi.mock` des factories). **État 2026-10-09** : dépendance pas encore installée ; l'adoption passe par le harnais `createTestDb()` (roadmap R3.1) ;
+- tester le **vrai** stack Dexie sous Vitest grâce à `fake-indexeddb` — l'outil recommandé pour tout test touchant un repository (plus de `vi.mock` des factories). **État 2026-10-12** : dépendance installée ; le helper `createTestDb()` réinitialise la base entre les tests et est utilisé par les tests du repository Worker (roadmap R3.1) ;
 - « small-repo collapse » : quand un petit repository monostore est touché pour une vraie raison, le réduire à des délégations **dans ce commit** — pas de migration big-bang ;
 - supprimer `mergeAnnotations` (code mort) et les `getById` morts des live repos models/workers.
 
@@ -112,15 +112,15 @@ _Statut : active_
 
 ## D-008 — Loi de statut du worker : un seul foyer (module pur)
 
-_Statut : active — loi spécifiée · Proposition du 2026-09-29, reprise le 2026-10-08, loi consolidée le 2026-10-09 dans [statuts.md](./statuts.md), dernières décisions ouvertes (D3, D5) closes le 2026-10-12_
+_Statut : active — loi implémentée (R1) · Proposition du 2026-09-29, reprise le 2026-10-08, loi consolidée le 2026-10-09 dans [statuts.md](./statuts.md), décisions D3 et D5 closes le 2026-10-12_
 
 **Contexte.** La loi de transition des statuts (tâches et workers) est implémentée **quatre fois** (repo `updateTaskStatus`, saga, `useJobRealtime`, UI — avec deux mappings d'icônes divergents) et dérive déjà : sweeper qui force `COMPLETED` sur des tâches jamais démarrées, plugins qui écrivent `POSTING`/`POSTED` directement dans le code.
 
-**Décision.** La loi aura un foyer unique : `workerStatusLaw.ts` — module pur près de l'enum, testable sans jsdom ni Dexie — avec une algèbre d'événements (`START · POST · JOB_ACCEPTED · RESULT_OK · RESULT_ERR · REQUEUE`), deux dérivations (`workerStatusOf(queue)`, `recoveredOf(worker)`), des prédicats de capacité pour l'UI, et un adaptateur `taskStatusOfJobStatus`. Refus de transition = `FunctionResult.err(StatusChangeError)`, conformément à D-002. Invariant visé : le realtime peut bouger les tâches, la dérivaison de file peut bouger le worker — plus personne ne modifie le statut directement (`patch()`).
+**Décision.** La loi est centralisée dans `workerStatusLaw.ts`, module pur près de l'enum et testable sans jsdom ni Dexie. Les événements typés gouvernent les transitions ; les fonctions de dérivation et prédicats alimentent le repository, la saga et l'UI, et l'adaptateur traduit les statuts Supabase. Un refus de transition renvoie `FunctionResult.err(StatusChangeError)`, conformément à D-002. L'invariant est appliqué : le realtime peut faire évoluer les tâches, la file dérive le statut worker, et `patch()` ne permet plus de modifier le statut ou la file.
 
 **Décisions closes par la loi consolidée** ([statuts.md](./statuts.md), 2026-10-09) : D1 exhaustivité (alphabets clos + mapping total, valeur inconnue = erreur typée), D2 sweeper (ne jamais fabriquer de succès : interruption → rejeu `WAITING`, timeout `POSTING` → `COMPLETED_WITH_ERRORS`), D4 scission `TaskStatus`/`WorkerStatus` (deux alphabets distincts dans la spec).
 
-**Décisions closes** : **D3** verrou de la galerie (tranchée 2026-10-12, contre la recommandation initiale « scope canvas ») : un traitement en cours verrouille **toute la galerie**, pas seulement le canvas traité. Le comportement actuel (scope collection, `isWorkerOrTaskRunning({ collectionId })` dans `CollectionInspectorGalleryItemContent.tsx`) est la loi — ne pas le « corriger » en scope canvas lors du port UI de R1. **D5** table unique de présentation des statuts (tranchée 2026-10-12) : **un seul foyer de présentation côté UI** — une table par enum, `Record<TaskStatus, …>` et `Record<WorkerStatus, …>` (split D4), exhaustivité garantie par le typage, **aucun `default` runtime** (une valeur inconnue est déjà rejetée en amont par la loi en `StatusChangeError`, D1/D-002). La table naît dans `features/` (règle d'atterrissage D-009), jamais dans la couche loi (pas d'import UI dans `workerStatusLaw.ts`, D-008) ; les deux mappings actuels (`workerUtils.tsx`, chaîne de `if` de `WorkerStatusIcon.tsx`) sont absorbés par le port UI de R1.③. Overlay des vignettes de la galerie : **vignette neutre au repos** (pas d'icône sur `COMPLETED`), **`ERROR` signalé** par une icône d'alerte discrète — les échecs ne sont plus masqués. **Aucune décision D-008 n'est encore ouverte.**
+**Décisions closes** : **D3** verrou de la galerie (tranchée 2026-10-12, contre la recommandation initiale « scope canvas ») : un traitement en cours verrouille **toute la galerie**, pas seulement le canvas traité. Le comportement actuel (scope collection, `isWorkerOrTaskRunning({ collectionId })` dans `CollectionInspectorGalleryItemContent.tsx`) est la loi. **D5** table unique de présentation des statuts (tranchée 2026-10-12) : **un seul foyer de présentation côté UI** — une table par enum, `Record<TaskStatus, …>` et `Record<WorkerStatus, …>` (split D4), exhaustivité garantie par le typage, **aucun `default` runtime**. Les tables sont dans `features/`, sans dépendance UI dans `workerStatusLaw.ts` ; les mappings de l'interface ont été centralisés par R1. Overlay des vignettes de la galerie : **vignette neutre au repos** (pas d'icône sur `COMPLETED`), **`ERROR` signalé** par une icône d'alerte discrète — les échecs ne sont plus masqués. **Aucune décision D-008 n'est encore ouverte.**
 
 **Conséquences.** C'est la condition préalable de D-006. `ALL` reste un filtre UI hors de la loi.
 
@@ -143,9 +143,9 @@ _Statut : active · Formalisée en 2026, harnais réparé le 2026-09-30_
 **Décision.** Pyramide à trois niveaux : majoritairement des tests unitaires de fonctions pures ; tests de composants/hooks via React Testing Library (rôles accessibles, `user-event`, jamais les détails d'implémentation) ; E2E Playwright en nombre limité sur les parcours critiques (non encore déployés). Standards :
 
 - tests co-localisés dans `__tests__/` à côté du fichier source ;
-- `fake-indexeddb` pour tout test touchant un repository (D-004 ; objectif — la dépendance et le harnais arrivent avec roadmap R3.1) ;
+- `fake-indexeddb` pour tout test touchant un repository (D-004) ; le helper `createTestDb()` réinitialise la base Dexie entre les tests ;
 - harnais Vitest : stub `ResizeObserver` requis par `@dnd-kit`, mock i18n exportant `useTranslation` **et** `Trans` (les assertions ciblent les clés, que le mock renvoie à l'identique), mock WebGL fourni par `vitest-webgl-canvas-mock` ;
-- baseline mesurée 2026-10-08 : tsc vert, 24 fichiers / 82 tests verts (+1 fichier ignoré, 1 todo), ESLint `src` : 48 erreurs / 2 warnings (backlog roadmap Q1).
+- Vitest vérifié le 2026-10-12 : 25 fichiers réussis, 1 ignoré, 98 tests réussis et 1 todo. Baseline statique du 2026-10-08 : tsc vert, ESLint `src` : 48 erreurs / 2 warnings (backlog roadmap Q1).
 
 **Conséquences.** Le mock i18n renvoie les clés à l'identique : les tests vérifient les clés, pas les phrases. Toute nouvelle dépendance qui touche IndexedDB en production se teste sur le vrai stack, pas en `vi.mock`.
 

@@ -1,6 +1,6 @@
 # Architecture — CorpuSense
 
-_Spécification technique de référence. Dernière vérification contre le code : 2026-10-08. Les décisions sous-jacentes sont dans [DECISIONS.md](./DECISIONS.md)._
+_Spécification technique de référence. Dernière vérification contre le code : 2026-10-12. Les décisions sous-jacentes sont dans [DECISIONS.md](./DECISIONS.md)._
 
 ## 1. Rôle du projet
 
@@ -107,7 +107,7 @@ Clic « Lancer worker » → dispatch startWorkerProcessRequest
 → toast via eventsReducer → vue réactive mise à jour par Dexie
 ```
 
-Le statut des tâches (`WAITING, INPROGRESS, POSTING, POSTED, COMPLETED, ERROR…`) est aujourd'hui réparti entre quatre implémentations divergentes ; l'objectif est de le réunir dans un module pur unique (D-008, roadmap R1). Les anciens plugins `tesseract`/`surya` ne sont plus chargés (dossier `workers/old/`, suppression en roadmap Q5).
+La loi des statuts worker/tâche est centralisée dans le module pur `workerStatusLaw.ts` (R1, D-008) : elle valide les transitions, dérive le statut worker depuis sa file et mappe les états Supabase. Repository, saga, bridge realtime et présentation UI s'appuient sur cette loi ou sur des tables de présentation exhaustives ; `patch()` ne permet pas de modifier le statut ni la file. La migration Dexie v31 → v32 convertit les anciens alphabets et rejette explicitement les valeurs persistées inconnues. Les détails des transitions et de l'interruption/reprise sont dans [statuts.md](./statuts.md). Les anciens plugins `tesseract`/`surya` ne sont plus chargés (dossier `workers/old/`, suppression en roadmap Q5).
 
 ## 6. Plugins
 
@@ -117,7 +117,7 @@ Le statut des tâches (`WAITING, INPROGRESS, POSTING, POSTED, COMPLETED, ERROR�
 
 ## 7. Modèle de données
 
-Vocabulaire du domaine : `CONTEXT.md` (racine). Schéma Dexie **version 31** (`db.ts`) :
+Vocabulaire du domaine : `CONTEXT.md` (racine). Schéma Dexie **version 32** (`db.ts`), avec migration des statuts worker/tâche depuis v31 :
 
 | Store                                        | Clés/index                                                                     |
 | -------------------------------------------- | ------------------------------------------------------------------------------ |
