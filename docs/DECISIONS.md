@@ -120,7 +120,7 @@ _Statut : active — loi spécifiée · Proposition du 2026-09-29, reprise le 20
 
 **Décisions closes par la loi consolidée** ([statuts.md](./statuts.md), 2026-10-09) : D1 exhaustivité (alphabets clos + mapping total, valeur inconnue = erreur typée), D2 sweeper (ne jamais fabriquer de succès : interruption → rejeu `WAITING`, timeout `POSTING` → `COMPLETED_WITH_ERRORS`), D4 scission `TaskStatus`/`WorkerStatus` (deux alphabets distincts dans la spec).
 
-**Décisions encore ouvertes** (hors loi, à trancher dans roadmap R1) : verrou de la galerie par collection plutôt que par canvas (D3), table unique de présentation des statuts (D5).
+**Décision close depuis** : D3 verrou de la galerie (tranchée 2026-10-12, contre la recommandation initiale « scope canvas ») : un traitement en cours verrouille **toute la galerie**, pas seulement le canvas traité. Le comportement actuel (scope collection, `isWorkerOrTaskRunning({ collectionId })` dans `CollectionInspectorGalleryItemContent.tsx`) est la loi — ne pas le « corriger » en scope canvas lors du port UI de R1. **Reste ouverte** : table unique de présentation des statuts (D5).
 
 **Conséquences.** C'est la condition préalable de D-006. `ALL` reste un filtre UI hors de la loi.
 

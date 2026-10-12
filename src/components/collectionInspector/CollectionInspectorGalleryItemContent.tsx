@@ -38,7 +38,9 @@ const CollectionInspectorGalleryItemContent = ({
     () => ({ collectionId, canvasId: canvasWithSourceId.canvas.id }),
     [collectionId, canvasWithSourceId.canvas.id],
   );
-  // const isWorkerRunning = useWorkerContext().isWorkerOrTaskRunning(scope);
+  // D3 (DECISIONS.md D-008, closee 2026-10-12) : verrou volontairement scope collection —
+  // un traitement en cours verrouille toute la galerie, pas seulement le canvas traite.
+  // Ne pas « corriger » en scope canvas lors du port UI de R1.
   const isWorkerRunning = isWorkerOrTaskRunning({ collectionId });
   const idDisplayed = canvasToDisplay?.canvas.id === canvasWithSourceId.canvas.id;
   const hasOcrAnnotations = useOcrAnnotations(scope).hasOcrAnnotations;

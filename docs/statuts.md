@@ -148,4 +148,4 @@ L'enum actuelle `WorkerStatus` (`src/data/models/worker/worker.ts`) est **partag
 7. **Ack après persistance + sweep au boot** : à implémenter dans le bridge Supabase (`useJobRealtime` + récupération au démarrage).
 8. **Relaunch unifié** : un seul régime (tout non-`COMPLETED`), départ `INPROGRESS` propre, terminal direct si rien à faire.
 
-Restent ouvertes hors de la loi (à trancher à l'ouverture de R1) : D-008/D3 (verrou de la galerie) et D-008/D5 (table unique de présentation des statuts).
+D-008/D3 (verrou de la galerie) close le 2026-10-12 : verrou **scope collection** — un traitement en cours verrouille toute la galerie, pas seulement le canvas traité. Reste ouverte : D-008/D5 (table unique de présentation des statuts).
