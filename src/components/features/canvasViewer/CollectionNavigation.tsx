@@ -1,6 +1,6 @@
+import { useCollectionInspectorContext } from '@/components/reducers/CollectionInspectorContext';
 import { StepBack, StepForward } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useCollectionInspectorContext } from '@/components/reducers/CollectionInspectorContext';
 
 const CollectionNavigation = () => {
   const { t } = useTranslation();

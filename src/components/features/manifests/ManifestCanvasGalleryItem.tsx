@@ -1,4 +1,3 @@
-import { Canvas } from '@iiif/presentation-3';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -9,7 +8,10 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
+import { Canvas } from '@iiif/presentation-3';
 
+import Loading from '@/components/common/Loading';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { getLabel } from '@/data/utils/canvas';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import useThumbnail from '@/hooks/data/sources/useThumbnail';
@@ -18,8 +20,6 @@ import { useCanvasSelection } from '@/hooks/useCanvasSelection';
 import { truncateMiddle } from '@/utils/utils';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import Loading from '@/components/common/Loading';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface ManifestCanvasGalleryItemProps {
   index: number;

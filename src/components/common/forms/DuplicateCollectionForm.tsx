@@ -1,4 +1,13 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { CollectionDetails } from '@/data/models/collection/collection';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { FormProps } from '@/hooks/ui/useDialog';
@@ -8,8 +17,6 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 
 type DuplicateCollectionFormParams = FormProps & {
   collection: CollectionDetails;

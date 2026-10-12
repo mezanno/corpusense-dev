@@ -1,8 +1,3 @@
-import { Scope } from '@/data/models/scope/scope';
-import { Worker } from '@/data/models/worker/worker';
-import useDialog from '@/hooks/ui/useDialog';
-import { FileDown } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { useWorkerContext } from '@/components/reducers/WorkerContext';
 import {
   DropdownMenu,
@@ -10,6 +5,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Scope } from '@/data/models/scope/scope';
+import { Worker } from '@/data/models/worker/worker';
+import useDialog from '@/hooks/ui/useDialog';
+import { FileDown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const ResultsAvailable = ({ scope, showTitle }: { scope: Scope; showTitle?: boolean }) => {
   const { t } = useTranslation();

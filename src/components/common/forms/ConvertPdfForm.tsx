@@ -1,11 +1,11 @@
+import { Progress } from '@/components/ui/progress';
+import { Spinner } from '@/components/ui/spinner';
 import { FormProps } from '@/hooks/ui/useDialog';
 import { ConvertedFileInfo, usePdfConverter } from '@/hooks/usePdfConverter';
 import { FunctionResult } from '@/utils/functionResult';
 import { AlertCircle, CheckCircle, Download, FileUp } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Progress } from '@/components/ui/progress';
-import { Spinner } from '@/components/ui/spinner';
 
 const ConvertPdfForm = ({ closeDialog, onResult }: FormProps<string>) => {
   const { t } = useTranslation();

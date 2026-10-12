@@ -1,9 +1,9 @@
+import { IconWithTooltip } from '@/components/common/IconWithTooltip';
+import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import useCollectionLlmStatus from '@/hooks/data/collections/useCollectionLlmStatus';
 import ReactJsonView from '@microlink/react-json-view';
 import { Braces } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { IconWithTooltip } from '@/components/common/IconWithTooltip';
-import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 
 const LlmStatus = ({ collectionId }: { collectionId: string }) => {
   const { t } = useTranslation();

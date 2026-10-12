@@ -1,11 +1,3 @@
-import { Source } from '@/data/models/source/source';
-import useSources from '@/hooks/data/sources/useSources';
-import { FormProps } from '@/hooks/ui/useDialog';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import { z } from 'zod';
 import {
   Form,
   FormControl,
@@ -16,6 +8,14 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Source } from '@/data/models/source/source';
+import useSources from '@/hooks/data/sources/useSources';
+import { FormProps } from '@/hooks/ui/useDialog';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
 
 type UpdateSourceNameFormProps = FormProps<void> & {
   source: Source;

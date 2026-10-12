@@ -1,6 +1,6 @@
+import WorkersMenu from '@/components/features/workers/WorkersMenu';
 import { Scope } from '@/data/models/scope/scope';
 import DangerousMenu from './menu/DangerousMenu';
-import WorkersMenu from '@/components/features/workers/WorkersMenu';
 
 const Toolbar = ({
   title,

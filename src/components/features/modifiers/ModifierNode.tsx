@@ -1,10 +1,16 @@
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Modifier } from '@/data/models/modifiers/Modifier';
 import { modifierRegistry } from '@/data/models/modifiers/ModifierFactory';
 import { Handle, Node, NodeProps, Position, useNodeConnections } from '@xyflow/react';
 import { PlusCircle, Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import z, { ZodObject, ZodRawShape } from 'zod';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ModifierForm from './ModifierForm';
 
 type ModifierNodeProps<TSchema extends ZodObject<ZodRawShape>> = {

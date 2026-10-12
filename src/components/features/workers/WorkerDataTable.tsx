@@ -1,4 +1,5 @@
-import { workerStatusPresentation } from './statusPresentation';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Worker } from '@/data/models/worker/worker';
 import { contains } from '@/data/utils/scope';
 import {
@@ -12,8 +13,7 @@ import {
 } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { workerStatusPresentation } from './statusPresentation';
 
 interface WorkerDataTableProps {
   data: Worker[];

@@ -1,3 +1,13 @@
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { ElementType } from '@/data/models/annotations/annotation';
 import { Collection } from '@/data/models/collection/collection';
 import { useCollections } from '@/hooks/data/collections/useCollections';
@@ -14,9 +24,6 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
 import { z } from 'zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import './taginput.css'; //permet d'enlever le background transparent du taginput
 
 const formSchema = z.object({

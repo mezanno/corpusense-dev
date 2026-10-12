@@ -12,19 +12,19 @@ Technical representation            DTO variants, converters to external formats
 Persistence                         ONE Dexie schema file; store keys + index expressions
 ```
 
-- **Observed.** Entities are declared as Zod schemas with `.strict()` (unknown keys are a bug, not a pass); TypeScript types are *inferred from* schemas, never written by hand. The whole IndexedDB schema — ~20 stores, index expressions including compound indexes (`'[canvasId+collectionId+type]'`) — lives in a single versioned declaration file (`db.ts`, `db.version(30)`). Migrations are Dexie `upgrade` blocks attached to version bumps.
+- **Observed.** Entities are declared as Zod schemas with `.strict()` (unknown keys are a bug, not a pass); TypeScript types are _inferred from_ schemas, never written by hand. The whole IndexedDB schema — ~20 stores, index expressions including compound indexes (`'[canvasId+collectionId+type]'`) — lives in a single versioned declaration file (`db.ts`, `db.version(30)`). Migrations are Dexie `upgrade` blocks attached to version bumps.
 - **Inferred.** Single-file schema + version counter makes migrations reviewable as one diff — the strongest habit to transplant, independent of the storage technology.
 - **Observed.** Blobs (images, PDFs) are first-class stored entities separated from metadata (content/id split) so metadata queries stay cheap and exports are self-contained.
 
 ## 2. Access pattern
 
-| Concern | Observed mechanism | Abstract role |
-|---|---|---|
-| Write path | repository class per store, methods return `FunctionResult` | command side |
-| Read path | `liveQuery/` repositories returning thunks, consumed by `useLiveQuery` | reactive read side |
-| Substitution seam | `getXRepository()` factories; no DI container | testability / future adapter swap |
-| Cross-store invariant | aggregate repositories (Sources, Collections, Annotations, Workers) | the only places allowed to span stores |
-| Export/portability | `dexie-export-import` dump + per-plugin exporters | data ownership stays with the user |
+| Concern               | Observed mechanism                                                     | Abstract role                          |
+| --------------------- | ---------------------------------------------------------------------- | -------------------------------------- |
+| Write path            | repository class per store, methods return `FunctionResult`            | command side                           |
+| Read path             | `liveQuery/` repositories returning thunks, consumed by `useLiveQuery` | reactive read side                     |
+| Substitution seam     | `getXRepository()` factories; no DI container                          | testability / future adapter swap      |
+| Cross-store invariant | aggregate repositories (Sources, Collections, Annotations, Workers)    | the only places allowed to span stores |
+| Export/portability    | `dexie-export-import` dump + per-plugin exporters                      | data ownership stays with the user     |
 
 ## 3. Data-related decisions worth keeping
 
@@ -35,7 +35,7 @@ Persistence                         ONE Dexie schema file; store keys + index ex
 
 ## 4. For the new project (technology-agnostic)
 
-- Keep the four layers explicit; name the persistence module after the *role*, not the product (`persistence/`, not `indexeddb/`). `[correction to source naming]`
+- Keep the four layers explicit; name the persistence module after the _role_, not the product (`persistence/`, not `indexeddb/`). `[correction to source naming]`
 - One schema declaration file, monotonically increasing version, migration per bump, migration covered by one test per bump. `[RECOMMENDED — source had none]`
 - Factory-function DI seam until a second adapter justifies a table/interface abstraction. `[OBSERVED, right-sized]`
 - Separate content (blobs) from metadata as the source does.

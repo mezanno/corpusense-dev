@@ -1,14 +1,14 @@
-import useDialog from '@/hooks/ui/useDialog';
-import { Canvas } from '@iiif/presentation-3';
-import { Book, BookOpenText, Eye, EyeOff, NotebookPen, Wrench } from 'lucide-react';
-import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import ResultsAvailable from '@/components/common/ResultsAvailable';
 import Toolbar from '@/components/common/ToolBar';
 import { useWorkerContext } from '@/components/reducers/WorkerContext';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Toggle } from '@/components/ui/toggle';
+import useDialog from '@/hooks/ui/useDialog';
+import { Canvas } from '@iiif/presentation-3';
+import { Book, BookOpenText, Eye, EyeOff, NotebookPen, Wrench } from 'lucide-react';
+import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CanvasViewerMode } from './CanvasViewer';
 
 const CanvasViewerToolbar = ({

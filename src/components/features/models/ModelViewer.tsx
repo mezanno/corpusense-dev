@@ -1,3 +1,24 @@
+import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
 import { DataField, DataModel } from '@/data/models/dataModel/dataModel';
 import { useModelIO } from '@/hooks/data/models/useModelIO';
 import { useModels } from '@/hooks/data/models/useModels';
@@ -16,15 +37,7 @@ import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { analogue } from 'simpler-color';
 import { v4 as uuid } from 'uuid';
-import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import { ColorPicker } from './ColorPicker';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Textarea } from '@/components/ui/textarea';
 
 const baseColor = '#a4d6f6';
 

@@ -1,11 +1,11 @@
+import { IconButtonWithTooltip } from '@/components/common/IconButtonWithTooltip';
+import Toolbar from '@/components/common/ToolBar';
 import { Collection } from '@/data/models/collection/collection';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import useDialog from '@/hooks/ui/useDialog';
 import { Copy, DownloadIcon } from 'lucide-react';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { IconButtonWithTooltip } from '@/components/common/IconButtonWithTooltip';
-import Toolbar from '@/components/common/ToolBar';
 
 const CollectionToolbar = memo(function CollectionToolbarFunc({
   collection,

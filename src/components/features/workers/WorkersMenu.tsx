@@ -1,11 +1,11 @@
 import { workerPlugins } from '@/App';
+import MultiOptionsMenu from '@/components/common/menu/MultiOptionsMenu';
 import { Scope } from '@/data/models/scope/scope';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
 import { startWorkerProcessRequest } from '@/state/reducers/workers';
 import { selectWorkerPluginsInfo } from '@/state/selectors/workers';
 import { PocketKnife, ScanText } from 'lucide-react';
-import MultiOptionsMenu from '@/components/common/menu/MultiOptionsMenu';
 
 const WorkersMenu = ({ scope }: { scope: Scope }) => {
   const appDispatch = useAppDispatch();

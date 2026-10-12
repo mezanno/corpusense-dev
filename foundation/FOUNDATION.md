@@ -2,7 +2,7 @@
 
 Extraction produced by the `/foundations` skill, 2026-09-30. Companion documents live in this folder.
 
-Question answered: *which knowledge, decisions, conventions, patterns and practices of this project deserve to be kept as the foundation of a new project, possibly built with a different technology?*
+Question answered: _which knowledge, decisions, conventions, patterns and practices of this project deserve to be kept as the foundation of a new project, possibly built with a different technology?_
 
 No target stack was provided, so recommendations stay conceptual; every place where a concrete choice is deferred is marked `[choice needed]`.
 
@@ -18,13 +18,13 @@ No target stack was provided, so recommendations stay conceptual; every place wh
 
 ## 2. What proved itself (reusability levels)
 
-| Level | Meaning |
-|---|---|
-| UNIVERSAL | transfers to any language/framework |
-| ECOSYSTEM | transfers within a language/tooling ecosystem |
-| FRAMEWORK | tied to React/Redux/Vite etc.; replace with target equivalent |
-| DOMAIN | business-specific; discard |
-| PROJECT_SPECIFIC | too particular to extract |
+| Level            | Meaning                                                       |
+| ---------------- | ------------------------------------------------------------- |
+| UNIVERSAL        | transfers to any language/framework                           |
+| ECOSYSTEM        | transfers within a language/tooling ecosystem                 |
+| FRAMEWORK        | tied to React/Redux/Vite etc.; replace with target equivalent |
+| DOMAIN           | business-specific; discard                                    |
+| PROJECT_SPECIFIC | too particular to extract                                     |
 
 Summaries of the durable items (details in `PATTERNS.md`, `DECISIONS.md`):
 
@@ -46,36 +46,37 @@ Summaries of the durable items (details in `PATTERNS.md`, `DECISIONS.md`):
 
 Concept → pattern → implementation, the discipline this extraction applies to everything:
 
-- *Concept:* reads should react to data changes. *Pattern:* live-query subscriptions at the repository seam. *Implementation:* `dexie-observable` + repository methods returning closures consumed by `useLiveQuery`.
-- *Concept:* errors crossing a boundary are data. *Pattern:* Result type. *Implementation:* `FunctionResult<T, BaseError>` + `BaseError` hierarchy.
+- _Concept:_ reads should react to data changes. _Pattern:_ live-query subscriptions at the repository seam. _Implementation:_ `dexie-observable` + repository methods returning closures consumed by `useLiveQuery`.
+- _Concept:_ errors crossing a boundary are data. _Pattern:_ Result type. _Implementation:_ `FunctionResult<T, BaseError>` + `BaseError` hierarchy.
 
 ## 4. Transferability matrix
 
-| Element | Source | Level | Reusable | Adaptation | Target |
-|---|---|---|---|---|---|
-| Client-only static SPA shape | repo shape | Universal | Yes | Low | any |
-| Local-first DB as source of truth | `data/repositories/indexeddb/` | Universal | Yes | Low | any local-store capable target |
-| Dependency layer rule (UI→orchestration→data) | implicit + violated | Universal | Yes (as rule) | Medium | any |
-| Result type + BaseError | `utils/functionResult.ts`, `utils/BaseError.ts` | Universal (concept) / Ecosystem (TS impl) | Yes | Medium | native error/result idiom of target |
-| Repository-per-store + factory seam | `dbFactory.ts` | Universal | Partial | Medium | reassess at 2nd storage adapter |
-| Saga orchestration with supervisor | `state/sagas/index.ts` | Framework | Partial | High | target background-task/coroutine facility |
-| Redux + Zustand split | `state/store.ts`, `state/zustand/` | Framework | No | High | target state tool, keep the *why* |
-| Plugin registry via glob discovery | `state/sagas/plugins/loader.ts` | Ecosystem | Yes | Medium | target build-time glob or explicit manifest |
-| Status-law external-job bridge | workers/Supabase `POSTING`/`POSTED` | Universal (pattern) / Domain (instances) | Yes as pattern | High | any remote queue |
-| Vite/Vitest/ESLint-9/Prettier trio configs | config files | Ecosystem | Verbatim | Low | if target is JS/TS |
-| TS project-references skeleton | `tsconfig*.json` | Ecosystem | Verbatim | Low | if target is TS |
-| CI workflow shape (pinned, least-privilege) | `.github/workflows/gh-pages.yml` | Universal | Verbatim (GH Actions) | Low | any CI with equivalents |
-| jsdom/browser-API stub checklist | `vitest.setup.ts` | Framework (web) | Verbatim | Low | web targets only |
-| i18n wiring (lazy namespaces over HTTP) | `src/i18n.ts` | Framework | Partial | Medium | target i18n library |
-| `cn()` + shadcn-style ui folder | `lib/utils.ts`, `components.json` | Framework | Partial | Medium | any component-kit approach |
-| Manual vendor chunks for heavy view libs | `vite.config.ts` | Framework | Partial | Medium | only with a heavy separable lib |
-| CONTEXT.md glossary format with `_Avoid_` | `CONTEXT.md` | Universal | Verbatim | None | any |
-| IIIF/canvas/annotation model, OCR/LLM workers, Supabase bridge | `data/models/**`, sagas | Domain | No | — | — |
-| Dexie schema *file* | `db.ts` | Domain (content) / Universal (shape) | Shape only | Medium | new schema, same file discipline |
+| Element                                                        | Source                                          | Level                                     | Reusable              | Adaptation | Target                                      |
+| -------------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------- | --------------------- | ---------- | ------------------------------------------- |
+| Client-only static SPA shape                                   | repo shape                                      | Universal                                 | Yes                   | Low        | any                                         |
+| Local-first DB as source of truth                              | `data/repositories/indexeddb/`                  | Universal                                 | Yes                   | Low        | any local-store capable target              |
+| Dependency layer rule (UI→orchestration→data)                  | implicit + violated                             | Universal                                 | Yes (as rule)         | Medium     | any                                         |
+| Result type + BaseError                                        | `utils/functionResult.ts`, `utils/BaseError.ts` | Universal (concept) / Ecosystem (TS impl) | Yes                   | Medium     | native error/result idiom of target         |
+| Repository-per-store + factory seam                            | `dbFactory.ts`                                  | Universal                                 | Partial               | Medium     | reassess at 2nd storage adapter             |
+| Saga orchestration with supervisor                             | `state/sagas/index.ts`                          | Framework                                 | Partial               | High       | target background-task/coroutine facility   |
+| Redux + Zustand split                                          | `state/store.ts`, `state/zustand/`              | Framework                                 | No                    | High       | target state tool, keep the _why_           |
+| Plugin registry via glob discovery                             | `state/sagas/plugins/loader.ts`                 | Ecosystem                                 | Yes                   | Medium     | target build-time glob or explicit manifest |
+| Status-law external-job bridge                                 | workers/Supabase `POSTING`/`POSTED`             | Universal (pattern) / Domain (instances)  | Yes as pattern        | High       | any remote queue                            |
+| Vite/Vitest/ESLint-9/Prettier trio configs                     | config files                                    | Ecosystem                                 | Verbatim              | Low        | if target is JS/TS                          |
+| TS project-references skeleton                                 | `tsconfig*.json`                                | Ecosystem                                 | Verbatim              | Low        | if target is TS                             |
+| CI workflow shape (pinned, least-privilege)                    | `.github/workflows/gh-pages.yml`                | Universal                                 | Verbatim (GH Actions) | Low        | any CI with equivalents                     |
+| jsdom/browser-API stub checklist                               | `vitest.setup.ts`                               | Framework (web)                           | Verbatim              | Low        | web targets only                            |
+| i18n wiring (lazy namespaces over HTTP)                        | `src/i18n.ts`                                   | Framework                                 | Partial               | Medium     | target i18n library                         |
+| `cn()` + shadcn-style ui folder                                | `lib/utils.ts`, `components.json`               | Framework                                 | Partial               | Medium     | any component-kit approach                  |
+| Manual vendor chunks for heavy view libs                       | `vite.config.ts`                                | Framework                                 | Partial               | Medium     | only with a heavy separable lib             |
+| CONTEXT.md glossary format with `_Avoid_`                      | `CONTEXT.md`                                    | Universal                                 | Verbatim              | None       | any                                         |
+| IIIF/canvas/annotation model, OCR/LLM workers, Supabase bridge | `data/models/**`, sagas                         | Domain                                    | No                    | —          | —                                           |
+| Dexie schema _file_                                            | `db.ts`                                         | Domain (content) / Universal (shape)      | Shape only            | Medium     | new schema, same file discipline            |
 
 ## 5. Final synthesis
 
 ### À conserver (keep)
+
 - Local-first data spine: single DB schema declaration file, Zod-validated models, repository-per-store, factory DI seam, live reactive reads.
 - Errors-as-values at the data boundary (`FunctionResult` + `BaseError` with cause/context).
 - One plugin registry module, one accessor; plugins as same-shaped modules validated by a runtime typeguard.
@@ -83,18 +84,20 @@ Concept → pattern → implementation, the discipline this extraction applies t
 - CI hygiene: SHA-pinned actions, `permissions: {}` default-deny, per-job least privilege, concurrency `cancel-in-progress`, `ubuntu-24.04`, pinned Node, `npm ci`.
 - Type-aware linting baseline + fully deterministic formatting (organize-imports / organize-attributes / class-sorter).
 - TS project references, strict, declaration-only emit into `node_modules/.tmp` (tooling output never pollutes the tree).
-- Single config file for build *and* tests; test-mode alias swap for heavy packages.
+- Single config file for build _and_ tests; test-mode alias swap for heavy packages.
 - Build-provenance stamping consumed by an in-app version display.
 - CONTEXT.md glossary + Conventional Commits; every dependency must justify itself (repo pruned 40 dead deps).
 
 ### À adapter (adapt)
-- Redux/saga/Zustand tripartition → express as *roles* (rare system state / orchestration side-effects / ephemeral view state) and pick target-native tools.
+
+- Redux/saga/Zustand tripartition → express as _roles_ (rare system state / orchestration side-effects / ephemeral view state) and pick target-native tools.
 - `import.meta.glob` registry → any build-time discovery mechanism, or an explicit manifest if the target has none.
-- Dexie/IndexedDB → any embedded local store keeping the same *seam* (schema file, repositories, live reads).
+- Dexie/IndexedDB → any embedded local store keeping the same _seam_ (schema file, repositories, live reads).
 - Live-query closure pattern → target's reactivity primitive.
 - i18next HTTP-backend lazy namespaces → target i18n with lazy loading.
 
 ### À abandonner (discard)
+
 - Mutable plugin exports from the app root (two divergent registries in practice).
 - Data-layer imports of the React root / UI store (layering violations).
 - Ad-hoc `import.meta.env.VITE_*` reads at ~16 call sites (no validation).
@@ -105,4 +108,5 @@ Concept → pattern → implementation, the discipline this extraction applies t
 - The whole IIIF/worker/job domain model and its integrations.
 
 ### À ajouter (missing in source, required for the starter)
+
 See `BOOTSTRAP-CHECKLIST.md`. Headline: PR quality-gate workflow, pre-commit hooks, mechanically enforced architecture boundaries, validated env module, pre-registered error-reporting seam, one E2E smoke test, CONTRIBUTING + PR template, dependency audit in CI.

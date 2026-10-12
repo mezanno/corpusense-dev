@@ -1,3 +1,5 @@
+import VersionDisplay from '@/components/common/VersionDisplay';
+import WorkerLabel from '@/components/features/workers/WorkerLabel';
 import { useCollectionContext } from '@/components/reducers/CollectionContext';
 import { useConnectedUserContext } from '@/components/reducers/ConnectedUserContext';
 import { useWorkerContext } from '@/components/reducers/WorkerContext';
@@ -9,8 +11,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import VersionDisplay from '@/components/common/VersionDisplay';
-import WorkerLabel from '@/components/features/workers/WorkerLabel';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuAction,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+} from '@/components/ui/sidebar';
 import { WorkerStatus } from '@/data/models/worker/worker';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import useDialog from '@/hooks/ui/useDialog';
@@ -33,22 +49,6 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuAction,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-} from '@/components/ui/sidebar';
 
 const WorkersSideBarGroup = () => {
   const { t } = useTranslation();
@@ -257,7 +257,9 @@ const LayoutSideBar = () => {
                         {t('btn_logout')}
                       </DropdownMenuItem>
                     ) : (
-                      <DropdownMenuItem onClick={openLoginDialog}>{t('btn_login')}</DropdownMenuItem>
+                      <DropdownMenuItem onClick={openLoginDialog}>
+                        {t('btn_login')}
+                      </DropdownMenuItem>
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>

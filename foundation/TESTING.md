@@ -31,4 +31,4 @@ Pyramid sized for a local-first app:
 - Tests colocated (`__tests__/` beside subject); one naming convention everywhere.
 - The setup file doubles as the documented checklist of "browser APIs the test environment lacks" — keep the comments, they're load-bearing.
 - Alias-swap heavy global-runtime packages out of tests rather than mocking them per-file.
-- Coverage is reported, not gated, until the seam tier exists; then gate on the *data/orchestration* directories specifically (coverage on UI components is noise).
+- Coverage is reported, not gated, until the seam tier exists; then gate on the _data/orchestration_ directories specifically (coverage on UI components is noise).

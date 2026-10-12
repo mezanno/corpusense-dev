@@ -1,4 +1,13 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+} from '@/components/ui/form';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { CanvasScope } from '@/data/models/scope/scope';
 import {
   DuplicateDistribution,
@@ -10,8 +19,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import z from 'zod';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from '@/components/ui/form';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 type DuplicateLayoutFormProps = FormProps & {
   scope: CanvasScope;

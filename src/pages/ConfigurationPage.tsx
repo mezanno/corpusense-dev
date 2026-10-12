@@ -1,9 +1,9 @@
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useTranslation } from 'react-i18next';
 import ConfigurationAPITab from '@/components/features/configuration/ConfigurationAPITab';
 import ConfigurationGeneralTab from '@/components/features/configuration/ConfigurationGeneralTab';
 import ConfigurationLLMTab from '@/components/features/configuration/ConfigurationLLMTab';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useTranslation } from 'react-i18next';
 
 const ConfigurationPage = () => {
   const { t } = useTranslation();

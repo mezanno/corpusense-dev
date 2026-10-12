@@ -10,7 +10,9 @@ import ImportModelForm from '@/components/common/forms/ImportModelForm';
 import LLMProfileForm, { LLMProfileFormValues } from '@/components/common/forms/LLMProfileForm';
 import LoadModifierChainForm from '@/components/common/forms/LoadModifierChainForm';
 import LoginForm from '@/components/common/forms/LoginForm';
-import NewCollectionForm, { NewCollectionFormParams } from '@/components/common/forms/NewCollectionForm';
+import NewCollectionForm, {
+  NewCollectionFormParams,
+} from '@/components/common/forms/NewCollectionForm';
 import NewModelForm from '@/components/common/forms/NewModelForm';
 import NewProjectForm from '@/components/common/forms/NewProjectForm';
 import OpenManifestForm from '@/components/common/forms/openManifestForm/OpenManifestForm';
@@ -19,10 +21,12 @@ import SaveModifierChainForm from '@/components/common/forms/SaveModifierChainFo
 import SelectLlmForm from '@/components/common/forms/SelectLlmForm';
 import StartWorkerForm from '@/components/common/forms/StartWorkerForm';
 import UpdateSourceNameForm from '@/components/common/forms/UpdateSourceNameForm';
-import UploadSourceForm, { UploadSourceFormParams } from '@/components/common/forms/UploadSourceForm';
+import UploadSourceForm, {
+  UploadSourceFormParams,
+} from '@/components/common/forms/UploadSourceForm';
+import ModelPreview from '@/components/features/models/ModelPreview';
 import ModelUsageList from '@/components/features/models/ModelUsageList';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
-import ModelPreview from '@/components/features/models/ModelPreview';
 import { CollectionDetails } from '@/data/models/collection/collection';
 import { DataModel } from '@/data/models/dataModel/dataModel';
 import { LLMProfile } from '@/data/models/LLMProfile';

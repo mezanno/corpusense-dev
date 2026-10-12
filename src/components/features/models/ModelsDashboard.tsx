@@ -1,9 +1,9 @@
+import { Card, CardContent } from '@/components/ui/card';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useModels } from '@/hooks/data/models/useModels';
 import useDialog from '@/hooks/ui/useDialog';
 import { Download, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent } from '@/components/ui/card';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ModelCard } from './ModelCard';
 
 const ModelsDashboard = ({

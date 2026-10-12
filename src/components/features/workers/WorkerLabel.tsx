@@ -1,7 +1,7 @@
-import { workerStatusPresentation } from './statusPresentation';
+import ScopeLabel from '@/components/common/ScopeLabel';
 import { Worker } from '@/data/models/worker/worker';
 import { useTranslation } from 'react-i18next';
-import ScopeLabel from '@/components/common/ScopeLabel';
+import { workerStatusPresentation } from './statusPresentation';
 
 const WorkerLabel = ({ worker }: { worker: Worker }) => {
   const { t } = useTranslation();

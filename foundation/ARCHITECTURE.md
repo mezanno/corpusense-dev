@@ -28,16 +28,16 @@ The project is a **client-only, offline-first SPA with an event-orchestration la
 
 Three state compartments, by role (Observed):
 
-| Role | Tool | Size | Rule |
-|---|---|---|---|
-| System UI state (events log, worker statuses) | Redux Toolkit | 2 slices, thunk **disabled** | async side-effects forbidden in reducers/thunks — sagas only |
-| Background orchestration state | sagas (in-process) | queues, retries | long-lived, supervised |
-| Ephemeral UI state | React state / 1 Zustand store / Contexts | small | never persisted, never authoritative |
-| Durable domain data | IndexedDB via live queries | everything that survives reload | the *only* source of truth |
+| Role                                          | Tool                                     | Size                            | Rule                                                         |
+| --------------------------------------------- | ---------------------------------------- | ------------------------------- | ------------------------------------------------------------ |
+| System UI state (events log, worker statuses) | Redux Toolkit                            | 2 slices, thunk **disabled**    | async side-effects forbidden in reducers/thunks — sagas only |
+| Background orchestration state                | sagas (in-process)                       | queues, retries                 | long-lived, supervised                                       |
+| Ephemeral UI state                            | React state / 1 Zustand store / Contexts | small                           | never persisted, never authoritative                         |
+| Durable domain data                           | IndexedDB via live queries               | everything that survives reload | the _only_ source of truth                                   |
 
 Data flow: **reactive reads, imperative writes.** UI subscribes to the DB directly (`useLiveQuery` over `dexie-observable`); mutations are issued as commands consumed by sagas; sagas call repositories; repositories return `FunctionResult`.
 
-## 2. Dependency rule (the rule the project *meant* to have)
+## 2. Dependency rule (the rule the project _meant_ to have)
 
 ```
 pages → components → hooks(data) → sagas → repositories → models
@@ -75,21 +75,21 @@ External systems adapters (remote queue, HTTP APIs), each behind its own adapter
 
 Responsibilities and forbidden dependencies:
 
-| Component | Responsibility | May import | Forbidden |
-|---|---|---|---|
-| Interface | render, route, translate | Application | Persistence, external adapters directly |
-| Application | orchestrate | Domain, Persistence (via seam), adapters | UI frameworks' internals, view state |
-| Domain | invariants | itself | everything upward |
-| Persistence | durable IO, transactions | Domain models | Application, Interface |
-| Adapters | protocol translation | Domain | everything upward |
+| Component   | Responsibility           | May import                               | Forbidden                               |
+| ----------- | ------------------------ | ---------------------------------------- | --------------------------------------- |
+| Interface   | render, route, translate | Application                              | Persistence, external adapters directly |
+| Application | orchestrate              | Domain, Persistence (via seam), adapters | UI frameworks' internals, view state    |
+| Domain      | invariants               | itself                                   | everything upward                       |
+| Persistence | durable IO, transactions | Domain models                            | Application, Interface                  |
+| Adapters    | protocol translation     | Domain                                   | everything upward                       |
 
 ## 4. Async model (Observed → abstracted)
 
 - Long-lived background flows are **coroutines supervised by a restart loop** (`launchSaga`: `while(true) try call(saga)`) — one crashed worker cannot silently kill orchestration. Universal principle: every daemon needs a supervisor + a structured log line on restart.
 - Unit-of-work dispatch goes through a **plugin seam**: tasks carry a plugin name; the registry maps name → capability; each plugin validates its runtime parameters against a schema (Zod) at the boundary.
-- Work handed to a remote service the client can't hold open is tracked with a **persisted intermediate status pair** ("handed off" / "acknowledged") polled back — a *status law* that must be written down exactly once (source repo has its own fix-plan doc precisely because four implementations diverged).
+- Work handed to a remote service the client can't hold open is tracked with a **persisted intermediate status pair** ("handed off" / "acknowledged") polled back — a _status law_ that must be written down exactly once (source repo has its own fix-plan doc precisely because four implementations diverged).
 
 ## 5. Module design notes (Observed, praised)
 
 - The plugin loader and the DB factory are **deep modules**: small surface (`loadWorkerPlugins()`, `getXRepository()`), large absorbed behaviour.
-- The deferred "table seam" design (`docs/plan-table-seam.md`, glossary marked *"banked, not shipped"*) is the right way to park an idea: as a written plan, **not** as empty directories on disk.
+- The deferred "table seam" design (`docs/plan-table-seam.md`, glossary marked _"banked, not shipped"_) is the right way to park an idea: as a written plan, **not** as empty directories on disk.

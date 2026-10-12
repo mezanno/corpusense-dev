@@ -1,8 +1,3 @@
-import useLiveSources from '@/hooks/data/sources/useLiveSources';
-import useDialog from '@/hooks/ui/useDialog';
-import { Ellipsis, Globe, Plus } from 'lucide-react';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   DropdownMenu,
@@ -11,6 +6,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import useLiveSources from '@/hooks/data/sources/useLiveSources';
+import useDialog from '@/hooks/ui/useDialog';
+import { Ellipsis, Globe, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ManifestCard } from './ManifestCard';
 
 const IIIFSourcesDashboard = () => {

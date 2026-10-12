@@ -1,5 +1,5 @@
-import { useTranslation } from 'react-i18next';
 import { Progress } from '@/components/ui/progress';
+import { useTranslation } from 'react-i18next';
 
 const ProgressPanel = ({ progress }: { progress: number }) => {
   const { t } = useTranslation();

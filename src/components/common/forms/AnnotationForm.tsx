@@ -1,3 +1,25 @@
+import AnnotationOrderPanel from '@/components/common/AnnotationOrderPanel';
+import Entities from '@/components/common/Entities';
+import Toolbar from '@/components/common/ToolBar';
+import { useWorkerContext } from '@/components/reducers/WorkerContext';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 import { Annotation, ElementType } from '@/data/models/annotations/annotation';
 import {
   getAnnotationText,
@@ -14,15 +36,6 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
-import AnnotationOrderPanel from '@/components/common/AnnotationOrderPanel';
-import Entities from '@/components/common/Entities';
-import { useWorkerContext } from '@/components/reducers/WorkerContext';
-import Toolbar from '@/components/common/ToolBar';
-import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { Textarea } from '@/components/ui/textarea';
 
 const annotationFormSchema = z.object({
   type: z.enum(ElementType),

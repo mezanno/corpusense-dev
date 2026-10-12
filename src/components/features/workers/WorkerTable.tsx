@@ -1,6 +1,5 @@
-import { workerStatusPresentation } from './statusPresentation';
-import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import ScopeLabel from '@/components/common/ScopeLabel';
+import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -9,13 +8,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import WorkerDataTable from './WorkerDataTable';
 import { Worker, WorkerStatus } from '@/data/models/worker/worker';
 import { getWorkerCategory } from '@/data/models/worker/worker.utils';
 import useWorkers from '@/hooks/data/workers/useWorkers';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, MoreHorizontal, Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { workerStatusPresentation } from './statusPresentation';
+import WorkerDataTable from './WorkerDataTable';
 
 interface WorkerTableProps {
   workers: Worker[];

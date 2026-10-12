@@ -1,5 +1,5 @@
-import useModifierChainLive from '@/hooks/data/modifiers/useModifierChainLive';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import useModifierChainLive from '@/hooks/data/modifiers/useModifierChainLive';
 import { ModifierChainCard } from './ModifierChainCard';
 
 const ModifierChainDashboard = ({

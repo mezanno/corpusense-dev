@@ -1,7 +1,7 @@
+import { useWorkerContext } from '@/components/reducers/WorkerContext';
 import { WorkerStatus } from '@/data/models/worker/worker';
 import { useMemo } from 'react';
 import { PacmanLoader } from 'react-spinners';
-import { useWorkerContext } from '@/components/reducers/WorkerContext';
 import WorkerDurationCounter from './WorkerDurationCounter';
 
 const CollectionWorkerCounters = ({ collectionId }: { collectionId: string }) => {

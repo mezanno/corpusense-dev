@@ -1,9 +1,3 @@
-import { ElementType } from '@/data/models/annotations/annotation';
-import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
-import useDialog from '@/hooks/ui/useDialog';
-import { useSortable } from '@dnd-kit/react/sortable';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useAnnotationContext } from '@/components/reducers/AnnotationContext';
 import {
   ContextMenu,
@@ -11,6 +5,12 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
+import { ElementType } from '@/data/models/annotations/annotation';
+import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
+import useDialog from '@/hooks/ui/useDialog';
+import { useSortable } from '@dnd-kit/react/sortable';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import CollectionInspectorGalleryItemContent from './CollectionInspectorGalleryItemContent';
 
 const CollectionInspectorGalleryItem = ({

@@ -1,9 +1,9 @@
+import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
 import useModifierChainIO from '@/hooks/data/modifiers/useModifierChainIO';
 import { Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
 
 export function ModifierChainCard({
   chain,

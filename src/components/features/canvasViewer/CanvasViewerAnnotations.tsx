@@ -1,3 +1,5 @@
+import AnnotationForm from '@/components/common/forms/AnnotationForm';
+import { useAnnotationContext } from '@/components/reducers/AnnotationContext';
 import { Annotation } from '@/data/models/annotations/annotation';
 import { getAnnotationType, isAnnotation } from '@/data/models/annotations/annotation.utils';
 import { scale, scaleAnnotation } from '@/data/utils/annotations';
@@ -11,8 +13,6 @@ import {
 } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
 import { useEffect, useRef } from 'react';
-import AnnotationForm from '@/components/common/forms/AnnotationForm';
-import { useAnnotationContext } from '@/components/reducers/AnnotationContext';
 import { CanvasViewerMode } from './CanvasViewer';
 
 const CanvasViewerAnnotations = ({

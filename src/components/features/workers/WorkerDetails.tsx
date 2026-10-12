@@ -1,4 +1,6 @@
-import { taskStatusPresentation } from './statusPresentation';
+import ScopeLabel from '@/components/common/ScopeLabel';
+import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
+import { useWorkerContext } from '@/components/reducers/WorkerContext';
 import {
   canInterruptWorker,
   canRecoverWorker,
@@ -10,9 +12,7 @@ import useDialog from '@/hooks/ui/useDialog';
 import { recoverWorkerRequest, stopWorkerProcessRequest } from '@/state/reducers/workers';
 import { CircleX } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
-import { useWorkerContext } from '@/components/reducers/WorkerContext';
-import ScopeLabel from '@/components/common/ScopeLabel';
+import { taskStatusPresentation } from './statusPresentation';
 
 const WorkerDetails = ({ workerId }: { workerId: string }) => {
   const { t } = useTranslation();

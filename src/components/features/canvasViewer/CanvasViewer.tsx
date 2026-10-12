@@ -1,15 +1,15 @@
+import ModifierChainFlow from '@/components/features/modifiers/ModifierChainFlow';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { Annotorious } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
 import { useState } from 'react';
-import CollectionNavigation from './CollectionNavigation';
-import ModifierChainFlow from '@/components/features/modifiers/ModifierChainFlow';
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import CanvasViewerAnnotations from './CanvasViewerAnnotations';
 import CanvasViewerOSDContent from './CanvasViewerOSDContent';
 import CanvasViewerText from './CanvasViewerText';
 import CanvasViewerToolbar from './CanvasViewerToolbar';
+import CollectionNavigation from './CollectionNavigation';
 
 export enum CanvasViewerMode {
   DRAW = 'draw',

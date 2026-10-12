@@ -1,6 +1,6 @@
+import { useManifestPageContext } from '@/components/reducers/ManifestPageContext';
 import { StepBack, StepForward } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useManifestPageContext } from '@/components/reducers/ManifestPageContext';
 
 const ManifestNavigation = () => {
   const { t } = useTranslation();

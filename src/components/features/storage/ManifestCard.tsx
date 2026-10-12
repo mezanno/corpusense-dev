@@ -1,3 +1,5 @@
+import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Source } from '@/data/models/source/source';
 import useBlob from '@/hooks/data/sources/useBlob';
 import useSource from '@/hooks/data/sources/useSource';
@@ -8,8 +10,6 @@ import useAppNavigation from '@/hooks/useAppNavigation';
 import { cn } from '@/lib/utils';
 import { ClipboardCopy, Clock, Cloud, Layers, Pen, Trash2, UploadCloud } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
 
 interface ManifestCardProps {
   source: Source;

@@ -1,14 +1,4 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { Worker } from '@/data/models/worker/worker';
-import useWorkers from '@/hooks/data/workers/useWorkers';
-import { useAppSelector } from '@/hooks/hooks';
-import { FormProps } from '@/hooks/ui/useDialog';
-import { selectExportFormats } from '@/state/selectors/workers';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import { z } from 'zod';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
@@ -19,6 +9,16 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Worker } from '@/data/models/worker/worker';
+import useWorkers from '@/hooks/data/workers/useWorkers';
+import { useAppSelector } from '@/hooks/hooks';
+import { FormProps } from '@/hooks/ui/useDialog';
+import { selectExportFormats } from '@/state/selectors/workers';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
 
 type ExportFormatSelectionFormProps = FormProps & {
   worker: Worker;

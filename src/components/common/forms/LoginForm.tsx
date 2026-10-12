@@ -1,9 +1,3 @@
-import useDialog, { FormProps } from '@/hooks/ui/useDialog';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { MouseEvent, useEffect, useRef } from 'react';
-import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import { z } from 'zod';
 import { useConnectedUserContext } from '@/components/reducers/ConnectedUserContext';
 import {
   Form,
@@ -15,6 +9,12 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import useDialog, { FormProps } from '@/hooks/ui/useDialog';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { MouseEvent, useEffect, useRef } from 'react';
+import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
 
 const formSchema = z.object({
   email: z.string(),

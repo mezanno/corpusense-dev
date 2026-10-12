@@ -1,5 +1,5 @@
-import { useTranslation } from 'react-i18next';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from 'react-i18next';
 
 const Loading = () => {
   const { t } = useTranslation();

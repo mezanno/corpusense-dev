@@ -1,4 +1,14 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { FormProps } from '@/hooks/ui/useDialog';
 import emailjs from '@emailjs/browser';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,9 +17,6 @@ import Fireworks from 'react-canvas-confetti/dist/presets/fireworks';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 
 const contactFormSchema = z.object({
   nom: z.string(),

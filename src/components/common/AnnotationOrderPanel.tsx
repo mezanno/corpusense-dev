@@ -1,7 +1,7 @@
+import { Button } from '@/components/ui/button';
 import { Annotation } from '@/data/models/annotations/annotation';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
-import { Button } from '@/components/ui/button';
 
 const AnnotationOrderPanel = ({
   annotation,

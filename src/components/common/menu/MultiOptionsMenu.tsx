@@ -1,7 +1,3 @@
-import { Scope } from '@/data/models/scope/scope';
-import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { ClockLoader } from 'react-spinners';
 import { useWorkerContext } from '@/components/reducers/WorkerContext';
 import {
   DropdownMenu,
@@ -17,6 +13,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Spinner } from '@/components/ui/spinner';
+import { Scope } from '@/data/models/scope/scope';
+import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ClockLoader } from 'react-spinners';
 
 interface MultiOptionsMenuItem {
   name: string;

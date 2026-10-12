@@ -1,4 +1,13 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+} from '@/components/ui/form';
 import { ElementType } from '@/data/models/annotations/annotation';
 import { Scope } from '@/data/models/scope/scope';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
@@ -7,8 +16,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from '@/components/ui/form';
 
 type RemoveAnnotationsFormProps = FormProps & {
   scope: Scope;

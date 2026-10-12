@@ -1,14 +1,3 @@
-import { SourceWithContent } from '@/data/models/source/source';
-import useSources from '@/hooks/data/sources/useSources';
-import { FunctionResult } from '@/utils/functionResult';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { IIIFExternalWebResource, Manifest } from '@iiif/presentation-3';
-import { Thumbnail } from '@samvera/clover-iiif/primitives';
-import { Cozy } from 'cozy-iiif';
-import { Layers } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import {
@@ -20,6 +9,17 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { SourceWithContent } from '@/data/models/source/source';
+import useSources from '@/hooks/data/sources/useSources';
+import { FunctionResult } from '@/utils/functionResult';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { IIIFExternalWebResource, Manifest } from '@iiif/presentation-3';
+import { Thumbnail } from '@samvera/clover-iiif/primitives';
+import { Cozy } from 'cozy-iiif';
+import { Layers } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import z from 'zod';
 
 interface AddManifestCardProps {
   existingSource?: SourceWithContent;

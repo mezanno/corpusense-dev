@@ -1,9 +1,9 @@
+import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { DataModel } from '@/data/models/dataModel/dataModel';
 import { useModelIO } from '@/hooks/data/models/useModelIO';
 import { Download, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
 // import ReactJsonView from '@microlink/react-json-view';
 
 export function ModelCard({

@@ -6,12 +6,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { Project } from '@/data/models/project';
 import useProjects from '@/hooks/data/projects/useProjects';
 import useDialog from '@/hooks/ui/useDialog';
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Separator } from '@/components/ui/separator';
 
 type ProjectSectionProps = {
   selectedProjectId: string | undefined;

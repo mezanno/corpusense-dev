@@ -1,4 +1,6 @@
+import Loading from '@/components/common/Loading';
 import WorkerStatusIcon from '@/components/features/workers/WorkerStatusIcon';
+import { useWorkerContext } from '@/components/reducers/WorkerContext';
 import { getLabel } from '@/data/utils/canvas';
 import useOcrAnnotations from '@/hooks/data/annotations/useOcrAnnotations';
 import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
@@ -9,8 +11,6 @@ import 'gridstack/dist/gridstack.min.css';
 import { CircleX, SpellCheck, SpellCheck2 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import Loading from '@/components/common/Loading';
-import { useWorkerContext } from '@/components/reducers/WorkerContext';
 
 const CollectionInspectorGalleryItemContent = ({
   canvasWithSourceId,

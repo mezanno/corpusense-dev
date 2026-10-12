@@ -2,6 +2,9 @@
 build
 coverage
 
+# Assets vendor (pdfjs, servis tels quels) :
+public/pdfjs
+
 # Code archivé (hors compilation, voir archive/legacy-workers/README.md):
 archive
 

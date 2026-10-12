@@ -12,7 +12,7 @@ One workflow (`gh-pages.yml`), deploy-only, triggered on push to the integration
 
 This workflow is small and exemplary — reuse verbatim (adapting commands to the target).
 
-**Critical gap (Observed as absence):** the documented policy says PRs must pass lint+tests, but no workflow enforces any of it; quality gates run only on developers' machines, and a 46-error lint backlog accrued exactly as predicted. There is also a redundant *fourth* source of truth for npm (a global `npm install -g npm@11.6.4` step contradicting `packageManager` and README).
+**Critical gap (Observed as absence):** the documented policy says PRs must pass lint+tests, but no workflow enforces any of it; quality gates run only on developers' machines, and a 46-error lint backlog accrued exactly as predicted. There is also a redundant _fourth_ source of truth for npm (a global `npm install -g npm@11.6.4` step contradicting `packageManager` and README).
 
 ## 2. Reference pipeline, language-independent (Recommended)
 
@@ -33,6 +33,7 @@ Deploy     separate job, `needs: build`, least privilege, environment with URL
 ```
 
 Rules that survive any CI product (UNIVERSAL):
+
 - default-deny permissions; per-job grants only;
 - third-party actions pinned by digest/SHA;
 - concurrency cancellation per deploy group;

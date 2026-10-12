@@ -1,3 +1,7 @@
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Textarea } from '@/components/ui/textarea';
 import useSources from '@/hooks/data/sources/useSources';
 import i18n from '@/i18n';
 import { FunctionResult } from '@/utils/functionResult';
@@ -8,10 +12,6 @@ import { Manifest } from '@iiif/presentation-3';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { Textarea } from '@/components/ui/textarea';
 
 interface LoadManifestCardProps {
   setLoadedManifest: (manifest: Manifest | undefined) => void;

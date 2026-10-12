@@ -1,3 +1,7 @@
+import { FormControl, FormDescription, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Slider } from '@/components/ui/slider';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   isEnumFieldMeta,
   isNumberFieldMeta,
@@ -9,10 +13,6 @@ import { CircleQuestionMark } from 'lucide-react';
 import { useEffect } from 'react';
 import { FormProvider, useForm, useWatch } from 'react-hook-form';
 import z, { ZodObject, ZodRawShape } from 'zod';
-import { FormControl, FormDescription, FormField, FormItem, FormLabel } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Slider } from '@/components/ui/slider';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 type ModifierFormProps<TSchema extends ZodObject<ZodRawShape>> = {
   modifier: Modifier<TSchema>;
