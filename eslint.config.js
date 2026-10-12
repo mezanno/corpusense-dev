@@ -18,7 +18,16 @@ export default tseslint.config(
   reactPlugin.configs.flat.recommended,
   reactPlugin.configs.flat['jsx-runtime'],
   {
-    ignores: ['node_modules', 'dist', 'dev-dist', 'build', 'coverage', 'public', 'scripts'],
+    ignores: [
+      'node_modules',
+      'dist',
+      'dev-dist',
+      'build',
+      'coverage',
+      'public',
+      'scripts',
+      'archive',
+    ],
   },
   {
     settings: {

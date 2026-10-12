@@ -106,7 +106,7 @@ _Statut : active_
 
 **Décision.** Workers et importers sont des modules autonomes de `src/state/sagas/plugins/{workers,importers}/`, découverts au build par `import.meta.glob` (eager), filtrés au runtime par le drapeau `experimental` (les plugins marqués expérimentaux ne se chargent que si l'utilisateur active les fonctionnalités expérimentales).
 
-**Conséquences.** Ajouter un traitement = déposer un fichier, sans registry à maintenir. Corollaire technique : le glob ne descend pas dans les sous-répertoires — `workers/old/` est donc du code mort assumé (suppression listée en roadmap). **Dette connue** : deux instances du registry coexistent (`App.tsx` exporte un `workerPlugins` mutable, `sagas/workers.ts` recharge indépendamment) — à unifier (roadmap Q6).
+**Conséquences.** Ajouter un traitement = déposer un fichier, sans registry à maintenir. Corollaire technique : le glob ne descend pas dans les sous-répertoires — les anciens workers `workers/old/` sont donc du code mort assumé, archivé depuis le 2026-10-12 dans `archive/legacy-workers/` (roadmap Q5). **Dette connue** : deux instances du registry coexistent (`App.tsx` exporte un `workerPlugins` mutable, `sagas/workers.ts` recharge indépendamment) — à unifier (roadmap Q6).
 
 ---
 

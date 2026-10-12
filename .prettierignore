@@ -2,6 +2,9 @@
 build
 coverage
 
+# Code archivé (hors compilation, voir archive/legacy-workers/README.md):
+archive
+
 # Ignore all HTML files:
 **/*.html
 
