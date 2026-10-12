@@ -112,7 +112,7 @@ _Statut : active_
 
 ## D-008 — Loi de statut du worker : un seul foyer (module pur)
 
-_Statut : active — loi spécifiée · Proposition du 2026-09-29, reprise le 2026-10-08, loi consolidée le 2026-10-09 dans [statuts.md](./statuts.md)_
+_Statut : active — loi spécifiée · Proposition du 2026-09-29, reprise le 2026-10-08, loi consolidée le 2026-10-09 dans [statuts.md](./statuts.md), dernières décisions ouvertes (D3, D5) closes le 2026-10-12_
 
 **Contexte.** La loi de transition des statuts (tâches et workers) est implémentée **quatre fois** (repo `updateTaskStatus`, saga, `useJobRealtime`, UI — avec deux mappings d'icônes divergents) et dérive déjà : sweeper qui force `COMPLETED` sur des tâches jamais démarrées, plugins qui écrivent `POSTING`/`POSTED` directement dans le code.
 
@@ -120,7 +120,7 @@ _Statut : active — loi spécifiée · Proposition du 2026-09-29, reprise le 20
 
 **Décisions closes par la loi consolidée** ([statuts.md](./statuts.md), 2026-10-09) : D1 exhaustivité (alphabets clos + mapping total, valeur inconnue = erreur typée), D2 sweeper (ne jamais fabriquer de succès : interruption → rejeu `WAITING`, timeout `POSTING` → `COMPLETED_WITH_ERRORS`), D4 scission `TaskStatus`/`WorkerStatus` (deux alphabets distincts dans la spec).
 
-**Décision close depuis** : D3 verrou de la galerie (tranchée 2026-10-12, contre la recommandation initiale « scope canvas ») : un traitement en cours verrouille **toute la galerie**, pas seulement le canvas traité. Le comportement actuel (scope collection, `isWorkerOrTaskRunning({ collectionId })` dans `CollectionInspectorGalleryItemContent.tsx`) est la loi — ne pas le « corriger » en scope canvas lors du port UI de R1. **Reste ouverte** : table unique de présentation des statuts (D5).
+**Décisions closes** : **D3** verrou de la galerie (tranchée 2026-10-12, contre la recommandation initiale « scope canvas ») : un traitement en cours verrouille **toute la galerie**, pas seulement le canvas traité. Le comportement actuel (scope collection, `isWorkerOrTaskRunning({ collectionId })` dans `CollectionInspectorGalleryItemContent.tsx`) est la loi — ne pas le « corriger » en scope canvas lors du port UI de R1. **D5** table unique de présentation des statuts (tranchée 2026-10-12) : **un seul foyer de présentation côté UI** — une table par enum, `Record<TaskStatus, …>` et `Record<WorkerStatus, …>` (split D4), exhaustivité garantie par le typage, **aucun `default` runtime** (une valeur inconnue est déjà rejetée en amont par la loi en `StatusChangeError`, D1/D-002). La table naît dans `features/` (règle d'atterrissage D-009), jamais dans la couche loi (pas d'import UI dans `workerStatusLaw.ts`, D-008) ; les deux mappings actuels (`workerUtils.tsx`, chaîne de `if` de `WorkerStatusIcon.tsx`) sont absorbés par le port UI de R1.③. Overlay des vignettes de la galerie : **vignette neutre au repos** (pas d'icône sur `COMPLETED`), **`ERROR` signalé** par une icône d'alerte discrète — les échecs ne sont plus masqués. **Aucune décision D-008 n'est encore ouverte.**
 
 **Conséquences.** C'est la condition préalable de D-006. `ALL` reste un filtre UI hors de la loi.
 
