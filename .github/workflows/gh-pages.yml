@@ -14,8 +14,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # --- JOB 0 : VALIDATION (workflow réutilisable ci.yml) ---
+  # Le déploiement est conditionné : build et deploy ne tournent que si la
+  # validation (types, tests, format, lint ratchet) passe.
+  validate:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
   # --- JOB 1 : BUILD  ---
   build:
+    needs: validate # Validé d'abord, buildé ensuite
     runs-on: ubuntu-24.04
     permissions:
       pages: read # Requis pour le déploiement Pages natif
@@ -56,8 +65,8 @@ jobs:
     runs-on: ubuntu-24.04
     needs: build # Ne s'exécute qu'après la réussite du job build
     permissions:
-      pages: write      # Requis pour le déploiement Pages natif
-      id-token: write   # Requis pour la vérification OIDC
+      pages: write # Requis pour le déploiement Pages natif
+      id-token: write # Requis pour la vérification OIDC
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
