@@ -1,7 +1,7 @@
 import { useWorkerContext } from '@/components/reducers/WorkerContext';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
-import WorkerDetails from '@/components/workers/WorkerDetails';
-import WorkerTable from '@/components/workers/WorkerTable';
+import WorkerDetails from '@/components/features/workers/WorkerDetails';
+import WorkerTable from '@/components/features/workers/WorkerTable';
 import { WorkerStatus } from '@/data/models/worker/worker';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';

@@ -1,4 +1,4 @@
-import ExpertReportCard from '@/components/ExpertReportCard';
+import ExpertReportCard from '@/components/features/expert/ExpertReportCard';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useModels } from '@/hooks/data/models/useModels';
 import useModifierChainLive from '@/hooks/data/modifiers/useModifierChainLive';

@@ -1,5 +1,5 @@
-import ProjectSection from '@/components/simpleView/ProjectSection';
-import SourceSection from '@/components/simpleView/SourceSection';
+import ProjectSection from '@/components/features/projects/ProjectSection';
+import SourceSection from '@/components/features/projects/SourceSection';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 

@@ -1,4 +1,4 @@
-import LocalStorageDashboard from '@/components/storage/LocalStorageDashboard';
+import LocalStorageDashboard from '@/components/features/storage/LocalStorageDashboard';
 
 const StoragePage = () => {
   return (

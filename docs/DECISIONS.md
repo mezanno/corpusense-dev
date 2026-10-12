@@ -126,13 +126,13 @@ _Statut : active — loi implémentée (R1) · Proposition du 2026-09-29, repris
 
 ---
 
-## D-009 — Restructuration « feature-first » des composants : validée, différée
+## D-009 — Restructuration « feature-first » des composants : adoptée et appliquée
 
-_Statut : différée · Proposition 2026 (doc 07), statut confirmé aux revues_
+_Statut : active · Cible adoptée en 2026, migration R7 terminée le 2026-10-12_
 
-**Décision.** La cible `components/{ui,common,layout,features/<domaine>}` est retenue (ui/ = atomes shadcn sans logique métier ; features/ = composants métier par domaine, colocalisés avec leurs styles). Elle n'est **pas** appliquée : la migration se ferait par gros déplacements sans valeur fonctionnelle immédiate. Règle d'atterrissage : composer les nouveaux composants directement dans `features/` pour garder le delta petit.
+**Décision.** La cible `src/components/{ui,common,layout,features/<domaine>}` est appliquée progressivement, par tranches cohérentes et sans migration globale : `ui/` conserve les primitives génériques sans logique métier ; `common/` accueille les composants applicatifs transversaux ; `layout/` contient le shell et la navigation ; `features/<domaine>/` regroupe l'UI métier avec ses styles et tests lorsque possible. Les pages, hooks, services, modèles et contextes restent dans leurs couches respectives. Les nouveaux composants métier rejoignent directement leur feature ; les primitives génériques vont dans `ui/`.
 
-**Conséquences.** `src/components/` reste majoritairement plat entre-temps ; la proposition complète (arborescence cible) est à re-dériver de cette entrée si le chantier s'ouvre.
+**Conséquences.** Les domaines migrés et leurs consommateurs utilisent leurs nouveaux chemins ; aucun barrel ou wrapper n'est ajouté uniquement pour masquer les frontières. Les composants historiques ou techniques restants ne sont déplacés que si une évolution apporte une valeur nette. Le bilan d'exécution et les validations figurent dans [roadmap.md](./roadmap.md).
 
 ---
 

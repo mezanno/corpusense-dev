@@ -1,4 +1,4 @@
-import LanguageFlag from '@/components/LanguageFlag';
+import LanguageFlag from '@/components/common/LanguageFlag';
 import { Toaster } from '@/components/ui/sonner';
 import usePendingMigration from '@/hooks/data/sources/usePendingMigration';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router-dom';
 import { toast } from 'sonner';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '../components/ui/sidebar';
-import LayoutSideBar from './LayoutSidebar';
+import LayoutSideBar from '@/components/layout/LayoutSidebar';
 
 const Layout = () => {
   const { t } = useTranslation();

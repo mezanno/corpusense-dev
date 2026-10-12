@@ -1,15 +1,15 @@
-import CanvasViewer from '@/components/canvasViewer/CanvasViewer';
-import Loading from '@/components/Loading';
-import ManifestExplorer from '@/components/manifests/ManifestExplorer';
-import ManifestNavigation from '@/components/manifests/ManifestNavigation';
-import NoManifestToShow from '@/components/manifests/NoManifestToShow';
-import NothingToShow from '@/components/NothingToShow';
+import CanvasViewer from '@/components/features/canvasViewer/CanvasViewer';
+import Loading from '@/components/common/Loading';
+import ManifestExplorer from '@/components/features/manifests/ManifestExplorer';
+import ManifestNavigation from '@/components/features/manifests/ManifestNavigation';
+import NoManifestToShow from '@/components/features/manifests/NoManifestToShow';
+import NothingToShow from '@/components/common/NothingToShow';
 import { CanvasSelectionProvider } from '@/components/reducers/CanvasSelectionContext';
 import { useManifestPageContext } from '@/components/reducers/ManifestPageContext';
 import useKeyboard from '@/hooks/ui/useKeyboard';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import ManifestCanvasGallery from '../components/manifests/ManifestCanvasGallery';
+import ManifestCanvasGallery from '@/components/features/manifests/ManifestCanvasGallery';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../components/ui/resizable';
 
 const ManifestExplorerPage = () => {

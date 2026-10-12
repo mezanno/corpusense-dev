@@ -1,4 +1,4 @@
-import CollectionTable from '@/components/collectionPage/CollectionTable';
+import CollectionTable from '@/components/features/collections/CollectionTable';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import useDialog from '@/hooks/ui/useDialog';
 import { FilePlus, Import } from 'lucide-react';

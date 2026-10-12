@@ -73,6 +73,20 @@ Rôles :
 3. **Écriture et orchestration** : l'IHM dispatche des actions de commande (`startWorkerProcessRequest`, …) ; les sagas orchestrent, les plugins exécutent, les résultats sont persistés via les repositories ; Redux ne porte que le statut d'exécution et les notifications.
 4. **Accès aux données** : jamais d'appel Dexie direct depuis l'UI — toujours un repository instancié par `dbFactory.ts` (D-004 ; interface de découplage non retenue, D-005).
 
+### Organisation des composants React (D-009)
+
+`src/components/` est organisé selon la responsabilité des composants :
+
+| Dossier               | Contenu                                                                                    |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| `ui/`                 | Primitives génériques, notamment les composants shadcn, sans logique métier                |
+| `common/`             | Composants applicatifs transversaux réutilisés par plusieurs domaines                      |
+| `layout/`             | Shell de l'application et navigation transversale                                          |
+| `features/<domaine>/` | Composants d'interface métier classés par domaine, avec styles/tests co-localisés si utile |
+| `reducers/`           | Providers et contextes React transversaux                                                  |
+
+Les pages restent dans `src/pages/` ; hooks, modèles, services et accès aux données gardent leurs couches propres. Cette organisation a été mise en place progressivement dans R7 ; elle ne justifie pas le déplacement mécanique des composants ou éléments techniques restants.
+
 ## 4. Gestion de l'état (résumé de D-001)
 
 | Mécanisme         | Emplacement                             | Contenu                                                                                        |
