@@ -16,6 +16,7 @@ type WorkerPluginInfo = {
 };
 export type WorkerPlugin = {
   run: WorkerRunFunction;
+  executionStrategy: 'synchronous' | 'job';
   export?: WorkerExportFunction;
   extractData?: WorkerExtractDataFunction;
   processResult?: WorkerProcessResultFunction;
@@ -32,6 +33,7 @@ type WorkerModule = {
   extractData?: WorkerExtractDataFunction;
   processResult?: WorkerProcessResultFunction;
   pluginName: string;
+  pluginExecutionStrategy?: 'synchronous' | 'job';
   pluginDisplayName?: string;
   pluginDescription?: string;
   pluginCategory?: string;
@@ -62,6 +64,9 @@ const isWorkerModule = (mod: unknown): mod is WorkerModule => {
   return (
     typeof m.default === 'function' &&
     typeof m.pluginName === 'string' &&
+    (m.pluginExecutionStrategy === undefined ||
+      m.pluginExecutionStrategy === 'synchronous' ||
+      m.pluginExecutionStrategy === 'job') &&
     // les champs optionnels sont simplement ignorés ici
     (m.pluginDisplayName === undefined || typeof m.pluginDisplayName === 'string') &&
     (m.pluginDescription === undefined || typeof m.pluginDescription === 'string') &&
@@ -102,6 +107,7 @@ export function loadWorkerPlugins() {
       ) {
         workerPlugins[mod.pluginName] = {
           run: mod.default,
+          executionStrategy: mod.pluginExecutionStrategy ?? 'synchronous',
           info: {
             displayName: mod.pluginDisplayName,
             description: mod.pluginDescription,

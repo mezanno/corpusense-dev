@@ -4,7 +4,7 @@ import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters
 import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
 import { Result } from '@/data/models/result/result';
 import { isAnnotationScope, isCanvasScope, toString } from '@/data/models/scope/scope.utils';
-import { Task, WorkerResponse, WorkerStatus } from '@/data/models/worker/worker';
+import { Task, WorkerEvent, WorkerResponse } from '@/data/models/worker/worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,
@@ -38,8 +38,8 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
   console.log(`Processing task for scope ${toString(task.scope)}`);
   if (!isCanvasScope(task.scope) && !isAnnotationScope(task.scope)) {
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: i18n.t('error_task_invalid_scope'),
+      event: WorkerEvent.RESULT_ERR,
+      message: i18n.t('error_task_invalid_scope'),
     };
   }
   const annotationRepository = getAnnotationRepository();
@@ -48,16 +48,16 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     const canvasWithSourceIdResult = await collectionRepository.getCanvasByScope(task.scope);
     if (!canvasWithSourceIdResult.ok) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: canvasWithSourceIdResult.error.message,
+        event: WorkerEvent.RESULT_ERR,
+        message: canvasWithSourceIdResult.error.message,
       };
     }
     const canvasWithSourceId = canvasWithSourceIdResult.value;
     const image = getImage(canvasWithSourceId.canvas);
     if (image.id === undefined) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: 'Image ID is undefined',
+        event: WorkerEvent.RESULT_ERR,
+        message: 'Image ID is undefined',
       };
     }
     let regions = JSON.stringify([]);
@@ -101,8 +101,8 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     const peroUrl = getValueForPluginParam(pluginName, 'apiUrl');
     if (peroUrl === null) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: 'Pero OCR API URL is not configured',
+        event: WorkerEvent.RESULT_ERR,
+        message: 'Pero OCR API URL is not configured',
       };
     }
 
@@ -123,8 +123,8 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     const imageUrl = sourceContent.type === 'local' ? localImageResult?.publicUrl : image.id;
     if (imageUrl === undefined) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: 'Image URL is undefined',
+        event: WorkerEvent.RESULT_ERR,
+        message: 'Image URL is undefined',
       };
     }
     const client = await Client.connect(peroUrl);
@@ -163,7 +163,7 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       }
 
       return {
-        status: WorkerStatus.COMPLETED,
+        event: WorkerEvent.RESULT_OK,
         content: savedAnnotations,
       };
     } catch (error) {
@@ -171,14 +171,14 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
         const peroError = peroResultError.parse(gradioResult.data);
         console.error('peroError: ', peroError[0].result.error);
         return {
-          status: WorkerStatus.ERROR,
-          statusMessage: peroError[0].result.error,
+          event: WorkerEvent.RESULT_ERR,
+          message: peroError[0].result.error,
         };
       } catch (err) {
         console.error('Error parsing peroResult:', err);
         return {
-          status: WorkerStatus.ERROR,
-          statusMessage: getErrorMessage(err),
+          event: WorkerEvent.RESULT_ERR,
+          message: getErrorMessage(err),
         };
       }
     }
@@ -186,8 +186,8 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     console.log('Error in peroocr worker: ', error);
 
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: getErrorMessage(error),
+      event: WorkerEvent.RESULT_ERR,
+      message: getErrorMessage(error),
     };
   }
 }

@@ -12,7 +12,9 @@ import { Result } from '@/data/models/result/result';
 import { Source, SourceContent, StoredBlob } from '@/data/models/source/source';
 import { StoredManifestContent, StoredManifestDetails } from '@/data/models/storedManifest';
 import { Tag } from '@/data/models/tag';
-import { Worker } from '@/data/models/worker/worker';
+import { TaskStatus, Worker, WorkerStatus } from '@/data/models/worker/worker';
+import { workerStatusOf } from '@/data/models/worker/workerStatusLaw';
+import { BaseError } from '@/utils/BaseError';
 import Dexie, { type EntityTable } from 'dexie';
 import 'dexie-observable';
 
@@ -109,6 +111,84 @@ db.version(31)
         collectionContent.content = [...collectionContent.content]
           .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
           .map(({ position: _position, ...rest }) => rest);
+      });
+  });
+
+db.version(32)
+  .stores({
+    workers: '&id, name, status, [scopeKey+name]',
+  })
+  .upgrade(async (tx) => {
+    await tx
+      .table('workers')
+      .toCollection()
+      .modify((worker: Worker) => {
+        worker.queue = worker.queue.map((task) => {
+          const previousStatus = String(task.status);
+          if (previousStatus === 'error') {
+            return { ...task, status: TaskStatus.COMPLETED_WITH_ERRORS };
+          }
+          const status = Object.values(TaskStatus).find(
+            (candidate) => String(candidate) === previousStatus,
+          );
+          if (status === undefined) {
+            throw new BaseError(
+              `Unknown persisted task status during migration: ${previousStatus}`,
+              { context: { workerId: worker.id, taskId: task.id, status: previousStatus } },
+            );
+          }
+          return { ...task, status };
+        });
+
+        const previousStatus = String(worker.status);
+        if (previousStatus === 'unfinished' || previousStatus === 'unfinished_with_errors') {
+          return;
+        }
+        if (previousStatus === 'error') {
+          worker.status = WorkerStatus.COMPLETED_WITH_ERRORS;
+          return;
+        }
+        if (previousStatus === 'all') {
+          throw new BaseError('The UI-only worker status "all" cannot be persisted', {
+            context: { workerId: worker.id },
+          });
+        }
+        if (
+          previousStatus !== 'error' &&
+          previousStatus !== 'waiting' &&
+          previousStatus !== 'posting' &&
+          previousStatus !== 'posted' &&
+          !Object.values(WorkerStatus).some((candidate) => String(candidate) === previousStatus)
+        ) {
+          throw new BaseError(
+            `Unknown persisted worker status during migration: ${previousStatus}`,
+            { context: { workerId: worker.id, status: previousStatus } },
+          );
+        }
+
+        if (worker.queue.length > 0) {
+          worker.status = workerStatusOf(worker.queue);
+          return;
+        }
+
+        const persistedStatus = Object.values(WorkerStatus).find(
+          (candidate) => String(candidate) === previousStatus,
+        );
+        if (
+          previousStatus === 'waiting' ||
+          previousStatus === 'posting' ||
+          previousStatus === 'posted'
+        ) {
+          worker.status = WorkerStatus.INPROGRESS;
+          return;
+        }
+        if (persistedStatus === undefined) {
+          throw new BaseError(
+            `Unknown persisted worker status during migration: ${previousStatus}`,
+            { context: { workerId: worker.id, status: previousStatus } },
+          );
+        }
+        worker.status = persistedStatus;
       });
   });
 

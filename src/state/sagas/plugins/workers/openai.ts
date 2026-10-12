@@ -2,7 +2,7 @@ import { LLMProfile } from '@/data/models/LLMProfile';
 import { Result } from '@/data/models/result/result';
 import { Scope } from '@/data/models/scope/scope';
 import { isAnnotationScope, isCanvasScope, toString } from '@/data/models/scope/scope.utils';
-import { Task, Worker, WorkerResponse, WorkerStatus } from '@/data/models/worker/worker';
+import { Task, Worker, WorkerEvent, WorkerResponse } from '@/data/models/worker/worker';
 import {
   getCollectionRepository,
   getModelRepository,
@@ -65,12 +65,12 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
     typeof worker.params !== 'object' ||
     !('profileId' in worker.params)
   ) {
-    return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_no_profileId') };
+    return { event: WorkerEvent.RESULT_ERR, message: i18n.t('error_no_profileId') };
   }
 
   const profileId = worker.params.profileId as string;
   if (profileId === undefined) {
-    return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_no_mistral_key') };
+    return { event: WorkerEvent.RESULT_ERR, message: i18n.t('error_no_mistral_key') };
   }
 
   const profiles: LLMProfile[] = (() => {
@@ -83,7 +83,7 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
   })();
   const profile = profiles.find((p) => p.id === profileId);
   if (profile === undefined) {
-    return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_no_mistral_key') };
+    return { event: WorkerEvent.RESULT_ERR, message: i18n.t('error_no_mistral_key') };
   }
 
   let model = undefined;
@@ -92,37 +92,37 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
     const collectionResult = await collectionRepository.getById(task.scope.collectionId);
     if (!collectionResult.ok) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: collectionResult.error.message,
+        event: WorkerEvent.RESULT_ERR,
+        message: collectionResult.error.message,
       };
     }
     const collection = collectionResult.value;
     const modelId = collection.modelId;
     if (modelId === undefined) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: i18n.t('error_model_undefined'),
+        event: WorkerEvent.RESULT_ERR,
+        message: i18n.t('error_model_undefined'),
       };
     }
     const modelRepository = getModelRepository();
     const modelResult = await modelRepository.getById(modelId);
     if (!modelResult.ok) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: modelResult.error.message,
+        event: WorkerEvent.RESULT_ERR,
+        message: modelResult.error.message,
       };
     }
     model = modelResult.value;
   } catch (error) {
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: getErrorMessage(error),
+      event: WorkerEvent.RESULT_ERR,
+      message: getErrorMessage(error),
     };
   }
 
   const text = await getText(task.scope);
   if (text === undefined || text.length === 0) {
-    return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_export_no_text') };
+    return { event: WorkerEvent.RESULT_ERR, message: i18n.t('error_export_no_text') };
   }
 
   const modelHasPreviousValueField = hasPreviousValueField(model);
@@ -168,13 +168,13 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
 
     console.log('Response from Worker:', response);
     return {
-      status: WorkerStatus.COMPLETED,
+      event: WorkerEvent.RESULT_OK,
       content: response.content,
     };
   } catch (error) {
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: getErrorMessage(error),
+      event: WorkerEvent.RESULT_ERR,
+      message: getErrorMessage(error),
     };
   }
 }

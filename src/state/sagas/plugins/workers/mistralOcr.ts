@@ -4,7 +4,7 @@ import { createAnnotation } from '@/data/models/annotations/annotation.factory';
 import { getAnnotationType } from '@/data/models/annotations/annotation.utils';
 import { Result } from '@/data/models/result/result';
 import { isAnnotationScope, isCanvasScope, toString } from '@/data/models/scope/scope.utils';
-import { Task, WorkerResponse, WorkerStatus } from '@/data/models/worker/worker';
+import { Task, WorkerEvent, WorkerResponse } from '@/data/models/worker/worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,
@@ -68,8 +68,8 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
   console.log(`Processing task for scope ${toString(task.scope)}`);
   if (!isCanvasScope(task.scope)) {
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: i18n.t('error_task_invalid_scope'),
+      event: WorkerEvent.RESULT_ERR,
+      message: i18n.t('error_task_invalid_scope'),
     };
   }
   const annotationRepository = getAnnotationRepository();
@@ -78,16 +78,16 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     const canvasWithSourceIdResult = await collectionRepository.getCanvasByScope(task.scope);
     if (!canvasWithSourceIdResult.ok) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: i18n.t('error_canvas_not_found'),
+        event: WorkerEvent.RESULT_ERR,
+        message: i18n.t('error_canvas_not_found'),
       };
     }
     const canvasWithSourceId = canvasWithSourceIdResult.value;
     const image = getImage(canvasWithSourceId.canvas);
     if (image.id === undefined) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: 'Image ID is undefined',
+        event: WorkerEvent.RESULT_ERR,
+        message: 'Image ID is undefined',
       };
     }
     let regions: Region[] = [];
@@ -141,7 +141,7 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     //return an error if no API key is found
     if (apiKey === null || apiKey === '') {
       console.log('No Mistral API key found');
-      return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_no_mistral_key') };
+      return { event: WorkerEvent.RESULT_ERR, message: i18n.t('error_no_mistral_key') };
     }
 
     const sourceRepository = getSourceRepository();
@@ -228,13 +228,13 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     }
     const newAnnotations = await annotationRepository.addAll(annotations);
     return {
-      status: WorkerStatus.COMPLETED,
+      event: WorkerEvent.RESULT_OK,
       content: newAnnotations,
     };
   } catch (error) {
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: getErrorMessage(error),
+      event: WorkerEvent.RESULT_ERR,
+      message: getErrorMessage(error),
     };
   }
 }

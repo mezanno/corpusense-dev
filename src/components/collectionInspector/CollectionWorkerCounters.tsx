@@ -12,8 +12,6 @@ const CollectionWorkerCounters = ({ collectionId }: { collectionId: string }) =>
       getWorkersByScopeAndStatus({ collectionId }, [
         WorkerStatus.INPROGRESS,
         WorkerStatus.INPROGRESS_WITH_ERRORS,
-        WorkerStatus.POSTING,
-        WorkerStatus.WAITING,
       ]),
     [collectionId, getWorkersByScopeAndStatus],
   );

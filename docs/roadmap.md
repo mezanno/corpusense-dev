@@ -4,13 +4,11 @@ _Travail ouvert, consolidé à partir des plans exécutés partiellement (`plan-
 
 ## Chantiers structurants
 
-### R1 — Loi de statut du worker (candidate 1, condition de R2)
+### R1 — Loi de statut du worker ✅ (condition de R2 satisfaite)
 
-**Problème** : une loi, quatre copies (repo `updateTaskStatus`, saga, `useJobRealtime`, UI — deux mappings d'icônes divergents) ; dérives connues : sweeper forçant `COMPLETED` sur des tâches jamais démarrées, `customWorker` écrivant `POSTED` en direct. (Le verrou de la galerie scope collection n'est plus une dérive : D3 tranchée en ce sens le 2026-10-12, cf. DECISIONS.md D-008.)
-**Cible** : module pur `workerStatusLaw.ts` près de l'enum (`src/data/models/worker/`) — événements `START · POST · JOB_ACCEPTED · RESULT_OK · RESULT_ERR · REQUEUE`, `workerStatusOf(queue)`, `recoveredOf(worker)`, prédicats de capacité, `taskStatusOfJobStatus` ; refus de transition en `FunctionResult.err(StatusChangeError)` ; zéro import Redux/Dexie/React/Supabase (D-008).
-**Ordre** : ① tests de caractérisation des copies actuelles (fake-indexeddb) → ② module + tests exhaustifs de la table de transitions → ③ ports un commit par copie (repo + transaction unique de `updateTaskStatus`, saga, realtime, plugins par événements, UI par prédicats + table unique de présentation) → ④ comportements-correctifs (sweeper via `RESULT_ERR`/`REQUEUE` ; verrou de la galerie inchangé — scope collection acté en D3).
-**Critère de sortie** : en dehors du module et de ses tests, `case WorkerStatus.` / `status === WorkerStatus.` n'apparaissent que dans la table de présentation et le filtre `ALL` ; un test prouve la disparition du `patch()` direct de `status`.
-**Loi de référence** : [statuts.md](./statuts.md) (consolidée 2026-10-09) — la table de transitions, les flows d'interruption/relaunch et la feuille de route de la mise à jour y sont spécifiés ; les décisions D1, D2 et D4 (split `TaskStatus`/`WorkerStatus`) y sont closes. **D3 et D5 closes le 2026-10-12** : verrou de la galerie scope collection ; table de présentation unique côté UI (`Record` exhaustif par enum, sans `default`). Rien ne reste à trancher — le chantier peut ouvrir.
+**Résultat** : loi pure `workerStatusLaw.ts`, transitions exhaustives, événements câblés au repository, saga, plugins et bridge realtime ; migration IndexedDB v31 → v32 ; tables de présentation UI exhaustives. Le timeout `POSTING` de stratégie 2 est fixé à 60 secondes.
+**Critère de sortie satisfait** : hors module et tests, les comparaisons/mappings worker passent par des prédicats ou les tables exhaustives de présentation ; les écritures brutes de statut sont limitées à la création/migration et à la transaction du repository ; le type de `patch()` exclut `status` et `queue`, avec assertion de type dédiée.
+**Vérification** : table de transitions autorisées/refusées, repository et migration v31 → v32 couverts par tests ciblés. Les flows et décisions métier sont documentés dans [statuts.md](./statuts.md). La galerie garde le verrou scope collection (D-008/D3) ; chaque enum a sa table UI `Record` exhaustive sans `default` (D-008/D5).
 
 ### R2 — Moteur de file headless, puis retraite de Redux-Saga (candidate 4, D-006)
 

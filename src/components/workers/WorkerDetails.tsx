@@ -1,4 +1,9 @@
-import { WorkerStatus } from '@/data/models/worker/worker';
+import { taskStatusPresentation } from '@/components/features/workers/statusPresentation';
+import {
+  canInterruptWorker,
+  canRecoverWorker,
+  isTaskWaiting,
+} from '@/data/models/worker/workerStatusLaw';
 import useWorkers from '@/hooks/data/workers/useWorkers';
 import { useAppDispatch } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
@@ -8,7 +13,6 @@ import { useTranslation } from 'react-i18next';
 import { useAlertDialogContext } from '../reducers/useAlertDialogContext';
 import { useWorkerContext } from '../reducers/WorkerContext';
 import ScopeLabel from '../ScopeLabel';
-import { getTaskStatusColor, getWorkerStatusIcon } from './workerUtils';
 
 const WorkerDetails = ({ workerId }: { workerId: string }) => {
   const { t } = useTranslation();
@@ -25,14 +29,8 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
     );
   }
 
-  const displayRestartButton =
-    worker.status === WorkerStatus.UNFINISHED ||
-    worker.status === WorkerStatus.UNFINISHED_WITH_ERRORS ||
-    worker.status === WorkerStatus.COMPLETED_WITH_ERRORS;
-
-  const displayStopButton =
-    worker.status === WorkerStatus.INPROGRESS ||
-    worker.status === WorkerStatus.INPROGRESS_WITH_ERRORS;
+  const displayRestartButton = canRecoverWorker(worker.status);
+  const displayStopButton = canInterruptWorker(worker.status);
 
   const handleRecoverWorker = () => {
     appDispatch(recoverWorkerRequest(worker));
@@ -114,12 +112,12 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
           {worker.queue.map((task) => (
             <li
               key={task.id}
-              className={`flex items-center gap-2 ${getTaskStatusColor(task.status)}`}
+              className={`flex items-center gap-2 ${taskStatusPresentation[task.status].color}`}
             >
               <span
-                className={`rounded px-2 py-1 text-sm ${getTaskStatusColor(task.status)} bg-opacity-10`}
+                className={`rounded px-2 py-1 text-sm ${taskStatusPresentation[task.status].color} bg-opacity-10`}
               >
-                {getWorkerStatusIcon(task.status)}
+                {taskStatusPresentation[task.status].icon}
               </span>
               <strong>{t('table_col_title_taskID')}</strong> {task.id} -{' '}
               <strong>{t('table_col_title_status')}</strong> {t(`worker_status_${task.status}`)}
@@ -128,7 +126,7 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
                   - <em>{task.statusMessage}</em>
                 </span>
               )}
-              {task.status !== WorkerStatus.WAITING && (
+              {!isTaskWaiting(task.status) && (
                 <div className='cursor-pointer hover:scale-110' title={t('btn_delete')}>
                   <CircleX size={20} onClick={() => handleRemoveResult(task.id)} />
                 </div>

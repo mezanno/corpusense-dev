@@ -1,28 +1,18 @@
 import z from 'zod';
 import { ScopeSchema } from '../scope/scope';
 import { WorkerCreateDTOSChema } from './worker.dto';
+import { TaskStatus, WorkerEvent, WorkerStatus } from './workerStatusLaw';
 
-export enum WorkerStatus {
-  ALL = 'all', // Special status to represent all workers
-  WAITING = 'waiting', // Worker is waiting to be processed
-  INPROGRESS = 'inprogress', // Worker is currently being processed
-  POSTING = 'posting', // Worker is being posted to an external service
-  POSTED = 'posted', // Worker has been posted to an external service
-  INPROGRESS_WITH_ERRORS = 'inprogress_with_errors', // Worker is being processed but encountered errors
-  UNFINISHED = 'unfinished', // Worker has been processed but not completed
-  UNFINISHED_WITH_ERRORS = 'unfinished_with_errors', // Worker has been processed but not completed and encountered errors
-  COMPLETED = 'completed', // Worker has been successfully completed
-  ERROR = 'error', // Worker encountered an error during processing
-  COMPLETED_WITH_ERRORS = 'completed_with_errors', // Worker has been completed but with errors
-}
+export { TaskStatus, WorkerEvent, WorkerStatus } from './workerStatusLaw';
 
 const WorkerStatusSchema = z.enum(WorkerStatus);
+const TaskStatusSchema = z.enum(TaskStatus);
 
 const TaskSchema = z
   .object({
     id: z.number(),
     scope: ScopeSchema,
-    status: WorkerStatusSchema,
+    status: TaskStatusSchema,
     statusMessage: z.string().optional(),
     previousTask: z
       .object({
@@ -48,8 +38,8 @@ export type Worker = z.infer<typeof WorkerSchema>;
 
 const WorkerResponseSchema = z
   .object({
-    status: WorkerStatusSchema,
-    statusMessage: z.string().optional(),
+    event: z.enum([WorkerEvent.JOB_ACCEPTED, WorkerEvent.RESULT_OK, WorkerEvent.RESULT_ERR]),
+    message: z.string().optional(),
     content: z.unknown().optional(),
   })
   .strict();

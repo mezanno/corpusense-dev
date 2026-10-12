@@ -1,7 +1,7 @@
 import { Result } from '@/data/models/result/result';
 import { Scope } from '@/data/models/scope/scope';
 import { isAnnotationScope, isCanvasScope, toString } from '@/data/models/scope/scope.utils';
-import { Task, WorkerResponse, WorkerStatus } from '@/data/models/worker/worker';
+import { Task, WorkerEvent, WorkerResponse } from '@/data/models/worker/worker';
 import {
   getCollectionRepository,
   getModelRepository,
@@ -72,31 +72,31 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     const collectionResult = await collectionRepository.getById(task.scope.collectionId);
     if (!collectionResult.ok) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: collectionResult.error.message,
+        event: WorkerEvent.RESULT_ERR,
+        message: collectionResult.error.message,
       };
     }
     const collection = collectionResult.value;
     const modelId = collection.modelId;
     if (modelId === undefined) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: i18n.t('error_model_undefined'),
+        event: WorkerEvent.RESULT_ERR,
+        message: i18n.t('error_model_undefined'),
       };
     }
     const modelRepository = getModelRepository();
     const modelResult = await modelRepository.getById(modelId);
     if (!modelResult.ok) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: modelResult.error.message,
+        event: WorkerEvent.RESULT_ERR,
+        message: modelResult.error.message,
       };
     }
     model = modelResult.value;
   } catch (error) {
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: getErrorMessage(error),
+      event: WorkerEvent.RESULT_ERR,
+      message: getErrorMessage(error),
     };
   }
 
@@ -104,14 +104,14 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
   //return an error if no text is found
   if (text === undefined || text.length === 0) {
     console.log('No text found for this canvas');
-    return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_export_no_text') };
+    return { event: WorkerEvent.RESULT_ERR, message: i18n.t('error_export_no_text') };
   }
 
   const apiKey = getValueForPluginParam(pluginName, 'apiKey');
   //return an error if no API key is found
   if (apiKey === null || apiKey === '') {
     console.log('No Mistral API key found');
-    return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_no_mistral_key') };
+    return { event: WorkerEvent.RESULT_ERR, message: i18n.t('error_no_mistral_key') };
   }
 
   const modelHasPreviousValueField = hasPreviousValueField(model);
@@ -171,14 +171,14 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
 
     console.log('Response from Mistral:', response);
     return {
-      status: WorkerStatus.COMPLETED,
+      event: WorkerEvent.RESULT_OK,
       // content: response.choices[0].message.content as string,
       content: response.choices[0]?.message?.content as string,
     };
   } catch (error) {
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: getErrorMessage(error),
+      event: WorkerEvent.RESULT_ERR,
+      message: getErrorMessage(error),
     };
   }
 }

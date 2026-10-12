@@ -20,14 +20,19 @@ import {
 } from '@/data/models/source/source';
 import { AddSourceDTO } from '@/data/models/source/source.dto';
 import { Tag } from '@/data/models/tag';
-import { Task, Worker, WorkerStatus } from '@/data/models/worker/worker';
+import { Task, Worker } from '@/data/models/worker/worker';
+import { WorkerCreateDTO } from '@/data/models/worker/worker.dto';
+import {
+  StatusChangeError,
+  TaskEvent,
+  WorkerLifecycleEvent,
+} from '@/data/models/worker/workerStatusLaw';
 import { DBError, SourceAlreadyInProjectError } from '@/data/utils/errors';
 import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import { FunctionResult } from '@/utils/functionResult';
 import { NotFoundError } from '@/utils/NotFoundError';
 import { Canvas } from '@iiif/presentation-3';
 import { EntityNotFoundError } from '../EntityNotFoundError';
-import { StatusChangeError } from './workers';
 
 export interface AnnotationRepository {
   getById(id: string): Promise<FunctionResult<Annotation, EntityNotFoundError>>;
@@ -190,14 +195,18 @@ export interface WorkerRepository {
   getByScope(scope: Scope, subScope: boolean): Promise<Worker[]>;
   getByNamesAndScope(workerName: string[], scope: Scope): Promise<Worker[]>;
 
-  add(worker: Worker): Promise<Worker>;
+  add(worker: WorkerCreateDTO, queue?: Task[]): Promise<Worker>;
   addAll(workers: Worker[]): Promise<void>;
 
-  patch(id: string, changes: Partial<Worker>): Promise<void>;
+  patch(id: string, changes: Partial<Omit<Worker, 'status' | 'queue'>>): Promise<void>;
+  updateWorkerStatus(
+    workerId: string,
+    event: WorkerLifecycleEvent,
+  ): Promise<FunctionResult<Worker, EntityNotFoundError | StatusChangeError>>;
   updateTaskStatus(
     workerId: string,
     taskId: number,
-    newStatus: WorkerStatus,
+    event: TaskEvent,
     statusMessage?: string,
   ): Promise<FunctionResult<Task, EntityNotFoundError | StatusChangeError>>;
 

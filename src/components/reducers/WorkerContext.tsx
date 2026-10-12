@@ -1,7 +1,13 @@
 import { Result } from '@/data/models/result/result';
 import { Scope } from '@/data/models/scope/scope';
 import { isCollectionScope, isSameScope } from '@/data/models/scope/scope.utils';
-import { Task, Worker, WorkerStatus } from '@/data/models/worker/worker';
+import { Task, TaskStatus, Worker, WorkerStatus } from '@/data/models/worker/worker';
+import {
+  isTaskCapacityBlocking,
+  isTaskJobTracked,
+  isTaskTerminal,
+  isWorkerInProgress,
+} from '@/data/models/worker/workerStatusLaw';
 import {
   getResultLiveRepository,
   getWorkerLiveRepository,
@@ -14,13 +20,17 @@ type WorkerContextValue = {
   getWorkerById: (id: string) => Worker | undefined;
   getTaskById: (workerId: string, taskId: number) => Task | undefined;
   getWorkersByStatus: (status: WorkerStatus | WorkerStatus[]) => Worker[];
-  getStatus: (scope: Scope) => WorkerStatus | undefined;
+  getStatus: (scope: Scope) => ScopeStatus | undefined;
   isWorkerOrTaskRunning: (scope: Scope) => boolean;
   hasResult: (workerId: string) => boolean;
   getWorkersByScope: (scope: Scope) => Worker[];
   getWorkersByScopeAndStatus: (scope: Scope, status: WorkerStatus | WorkerStatus[]) => Worker[];
-  getPostedWorkers: () => Worker[]; // Add the getPostedWorkers function to the context value
+  getWorkersWithTrackedJobs: () => Worker[];
 };
+
+export type ScopeStatus =
+  | { kind: 'worker'; status: WorkerStatus }
+  | { kind: 'task'; status: TaskStatus };
 
 const WorkerContext = createContext<WorkerContextValue | undefined>(undefined);
 
@@ -68,10 +78,9 @@ export const WorkerProvider = ({ children }: Props) => {
         .sort((w1, w2) => w1.name.localeCompare(w2.name));
     };
 
-    //return the list of workers which have a task with the status posted
-    const getPostedWorkers = () => {
+    const getWorkersWithTrackedJobs = () => {
       return Object.values(workers).filter((worker) =>
-        worker.queue.some((task) => task.status === WorkerStatus.POSTED),
+        worker.queue.some((task) => isTaskJobTracked(task.status)),
       );
     };
 
@@ -81,29 +90,19 @@ export const WorkerProvider = ({ children }: Props) => {
      * @param scope The scope of the canvas (collectionId + canvasId)
      * @returns
      */
-    const getStatus = (scope: Scope) => {
+    const getStatus = (scope: Scope): ScopeStatus | undefined => {
       const existingWorker = workers.find((worker) => isSameScope(worker.scope, scope));
       if (existingWorker !== undefined) {
-        return existingWorker.status;
+        return { kind: 'worker', status: existingWorker.status };
       }
       // If no worker is found, check if a worker is running and has a task for the given scope
-      const runningWorkers = workers.filter(
-        (worker) =>
-          worker.status === WorkerStatus.INPROGRESS ||
-          worker.status === WorkerStatus.INPROGRESS_WITH_ERRORS,
-      );
+      const runningWorkers = workers.filter((worker) => isWorkerInProgress(worker.status));
       for (let j = 0; j < runningWorkers.length; j++) {
         const worker = runningWorkers[j];
         for (let i = 0; i < worker.queue.length; i++) {
           const task = worker.queue[i];
-          if (
-            isSameScope(task.scope, scope) &&
-            (task.status === WorkerStatus.INPROGRESS ||
-              task.status === WorkerStatus.WAITING ||
-              task.status === WorkerStatus.POSTED ||
-              task.status === WorkerStatus.POSTING)
-          ) {
-            return task.status;
+          if (isSameScope(task.scope, scope) && !isTaskTerminal(task.status)) {
+            return { kind: 'task', status: task.status };
           }
         }
       }
@@ -114,10 +113,7 @@ export const WorkerProvider = ({ children }: Props) => {
       //check if there is a worker running for the given scope
       //a worker is running if its status is INPROGRESS, INPROGRESS_WITH_ERRORS
       const isRunning = workers.some(
-        (worker) =>
-          isSameScope(worker.scope, scope) &&
-          (worker.status === WorkerStatus.INPROGRESS ||
-            worker.status === WorkerStatus.INPROGRESS_WITH_ERRORS),
+        (worker) => isSameScope(worker.scope, scope) && isWorkerInProgress(worker.status),
       );
       if (isRunning) {
         return true;
@@ -127,16 +123,10 @@ export const WorkerProvider = ({ children }: Props) => {
       //check if a running worker contains the a task with the scope in its queue
       for (let j = 0; j < workers.length; j++) {
         const worker = workers[j];
-        if (
-          worker.status === WorkerStatus.INPROGRESS ||
-          worker.status === WorkerStatus.INPROGRESS_WITH_ERRORS
-        ) {
+        if (isWorkerInProgress(worker.status)) {
           for (let i = 0; i < worker.queue.length; i++) {
             const task = worker.queue[i];
-            if (
-              (isSameScope(task.scope, scope) && task.status === WorkerStatus.INPROGRESS) ||
-              (isSameScope(task.scope, scope) && task.status === WorkerStatus.WAITING)
-            ) {
+            if (isSameScope(task.scope, scope) && isTaskCapacityBlocking(task.status)) {
               return true;
             }
           }
@@ -155,7 +145,7 @@ export const WorkerProvider = ({ children }: Props) => {
       getTaskById,
       getWorkersByStatus,
       getStatus,
-      getPostedWorkers,
+      getWorkersWithTrackedJobs,
       isWorkerOrTaskRunning,
       hasResult,
       getWorkersByScope,

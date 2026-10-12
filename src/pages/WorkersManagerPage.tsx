@@ -7,38 +7,37 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 
-type Filter = {
-  status: WorkerStatus;
-  selected: boolean;
-};
+type FilterStatus = WorkerStatus | 'all';
 
 const WorkersManagerPage = () => {
   const { t } = useTranslation();
   const { workerId } = useParams();
-  const [filters, setFilters] = useState<Filter[]>(
-    Object.values(WorkerStatus).map((status) => ({
+  const statuses = Object.values(WorkerStatus);
+  const [selectedStatuses, setSelectedStatuses] = useState<WorkerStatus[]>(statuses);
+  const allSelected = selectedStatuses.length === statuses.length;
+  const filters = [
+    { status: 'all' as const, selected: allSelected },
+    ...statuses.map((status) => ({
       status,
-      selected: true,
+      selected: selectedStatuses.includes(status),
     })),
-  );
+  ];
   const workers = useWorkerContext()
-    .getWorkersByStatus(filters.filter((f) => f.selected).map((f) => f.status))
+    .getWorkersByStatus(selectedStatuses)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   const initialSelectedWorkerId =
     workerId !== undefined && workers.find((w) => w.id === workerId) ? workerId : null;
   const [selectedWorkerId, setSelectedWorkerId] = useState<string | null>(initialSelectedWorkerId);
 
-  const updateFilter = (filter: Filter) => {
-    if (filter.status === WorkerStatus.ALL) {
-      const allSelected = filters.every((f) => f.selected);
-      setFilters((prev) => prev.map((f) => ({ ...f, selected: !allSelected })));
+  const updateFilter = (status: FilterStatus) => {
+    if (status === 'all') {
+      setSelectedStatuses(allSelected ? [] : statuses);
       return;
-    } else {
-      setFilters((prev) =>
-        prev.map((f) => (f.status === filter.status ? { ...f, selected: !f.selected } : f)),
-      );
     }
+    setSelectedStatuses((prev) =>
+      prev.includes(status) ? prev.filter((selected) => selected !== status) : [...prev, status],
+    );
   };
 
   return (
@@ -48,7 +47,7 @@ const WorkersManagerPage = () => {
           <div className='flex h-full flex-col overflow-y-auto'>
             <div className='m-2 flex flex-wrap space-y-2 space-x-2'>
               {filters.map((filter) => (
-                <div key={filter.status} onClick={() => updateFilter(filter)}>
+                <div key={filter.status} onClick={() => updateFilter(filter.status)}>
                   <input
                     type='checkbox'
                     checked={filter.selected}

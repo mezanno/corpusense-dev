@@ -1,6 +1,12 @@
 import { workerPlugins } from '@/App';
 import { useWorkerContext } from '@/components/reducers/WorkerContext';
-import { WorkerStatus } from '@/data/models/worker/worker';
+import { TaskStatus, WorkerEvent } from '@/data/models/worker/worker';
+import type { TaskEvent } from '@/data/models/worker/workerStatusLaw';
+import {
+  isTaskTerminal,
+  isWorkerUnfinished,
+  taskStatusOfJobStatus,
+} from '@/data/models/worker/workerStatusLaw';
 import { getWorkerRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { deleteFile } from '@/state/sagas/plugins/workers/supabase/utils';
 import { JobRow, supabase } from '@/utils/config';
@@ -19,179 +25,209 @@ const payloadSchema = z.object({
 
 const useJobRealtime = () => {
   const channelRef = useRef<RealtimeChannel | null>(null);
-  const { getPostedWorkers } = useWorkerContext();
-
-  const workersPosted = getPostedWorkers();
-  const workersPostedRef = useRef(workersPosted);
-
-  useEffect(() => {
-    workersPostedRef.current = workersPosted;
-  }, [workersPosted]);
+  const { workers } = useWorkerContext();
+  const workersRef = useRef(workers);
+  const fetchJobUpdatesRef = useRef<(() => Promise<void>) | null>(null);
 
   useEffect(() => {
-    // Serializes async work per worker id, so concurrent polling/realtime updates for the same worker never overlap
+    workersRef.current = workers;
+    void fetchJobUpdatesRef.current?.();
+  }, [workers]);
+
+  useEffect(() => {
+    // Per-worker mutex, implemented as a map: worker id -> last promise queued for that worker.
+    // Why it is needed: processing a job reads the worker from IndexedDB, then writes back the
+    // updated task queue. Two jobs of the same worker can arrive at the same time (a realtime
+    // event and the 20 s catch-up, or two tasks finishing together). Without serialization,
+    // both would read the same queue and the second write would overwrite the first one.
     const workerLocks = new Map<string, Promise<unknown>>();
+    // Runs `task` only after every task previously queued for `workerId` has finished.
+    // Different workers do not block each other.
+    // - `previous.catch(() => undefined)`: a failure of the previous task must not prevent this
+    //   one from running (the failure is still reported to the previous task's own caller).
+    // - The `finally` removes the map entry when this task is still the last one queued, so the
+    //   map does not grow forever. If another task was queued meanwhile, the entry is kept.
+    // - The trailing `.catch(() => undefined)` only avoids an unhandled rejection on the
+    //   cleanup chain; the caller still receives the real result or error through `run`.
     const withWorkerLock = <T,>(workerId: string, task: () => Promise<T>): Promise<T> => {
       const previous = workerLocks.get(workerId) ?? Promise.resolve();
       const run = previous.catch(() => undefined).then(task);
-      workerLocks.set(
-        workerId,
-        run.catch(() => undefined),
-      );
+      workerLocks.set(workerId, run);
+      void run
+        .finally(() => {
+          if (workerLocks.get(workerId) === run) workerLocks.delete(workerId);
+        })
+        .catch(() => undefined);
       return run;
     };
 
-    /**
-     * Processes a single task update from a Supabase JobRow.
-     * Re-reads the worker from IndexedDB (must be called under withWorkerLock) to avoid acting on stale state.
-     * Deletes completed jobs from Supabase.
-     */
-    const processSingleTask = async (workerId: string, job: JobRow) => {
+    // Ids of jobs already confirmed deleted from Supabase. Every IndexedDB write changes
+    // `workers`, which triggers a new fetchJobUpdates; a fetch that started before the deletion
+    // still holds a stale snapshot containing the job. Without this set, that stale job would be
+    // processed again and its deletion retried for nothing. Ids are never reused, so it is safe.
+    const deletedJobIds = new Set<number>();
+
+    // Acknowledges a job: its result is already persisted in IndexedDB, so Supabase no longer
+    // needs to keep it. First delete the uploaded file (only if the job succeeded), then the
+    // cs_jobs row.
+    const acknowledgeJob = async (job: JobRow, removeUpload: boolean) => {
+      if (removeUpload) {
+        try {
+          const payload = payloadSchema.safeParse(job.payload);
+          if (payload.success) {
+            const id = payload.data.url.split('/').pop();
+            if (id !== undefined) await deleteFile(`uploads/${id}`);
+          }
+        } catch (error) {
+          // A failed file cleanup must not prevent the job row from being deleted
+          console.error(`Error deleting upload of job ${job.id} from Supabase storage:`, error);
+        }
+      }
+
+      // `.select('id')` returns the rows actually deleted: without it, a delete rejected by
+      // RLS or matching no row would report neither an error nor any signal.
+      const { data, error } = await supabase
+        .from('cs_jobs')
+        .delete()
+        .eq('task_id', job.task_id)
+        .eq('worker_id', job.worker_id)
+        .select('id');
+      if (error) {
+        console.error(`Error deleting processed job ${job.id} from Supabase:`, error);
+      } else if (data.length === 0) {
+        console.warn(`Supabase job ${job.id} was not deleted (no matching row or delete denied)`);
+      }
+    };
+
+    // Handles a Supabase job for a local task:
+    // 1. find the worker/task in IndexedDB;
+    // 2. map the job status to a task event;
+    // 3. for a `completed` job, let the plugin process the result;
+    // 4. persist the new state in IndexedDB (status law);
+    // 5. acknowledge (delete) the job only once the terminal state is persisted.
+    const processSingleTask = async (job: JobRow) => {
+      // Checked inside the worker lock, so a deletion done by a previous queued task is seen.
+      if (deletedJobIds.has(job.id)) return;
       const workerRepository = getWorkerRepository();
-      const workerResult = await workerRepository.getById(workerId);
+      const workerResult = await workerRepository.getById(job.worker_id);
       if (!workerResult.ok) {
-        console.warn(`Worker not found: ${workerId}`);
+        console.warn(`Worker not found: ${job.worker_id}`);
         return;
       }
       const worker = workerResult.value;
-      const task = worker.queue.find((t) => t.id === job.task_id);
-
+      const task = worker.queue.find((queuedTask) => queuedTask.id === job.task_id);
       if (!task) {
         console.warn(`Task not found in worker ${worker.id} for task_id: ${job.task_id}`);
         return;
       }
 
-      // Map Supabase job status to WorkerStatus
-      const statusMap: Record<string, WorkerStatus> = {
-        pending: WorkerStatus.POSTED,
-        processing: WorkerStatus.INPROGRESS,
-        failed: WorkerStatus.ERROR,
-        completed: WorkerStatus.COMPLETED,
-      };
-      let taskStatus = statusMap[job.status] ?? WorkerStatus.ERROR;
-      let statusMessage = '';
-
-      // Skip processing if task is already finished locally; only clean up Supabase if it was a success
-      if (task.status === WorkerStatus.COMPLETED || task.status === WorkerStatus.ERROR) {
-        if (task.status === WorkerStatus.COMPLETED && job.status === 'completed') {
-          await supabase.from('cs_jobs').delete().eq('id', job.id);
-        }
+      const mappedStatus = taskStatusOfJobStatus(job.status);
+      if (!mappedStatus.ok) {
+        console.error('Unknown Supabase job status:', mappedStatus.error);
         return;
       }
 
-      // Handle successful results
+      // Task already COMPLETED locally (e.g. a previous deletion failed): nothing to reprocess,
+      // just retry the cleanup if the job is terminal.
+      if (task.status === TaskStatus.COMPLETED) {
+        if (isTaskTerminal(mappedStatus.value))
+          await acknowledgeJob(job, job.status === 'completed');
+        return;
+      }
+
+      // Interrupted worker: ignore intermediate updates (pending/processing), but a terminal
+      // result must still be recorded.
+      if (isWorkerUnfinished(worker.status) && !isTaskTerminal(mappedStatus.value)) {
+        return;
+      }
+
+      let event: TaskEvent = {
+        type: WorkerEvent.JOB_DELIVERED,
+        jobStatus: job.status,
+      };
+      let statusMessage =
+        job.status === 'failed'
+          ? typeof job.error === 'string'
+            ? job.error
+            : JSON.stringify(job.error)
+          : undefined;
+
       if (job.status === 'completed') {
         const plugin = workerPlugins[job.plugin_name];
-
         if (job.result !== null && plugin?.processResult) {
           try {
             const response = await plugin.processResult(job.result, task, job.worker_category);
-            if (response.status === WorkerStatus.ERROR) {
-              taskStatus = WorkerStatus.ERROR;
-              statusMessage = response.statusMessage ?? 'Plugin processing error';
+            if (response.event === WorkerEvent.RESULT_ERR) {
+              event = { type: WorkerEvent.RESULT_ERR };
+              statusMessage = response.message ?? 'Plugin processing error';
+            } else if (response.event === WorkerEvent.JOB_ACCEPTED) {
+              console.error(`Result processor ${job.plugin_name} returned a job-accepted event`);
+              event = { type: WorkerEvent.RESULT_ERR };
+              statusMessage = 'Invalid result processor response';
             }
           } catch (error) {
             console.error(`Error in processResult for plugin ${job.plugin_name}:`, error);
-            taskStatus = WorkerStatus.ERROR;
-            // Le message porté par l'erreur typée du plugin est plus cause que le constat
-            // « processing failed » : c'est lui qui doit survivre jusqu'au statut persisté.
+            event = { type: WorkerEvent.RESULT_ERR };
             statusMessage =
               getErrorMessage(error) || `Result processing failed for ${job.plugin_name}`;
           }
         }
-      } else if (job.status === 'failed') {
-        // Handle failures
-        statusMessage = typeof job.error === 'string' ? job.error : JSON.stringify(job.error);
       }
 
-      // Update the local queue
-      await workerRepository.updateTaskStatus(worker.id, task.id, taskStatus, statusMessage);
+      const updateResult = await workerRepository.updateTaskStatus(
+        worker.id,
+        task.id,
+        event,
+        statusMessage,
+      );
+      if (!updateResult.ok) {
+        console.error('Unable to persist delivered job status:', updateResult.error);
+        return;
+      }
 
-      // Only remove the job once it succeeded and its result was processed without error; keep it otherwise for troubleshooting
-      if (job.status === 'completed' && taskStatus === WorkerStatus.COMPLETED) {
-        const { data } = await supabase
-          .from('cs_jobs')
-          .select()
-          .eq('task_id', task.id)
-          .eq('worker_id', worker.id)
-          .single();
-        const payload = payloadSchema.safeParse(data?.payload);
-        if (payload.success) {
-          //id is the last part of the url after the last slash
-          const id = payload.data.url.split('/').pop();
-          if (id !== undefined) {
-            await deleteFile(`uploads/${id}`);
-          }
-        }
-
-        const { error } = await supabase
-          .from('cs_jobs')
-          .delete()
-          .eq('task_id', task.id)
-          .eq('worker_id', worker.id);
-
-        if (error) console.error('Error deleting processed job from Supabase:', error);
+      // Delete the job only if the persisted state is terminal. The uploaded file is removed
+      // only on full success; on error, keep everything for troubleshooting.
+      if (isTaskTerminal(updateResult.value.status)) {
+        await acknowledgeJob(
+          job,
+          job.status === 'completed' && updateResult.value.status === TaskStatus.COMPLETED,
+        );
       }
     };
 
-    /**
-     * Fetches updates from Supabase for all workers currently in POSTED state.
-     */
+    // Catch-up: on mount, on every workers change and every 20 s, since realtime events can be
+    // missed (disconnection, inactive tab). Jobs of the same worker run serially through
+    // withWorkerLock.
     const fetchJobUpdates = async () => {
-      const postedWorkers = workersPostedRef.current;
-      for (const worker of postedWorkers) {
-        const { data, error } = await supabase
-          .from('cs_jobs')
-          .select('*')
-          .eq('worker_id', worker.id);
+      const workerIds = workersRef.current.map((worker) => worker.id);
+      if (workerIds.length === 0) return;
 
-        if (error) {
-          console.error(`Error fetching updates for worker ${worker.id}:`, error);
-          continue;
-        }
+      const { data, error } = await supabase.from('cs_jobs').select('*').in('worker_id', workerIds);
+      if (error) {
+        console.error('Error fetching Supabase job updates:', error);
+        return;
+      }
 
-        if (data?.length) {
-          for (const job of data) {
-            await withWorkerLock(worker.id, () => processSingleTask(worker.id, job));
-          }
-        } else {
-          // No job left in Supabase for this worker: mark any still-pending task as completed
-          await withWorkerLock(worker.id, async () => {
-            const workerRepository = getWorkerRepository();
-            // re-read the freshest state under the lock, since it may have changed while waiting
-            const currentWorkerResult = await workerRepository.getById(worker.id);
-            if (!currentWorkerResult.ok) return;
-
-            const currentWorker = currentWorkerResult.value;
-            const updatedQueue = currentWorker.queue.map((task) =>
-              task.status === WorkerStatus.COMPLETED || task.status === WorkerStatus.ERROR
-                ? task
-                : { ...task, status: WorkerStatus.COMPLETED },
-            );
-            const anyError = updatedQueue.some((t) => t.status === WorkerStatus.ERROR);
-
-            await workerRepository.patch(worker.id, {
-              status: anyError ? WorkerStatus.COMPLETED_WITH_ERRORS : WorkerStatus.COMPLETED,
-              queue: updatedQueue,
-            });
-          });
+      for (const job of data ?? []) {
+        try {
+          await withWorkerLock(job.worker_id, () => processSingleTask(job));
+        } catch (jobError) {
+          console.error(`Error processing Supabase job ${job.id}:`, jobError);
         }
       }
     };
 
-    /**
-     * Handles live updates from Supabase Realtime.
-     */
     const handleJobRowUpdate = async (payload: RealtimePostgresUpdatePayload<JobRow>) => {
-      const job = payload.new;
       try {
-        await withWorkerLock(job.worker_id, () => processSingleTask(job.worker_id, job));
+        await withWorkerLock(payload.new.worker_id, () => processSingleTask(payload.new));
       } catch (error) {
         console.error('Error processing realtime job update:', error);
       }
     };
 
-    // Initialize Realtime Subscription
+    // Realtime subscription: Supabase pushes every UPDATE of a cs_jobs row (the worker backend
+    // changes `status`/`result` when a job progresses). Each update is processed under the
+    // worker lock. Realtime is best-effort, hence the periodic fetchJobUpdates below.
     const channel = supabase
       .channel('job-updates')
       .on<JobRow>(
@@ -199,6 +235,9 @@ const useJobRealtime = () => {
         { event: 'UPDATE', schema: 'public', table: 'cs_jobs' },
         (payload) => void handleJobRowUpdate(payload),
       )
+      // `subscribe` calls back with the connection state of the channel. REALTIME_SUBSCRIBE_STATES
+      // has SUBSCRIBED (listening), plus CLOSED, TIMED_OUT and CHANNEL_ERROR. Only SUBSCRIBED is
+      // logged; on the other states updates may be missed until the next catch-up fetch.
       .subscribe((status) => {
         if (status === REALTIME_SUBSCRIBE_STATES.SUBSCRIBED) {
           console.log('Successfully subscribed to REALTIME job updates');
@@ -206,17 +245,16 @@ const useJobRealtime = () => {
       });
 
     channelRef.current = channel;
-
-    // Trigger initial sync immediately
+    fetchJobUpdatesRef.current = fetchJobUpdates;
     void fetchJobUpdates();
 
-    // Setup periodic polling every 20 seconds
     const interval = setInterval(() => {
       void fetchJobUpdates();
     }, 20000);
 
     return () => {
       clearInterval(interval);
+      fetchJobUpdatesRef.current = null;
       if (channelRef.current) {
         void supabase.removeChannel(channelRef.current);
         channelRef.current = null;

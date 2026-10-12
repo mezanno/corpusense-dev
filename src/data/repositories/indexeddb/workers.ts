@@ -2,21 +2,20 @@ import { Scope } from '@/data/models/scope/scope';
 import { isCollectionScope } from '@/data/models/scope/scope.utils';
 import { Task, Worker, WorkerStatus } from '@/data/models/worker/worker';
 import { WorkerCreateDTO } from '@/data/models/worker/worker.dto';
-import { BaseError } from '@/utils/BaseError';
+import {
+  isWorkerUnfinished,
+  StatusChangeError,
+  TaskEvent,
+  transitionTaskStatus,
+  transitionWorkerStatus,
+  WorkerLifecycleEvent,
+  workerStatusOf,
+} from '@/data/models/worker/workerStatusLaw';
 import { FunctionResult } from '@/utils/functionResult';
 import { EntityNotFoundError } from '../EntityNotFoundError';
 import { db } from './db';
 import { WorkerRepository } from './types';
 import { computeScopeKey } from './utils';
-
-export class StatusChangeError extends BaseError {
-  constructor(context: { workerId: string; taskId: string; newStatus: WorkerStatus }) {
-    super(
-      `Task ${context.taskId} from worker ${context.workerId} cannot change to status ${context.newStatus}`,
-      { context },
-    );
-  }
-}
 
 export class IndexedDBWorkerRepository implements WorkerRepository {
   async getAll(): Promise<Worker[]> {
@@ -53,13 +52,13 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
     return workers.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
-  async add(worker: WorkerCreateDTO): Promise<Worker> {
+  async add(worker: WorkerCreateDTO, queue: Task[] = []): Promise<Worker> {
     const newWorker: Worker = {
       ...worker,
       scopeKey: computeScopeKey(worker.scope),
       status: WorkerStatus.INPROGRESS,
       createdAt: new Date().toISOString(),
-      queue: [],
+      queue,
       estimatedDuration: 0, // Default to 0, can be updated later
     };
     await db.workers.add(newWorker);
@@ -70,91 +69,65 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
     await db.workers.bulkAdd(workers);
   }
 
-  async patch(id: string, changes: Partial<Worker>): Promise<void> {
+  async patch(id: string, changes: Partial<Omit<Worker, 'status' | 'queue'>>): Promise<void> {
     await db.workers.update(id, changes);
+  }
+
+  async updateWorkerStatus(
+    workerId: string,
+    event: WorkerLifecycleEvent,
+  ): Promise<FunctionResult<Worker, EntityNotFoundError | StatusChangeError>> {
+    return await db.transaction('rw', db.workers, async () => {
+      const worker = await db.workers.get(workerId);
+      if (!worker) {
+        return FunctionResult.err(new EntityNotFoundError({ entity: 'Worker', id: workerId }));
+      }
+      const statusResult = transitionWorkerStatus(worker, event);
+      if (!statusResult.ok) return statusResult;
+
+      const updatedWorker = { ...worker, status: statusResult.value };
+      await db.workers.update(workerId, { status: updatedWorker.status });
+      return FunctionResult.ok(updatedWorker);
+    });
   }
 
   async updateTaskStatus(
     workerId: string,
     taskId: number,
-    newStatus: WorkerStatus,
+    event: TaskEvent,
     statusMessage?: string,
   ): Promise<FunctionResult<Task, EntityNotFoundError | StatusChangeError>> {
-    const worker = await db.workers.get(workerId);
-    if (!worker) {
-      return FunctionResult.err(new EntityNotFoundError({ entity: 'Worker', id: workerId }));
-    }
-    const taskIndex = worker.queue.findIndex((task) => task.id === taskId);
-    if (taskIndex === -1) {
-      return FunctionResult.err(
-        new EntityNotFoundError({ entity: 'Task', id: `${workerId}_${taskId}` }),
+    return await db.transaction('rw', db.workers, async () => {
+      const worker = await db.workers.get(workerId);
+      if (!worker) {
+        return FunctionResult.err(new EntityNotFoundError({ entity: 'Worker', id: workerId }));
+      }
+      const taskIndex = worker.queue.findIndex((task) => task.id === taskId);
+      if (taskIndex === -1) {
+        return FunctionResult.err(
+          new EntityNotFoundError({ entity: 'Task', id: `${workerId}_${taskId}` }),
+        );
+      }
+
+      const task = worker.queue[taskIndex];
+      const statusResult = transitionTaskStatus(task.status, event, workerId, taskId);
+      if (!statusResult.ok) return statusResult;
+
+      const updatedTask: Task = {
+        ...task,
+        status: statusResult.value,
+        statusMessage,
+      };
+      const updatedQueue = worker.queue.map((queuedTask, index) =>
+        index === taskIndex ? updatedTask : queuedTask,
       );
-    }
-    const currentStatus = worker.queue[taskIndex].status;
-    switch (newStatus) {
-      case WorkerStatus.POSTING:
-        if (currentStatus !== WorkerStatus.INPROGRESS) {
-          return FunctionResult.err(
-            new StatusChangeError({ workerId, taskId: `${taskId}`, newStatus }),
-          );
-        }
-        break;
-      case WorkerStatus.POSTED:
-        if (currentStatus !== WorkerStatus.POSTING) {
-          return FunctionResult.err(
-            new StatusChangeError({ workerId, taskId: `${taskId}`, newStatus }),
-          );
-        }
-        break;
-      case WorkerStatus.INPROGRESS:
-        if (currentStatus !== WorkerStatus.WAITING && currentStatus !== WorkerStatus.POSTED) {
-          return FunctionResult.err(
-            new StatusChangeError({ workerId, taskId: `${taskId}`, newStatus }),
-          );
-        }
-        break;
-      default:
-        break;
-    }
-    const updatedTask: Task = {
-      ...worker.queue[taskIndex],
-      status: newStatus,
-      statusMessage: statusMessage,
-    };
-    const updatedQueue = worker.queue.map((task, i) => (i === taskIndex ? updatedTask : task));
+      const status = isWorkerUnfinished(worker.status)
+        ? worker.status
+        : workerStatusOf(updatedQueue);
 
-    // Determine the overall worker status based on the updated queue (must include the change just made above)
-    const allFinished = updatedQueue.every(
-      (t) => t.status === WorkerStatus.COMPLETED || t.status === WorkerStatus.ERROR,
-    );
-    const anyError = updatedQueue.some((t) => t.status === WorkerStatus.ERROR);
-    const anyPosted = updatedQueue.some((t) => t.status === WorkerStatus.POSTED);
-
-    let overallStatus: WorkerStatus;
-    if (allFinished) {
-      overallStatus = anyError ? WorkerStatus.COMPLETED_WITH_ERRORS : WorkerStatus.COMPLETED;
-    } else if (anyError) {
-      overallStatus = WorkerStatus.INPROGRESS_WITH_ERRORS;
-    } else if (anyPosted) {
-      overallStatus = WorkerStatus.POSTED;
-    } else {
-      overallStatus = WorkerStatus.INPROGRESS;
-    }
-
-    try {
-      await db.transaction('rw', db.workers, async () => {
-        // Persist changes to IndexedDB
-        await this.patch(worker.id, {
-          status: overallStatus,
-        });
-
-        await db.workers.update(workerId, { queue: updatedQueue });
-      });
+      await db.workers.update(workerId, { status, queue: updatedQueue });
       return FunctionResult.ok(updatedTask);
-    } catch (error) {
-      console.error('Error updating task status:', error);
-      return FunctionResult.err(new EntityNotFoundError({ entity: 'Worker', id: workerId }));
-    }
+    });
   }
 
   async deleteById(workerId: string): Promise<void> {
@@ -184,13 +157,6 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
   async deleteResultById(workerId: string, taskId: number): Promise<void> {
     await db.transaction('rw', db.workers, db.results, async () => {
       await db.results.where({ workerId, taskId }).delete();
-      const worker = await db.workers.get(workerId);
-      if (worker) {
-        const updatedQueue = worker.queue.map((task) =>
-          task.id !== taskId ? task : { ...task, status: WorkerStatus.WAITING },
-        );
-        await db.workers.update(workerId, { queue: updatedQueue });
-      }
     });
   }
 }

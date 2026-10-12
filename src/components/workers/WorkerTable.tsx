@@ -1,3 +1,4 @@
+import { workerStatusPresentation } from '@/components/features/workers/statusPresentation';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import ScopeLabel from '@/components/ScopeLabel';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import WorkerDataTable from '@/components/workers/WorkerDataTable';
-import { getWorkerStatusIcon } from '@/components/workers/workerUtils';
 import { Worker, WorkerStatus } from '@/data/models/worker/worker';
 import { getWorkerCategory } from '@/data/models/worker/worker.utils';
 import useWorkers from '@/hooks/data/workers/useWorkers';
@@ -87,7 +87,7 @@ const WorkerTable = (props: WorkerTableProps) => {
         const value = t(`worker_status_${status}`);
         return (
           <div className='flex flex-col items-center justify-center space-x-2'>
-            {getWorkerStatusIcon(status)}
+            {workerStatusPresentation[status].icon}
             {value}
           </div>
         );

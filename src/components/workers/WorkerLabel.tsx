@@ -1,16 +1,16 @@
+import { workerStatusPresentation } from '@/components/features/workers/statusPresentation';
 import { Worker } from '@/data/models/worker/worker';
 import { useTranslation } from 'react-i18next';
 import ScopeLabel from '../ScopeLabel';
-import { getTaskStatusColor, getWorkerStatusIcon } from './workerUtils';
 
 const WorkerLabel = ({ worker }: { worker: Worker }) => {
   const { t } = useTranslation();
   return (
-    <div className={`flex items-center gap-2 p-2 ${getTaskStatusColor(worker.status)}`}>
+    <div className={`flex items-center gap-2 p-2 ${workerStatusPresentation[worker.status].color}`}>
       <span
-        className={`rounded px-2 py-1 text-sm ${getTaskStatusColor(worker.status)} bg-opacity-10`}
+        className={`rounded px-2 py-1 text-sm ${workerStatusPresentation[worker.status].color} bg-opacity-10`}
       >
-        {getWorkerStatusIcon(worker.status)}
+        {workerStatusPresentation[worker.status].icon}
       </span>
 
       <span className='wrap-break-words'>

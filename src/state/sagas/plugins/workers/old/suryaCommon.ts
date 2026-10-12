@@ -12,7 +12,7 @@ import {
   suryaTableResultSchema,
 } from '@/data/models/converters/suryaSchema';
 import { isAnnotationScope, isCanvasScope } from '@/data/models/scope/scope.utils';
-import { Task, WorkerResponse, WorkerStatus } from '@/data/models/worker/worker';
+import { Task, WorkerEvent, WorkerResponse } from '@/data/models/worker/worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,
@@ -54,8 +54,8 @@ export async function suryaRun(
 ): Promise<WorkerResponse> {
   if (!isCanvasScope(task.scope)) {
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: i18n.t('error_task_invalid_scope'),
+      event: WorkerEvent.RESULT_ERR,
+      message: i18n.t('error_task_invalid_scope'),
     };
   }
   const annotationRepository = getAnnotationRepository();
@@ -64,8 +64,8 @@ export async function suryaRun(
     const canvasWithSourceIdResult = await collectionRepository.getCanvasByScope(task.scope);
     if (!canvasWithSourceIdResult.ok) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: canvasWithSourceIdResult.error.message,
+        event: WorkerEvent.RESULT_ERR,
+        message: canvasWithSourceIdResult.error.message,
       };
     }
     const canvasWithSourceId = canvasWithSourceIdResult.value;
@@ -109,8 +109,8 @@ export async function suryaRun(
 
     if (image?.id === undefined) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: 'No image found for the canvas.',
+        event: WorkerEvent.RESULT_ERR,
+        message: 'No image found for the canvas.',
       };
     }
 
@@ -146,20 +146,20 @@ export async function suryaRun(
       }
       const newAnnotations = await annotationRepository.addAll(annotations);
       return {
-        status: WorkerStatus.COMPLETED,
+        event: WorkerEvent.RESULT_OK,
         content: newAnnotations,
       };
     } catch (error) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: getErrorMessage(error),
+        event: WorkerEvent.RESULT_ERR,
+        message: getErrorMessage(error),
       };
     }
   } catch (error) {
     console.error(getErrorMessage(error));
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: getErrorMessage(error),
+      event: WorkerEvent.RESULT_ERR,
+      message: getErrorMessage(error),
     };
   }
 }

@@ -1,6 +1,6 @@
 import { convertEdwinResult, EdwinBox } from '@/data/models/converters/edwinMagic';
 import { isCanvasScope } from '@/data/models/scope/scope.utils';
-import { Task, WorkerResponse, WorkerStatus } from '@/data/models/worker/worker';
+import { Task, WorkerEvent, WorkerResponse } from '@/data/models/worker/worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,
@@ -27,8 +27,8 @@ export const pluginConfigurationParams = {
 export default async function run(task: Task, _params: PluginParams): Promise<WorkerResponse> {
   if (!isCanvasScope(task.scope)) {
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: i18n.t('error_task_invalid_scope'),
+      event: WorkerEvent.RESULT_ERR,
+      message: i18n.t('error_task_invalid_scope'),
     };
   }
   try {
@@ -37,8 +37,8 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
 
     if (!canvasWithSourceIdResult.ok) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: i18n.t('error_canvas_not_found'),
+        event: WorkerEvent.RESULT_ERR,
+        message: i18n.t('error_canvas_not_found'),
       };
     }
     const canvasWithSourceId = canvasWithSourceIdResult.value;
@@ -47,15 +47,15 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     const url = getValueForPluginParam(pluginName, 'apiUrl');
     if (url === null) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: 'API URL is not configured',
+        event: WorkerEvent.RESULT_ERR,
+        message: 'API URL is not configured',
       };
     }
     const response: Response = await fetch(`${url}?image_url=${image.id}`);
     if (!response.ok) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: 'Network response was not ok',
+        event: WorkerEvent.RESULT_ERR,
+        message: 'Network response was not ok',
       };
     }
     const data: unknown = await response.json();
@@ -71,13 +71,13 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     const annotationRepository = getAnnotationRepository();
     const newAnnotations = await annotationRepository.addAll(annotations);
     return {
-      status: WorkerStatus.COMPLETED,
+      event: WorkerEvent.RESULT_OK,
       content: newAnnotations,
     };
   } catch (error) {
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: getErrorMessage(error),
+      event: WorkerEvent.RESULT_ERR,
+      message: getErrorMessage(error),
     };
   }
 }

@@ -353,6 +353,7 @@
   "worker_status_unfinished": "Unfinished",
   "worker_status_unfinished_with_errors": "Unfinished (with errors)",
   "worker_status_all": "All statuses",
+  "worker_status_posting": "Posting",
   "worker_status_posted": "Posted",
   "model_field_string": "Text",
   "model_field_number": "Number",

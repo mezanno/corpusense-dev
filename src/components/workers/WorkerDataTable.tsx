@@ -1,3 +1,4 @@
+import { workerStatusPresentation } from '@/components/features/workers/statusPresentation';
 import { Worker } from '@/data/models/worker/worker';
 import { contains } from '@/data/utils/scope';
 import {
@@ -13,7 +14,6 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Input } from '../ui/input';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '../ui/table';
-import { getTaskStatusColor } from './workerUtils';
 
 interface WorkerDataTableProps {
   data: Worker[];
@@ -101,7 +101,7 @@ const WorkerDataTable = ({
               <TableRow
                 key={row.id}
                 onClick={() => setSelectedWorkerId(row.getValue('id'))}
-                className={`${row.getValue('id') === selectedWorkerId ? 'bg-amber-100 hover:bg-amber-100' : ''} ${getTaskStatusColor(row.original.status)} `}
+                className={`${row.getValue('id') === selectedWorkerId ? 'bg-amber-100 hover:bg-amber-100' : ''} ${workerStatusPresentation[row.original.status].color} `}
               >
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className='px-2 py-1'>

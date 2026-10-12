@@ -3,11 +3,10 @@ import { AnnotationDTO } from '@/data/models/annotations/annotation.dto';
 import { createAnnotation } from '@/data/models/annotations/annotation.factory';
 import { Result } from '@/data/models/result/result';
 import { isCanvasScope, toString } from '@/data/models/scope/scope.utils';
-import { Task, Worker, WorkerResponse, WorkerStatus } from '@/data/models/worker/worker';
+import { Task, Worker, WorkerEvent, WorkerResponse } from '@/data/models/worker/worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,
-  getWorkerRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { applyModifierChainToAnnotations } from '@/data/utils/modifierChain';
 import { supabase } from '@/utils/config';
@@ -26,6 +25,7 @@ export const pluginCategory = WorkerCategory.LAYOUT; //category of the plugin, u
 export const pluginRuntimeParameters = z.object({
   type: z.enum(['perolayout']).describe(i18n.t('plugin_layoutextraction_description')),
 });
+export const pluginExecutionStrategy = 'job' as const;
 export const experimental = true;
 
 const responseSchema = z.object({
@@ -45,16 +45,16 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
   if (!paramsValidation.success) {
     console.error('Invalid parameters for pero layout worker: ', paramsValidation.error);
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: getErrorMessage(paramsValidation.error.message),
+      event: WorkerEvent.RESULT_ERR,
+      message: getErrorMessage(paramsValidation.error.message),
     };
   }
   const params = paramsValidation.data;
 
   if (!isCanvasScope(task.scope)) {
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: i18n.t('error_task_invalid_scope'),
+      event: WorkerEvent.RESULT_ERR,
+      message: i18n.t('error_task_invalid_scope'),
     };
   }
   try {
@@ -62,17 +62,14 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
     const canvasWithSourceIdResult = await collectionRepository.getCanvasByScope(task.scope);
     if (!canvasWithSourceIdResult.ok) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: canvasWithSourceIdResult.error.message,
+        event: WorkerEvent.RESULT_ERR,
+        message: canvasWithSourceIdResult.error.message,
       };
     }
     const canvasWithSourceId = canvasWithSourceIdResult.value;
     try {
       const user = (await supabase.auth.getUser()).data.user;
       if (user !== null) {
-        const workerRepository = getWorkerRepository();
-        await workerRepository.updateTaskStatus(worker.id, task.id, WorkerStatus.POSTING);
-
         const imageUrl = await uploadCanvasImage(canvasWithSourceId);
 
         const { data, error: supabaseError } = await supabase
@@ -102,29 +99,29 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
           });
         }
         return {
-          status: WorkerStatus.POSTED,
-          statusMessage: 'Task has been added to the processing queue',
+          event: WorkerEvent.JOB_ACCEPTED,
+          message: 'Task has been added to the processing queue',
         };
       } else {
         console.log('User not connected');
         return {
-          status: WorkerStatus.ERROR,
-          statusMessage: i18n.t('info_not_connected'),
+          event: WorkerEvent.RESULT_ERR,
+          message: i18n.t('info_not_connected'),
         };
       }
     } catch (error) {
       console.log('Error calling pero layout API: ', error);
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: getErrorMessage(error),
+        event: WorkerEvent.RESULT_ERR,
+        message: getErrorMessage(error),
       };
     }
   } catch (error) {
     console.log('Error in peroocr worker: ', error);
 
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: getErrorMessage(error),
+      event: WorkerEvent.RESULT_ERR,
+      message: getErrorMessage(error),
     };
   }
 }
@@ -194,7 +191,7 @@ export async function processResult(result: PeroLayoutResult, task: Task): Promi
   }
 
   return {
-    status: WorkerStatus.COMPLETED,
+    event: WorkerEvent.RESULT_OK,
     content: savedAnnotations,
   };
 }

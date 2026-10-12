@@ -3,7 +3,7 @@ import { AnnotationDTO } from '@/data/models/annotations/annotation.dto';
 import { createAnnotation } from '@/data/models/annotations/annotation.factory';
 import { Result } from '@/data/models/result/result';
 import { isCanvasScope, toString } from '@/data/models/scope/scope.utils';
-import { Task, Worker, WorkerResponse, WorkerStatus } from '@/data/models/worker/worker';
+import { Task, Worker, WorkerEvent, WorkerResponse } from '@/data/models/worker/worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,
@@ -29,6 +29,7 @@ export const pluginRuntimeParameters = z.object({
     .describe('Catégorie de traitement à utiliser'),
   name: z.string().describe('Nom du traitement'),
 });
+export const pluginExecutionStrategy = 'job' as const;
 export const experimental = true;
 
 const layoutResponseSchema = z.object({
@@ -48,16 +49,16 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
   if (!paramsValidation.success) {
     console.error('Invalid parameters for pero layout worker: ', paramsValidation.error);
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: getErrorMessage(paramsValidation.error.message),
+      event: WorkerEvent.RESULT_ERR,
+      message: getErrorMessage(paramsValidation.error.message),
     };
   }
   const params = paramsValidation.data;
 
   if (!isCanvasScope(task.scope)) {
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: i18n.t('error_task_invalid_scope'),
+      event: WorkerEvent.RESULT_ERR,
+      message: i18n.t('error_task_invalid_scope'),
     };
   }
   try {
@@ -65,8 +66,8 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
     const canvasWithSourceIdResult = await collectionRepository.getCanvasByScope(task.scope);
     if (!canvasWithSourceIdResult.ok) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: canvasWithSourceIdResult.error.message,
+        event: WorkerEvent.RESULT_ERR,
+        message: canvasWithSourceIdResult.error.message,
       };
     }
     const canvasWithSourceId = canvasWithSourceIdResult.value;
@@ -102,29 +103,29 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
           });
         }
         return {
-          status: WorkerStatus.POSTED,
-          statusMessage: 'Task has been added to the processing queue',
+          event: WorkerEvent.JOB_ACCEPTED,
+          message: 'Task has been added to the processing queue',
         };
       } else {
         console.log('User not connected');
         return {
-          status: WorkerStatus.ERROR,
-          statusMessage: i18n.t('info_not_connected'),
+          event: WorkerEvent.RESULT_ERR,
+          message: i18n.t('info_not_connected'),
         };
       }
     } catch (error) {
       console.log('Error calling custom worker: ', error);
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: getErrorMessage(error),
+        event: WorkerEvent.RESULT_ERR,
+        message: getErrorMessage(error),
       };
     }
   } catch (error) {
     console.log('Error in peroocr worker: ', error);
 
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: getErrorMessage(error),
+      event: WorkerEvent.RESULT_ERR,
+      message: getErrorMessage(error),
     };
   }
 }
@@ -142,7 +143,7 @@ export async function processResult(
   } else {
     //for other categories, we don't have a predefined way to process the result, so we just return the result as is and let the UI handle it
     return {
-      status: WorkerStatus.COMPLETED,
+      event: WorkerEvent.RESULT_OK,
       content: result,
     };
   }
@@ -210,7 +211,7 @@ async function processLayoutResult(result: LayoutResult, task: Task): Promise<Wo
   }
 
   return {
-    status: WorkerStatus.COMPLETED,
+    event: WorkerEvent.RESULT_OK,
     content: savedAnnotations,
   };
 }
