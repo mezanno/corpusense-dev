@@ -89,3 +89,13 @@ npx playwright test     # x10 d'affilée pour la preuve de stabilité
 ```
 
 Puis mise à jour de la ligne Q9 de `roadmap.md` (livré, date, preuve : nombre de specs, taux de réussite sur 10 runs).
+
+## 8. Bilan d'exécution (2026-10-13)
+
+Les 7 étapes sont exécutées sur `feat_e2e_playwright` ; 14 specs jouent à chaque run et la preuve de stabilité exigée est tenue (14/14 verts sur 10 runs consécutifs à chaque étape, vérifié à nouveau en fin de plan). Écarts assumés avec le plan :
+
+- **Port 5273 dédié** au lieu de 5173 réutilisé, et pas de `reuseExistingServer` : le serveur e2e est toujours lancé par le test (HTTP, mode e2e, PWA désactivée) ; un serveur de dev tiers (HTTPS, `.env` réel, service worker actif) aurait rendu les runs non déterministes.
+- **Deux correctifs produits** induits par les critères de sortie : `loadPath` i18n cassé avec `VITE_BASE_PATH=/` par défaut, et association `FormLabel`↔`Checkbox` cassée par des `id` explicites dans `ExportCollectionForm` (a11y réelle, pas un besoin de contournement).
+- **S3 post-reload** : le drawer WebGL ne repeint pas de nœud SVG annotorious après remontage ; la preuve de persistance cible le menu contexte, le formulaire rouvert et une relecture IndexedDB (documenté dans la spec et `developpement.md` § 5.7).
+- **S4** : une seule entrée d'archive dans les conditions par défaut ; assertions sur le contenu (canvas, valeur, `collectionId` croisé) plutôt que sur les noms.
+- **CI** : gating par `if: github.event_name == 'pull_request'` (plus simple qu'un input du workflow réutilisable) ; E2E jamais dans le chemin de `deploy.yml`.

@@ -25,6 +25,19 @@ npx prettier . --check                  # format
 
 Autres scripts utiles : `npm run build` (generate-env → tsc -b → vite build), `npm run preview`, `npm run test:coverage`, `npm run lint-fix`, `npm run format-fix`.
 
+### Tests E2E (Playwright, Q9)
+
+```bash
+npm run test:e2e           # npx playwright test — lance son propre serveur `dev:e2e` sur le port 5273
+npm run test:e2e:ui        # mode interactif
+```
+
+- Specs dans `e2e/` (jamais co-localisées : D-010 réserve `__tests__/` à Vitest) ; chromium seul ; assertions par rôles accessibles et libellés FR réels via `e2e/helpers/selectors.ts` (aucun `data-testid`).
+- **Aucun réseau externe** : `installE2ENetwork` abandonne tout ce qui n'est pas le serveur local ; la fixture IIIF (manifest P2, image, `info.json` single-tile) est servie en `page.route` sur l'hôte factice `https://iiif.e2e.test` (`e2e/fixtures/README.md`, régénération : `node scripts/generate-e2e-image.mjs`).
+- Environnement de test : `.env.e2e` versionné (valeurs Supabase factices — `createClient()` exige des valeurs valides), serveur HTTP en mode `e2e`, service worker PWA désactivé.
+- État : IndexedDB vierge par test (contexte neuf) ; les parcours se reconstruisent via `e2e/helpers/journeys.ts`.
+- Un spec ne se commite qu'après **10 runs consécutifs** `npx playwright test` verts ; le job CI (`ci.yml`, PR uniquement) téléverse le rapport en artefact au premier échec.
+
 ## 2. Conventions
 
 - **Alias `@/`** obligatoire pour les imports internes (`@/data/models/…`).
@@ -88,3 +101,11 @@ Autres scripts utiles : `npm run build` (generate-env → tsc -b → vite build)
 4. **Deux registries de plugins** : `App.tsx` (UI) et `sagas/workers.ts` (exécution) chargent chacun leur copie — dette roadmap Q6.
 5. **Imports transverses interdits** (future règle de lint d'architecture, roadmap Q4) : `src/data/**` ne doit rien importer de `@/App` ni des stores UI ; deux violations existent (`data/utils/plugins.ts`, `data/models/worker/worker.utils.ts`).
 6. **Documentation de l'app** : `DocumentationPage` sert les Markdown de `public/doc/` listés dans `index.json` — la doc technique n'y a pas sa place (voir [README.md](./README.md)).
+7. **E2E Playwright** (Q9, enseignements des specs `e2e/`) :
+   - `download.path()` est la fin autoritaire du flux en Node — `download.finished()` n'existe pas côté JS ;
+   - le build jszip installé rejette `loadAsync(stream)` : tamponner `createReadStream()` en mémoire avant lecture ;
+   - ne pas remettre d'`id` explicite sur un `Checkbox` dans un `FormControl` : il court-circuite l'id injecté et casse l'association `FormLabel`↔contrôle (corrigé dans `ExportCollectionForm` grâce à l'E2E) ;
+   - `fill` ne déclenche pas la validation react-hook-form : tout champ pilotant un bouton `disabled` se remplit au clavier (`pressSequentially`) ;
+   - le drawer WebGL d'OpenSeadragon 5 n'émet **jamais** `tile-drawn` : attendre le rendu par le réseau (`info.json` + tuile) et assertir sur l'overlay annotorious (`svg.a9s-annotationlayer`) ; après un reload, seules les peintures WebGL et la preuve IndexedDB/menu subsistent, pas le nœud SVG ;
+   - le geste de dessin repose sur la géométrie figée du viewport du projet chromium (1280×720, `defaultZoomLevel` 0.5) : changer le `viewport` impose de relancer les 10 runs de stabilité ;
+   - la ligne de log d'export `Export completed successfully.` (`LOG_EXPORT_COMPLETED` du logger) n'est pas traduite.
