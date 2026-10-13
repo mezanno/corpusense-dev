@@ -1,6 +1,6 @@
 import { workerPlugins } from '@/App';
 import { useWorkerContext } from '@/components/reducers/WorkerContext';
-import { TaskStatus, WorkerEvent } from '@/data/models/worker/worker';
+import { TaskStatus, Worker, WorkerEvent } from '@/data/models/worker/worker';
 import type { TaskEvent } from '@/data/models/worker/workerStatusLaw';
 import {
   isTaskTerminal,
@@ -25,12 +25,16 @@ const payloadSchema = z.object({
 
 const useJobRealtime = () => {
   const channelRef = useRef<RealtimeChannel | null>(null);
-  const { workers } = useWorkerContext();
-  const workersRef = useRef(workers);
+  const ctx = useWorkerContext();
+  const { workers } = ctx;
+  // Workers with at least one task in POSTED/INPROGRESS: the only ones that can own rows in
+  // cs_jobs. All workers ever created live in IndexedDB (hundreds of completed ones); sending
+  // their ids on every catch-up would blow up the request URL (see fetchJobUpdates).
+  const trackedWorkersRef = useRef<Worker[]>([]);
   const fetchJobUpdatesRef = useRef<(() => Promise<void>) | null>(null);
 
   useEffect(() => {
-    workersRef.current = workers;
+    trackedWorkersRef.current = ctx.getWorkersWithTrackedJobs();
     void fetchJobUpdatesRef.current?.();
   }, [workers]);
 
@@ -199,16 +203,27 @@ const useJobRealtime = () => {
     // missed (disconnection, inactive tab). Jobs of the same worker run serially through
     // withWorkerLock.
     const fetchJobUpdates = async () => {
-      const workerIds = workersRef.current.map((worker) => worker.id);
+      const workerIds = trackedWorkersRef.current.map((worker) => worker.id);
       if (workerIds.length === 0) return;
 
-      const { data, error } = await supabase.from('cs_jobs').select('*').in('worker_id', workerIds);
-      if (error) {
-        console.error('Error fetching Supabase job updates:', error);
-        return;
+      // The `in` filter travels in the GET URL: a single in.(...) with every worker id can grow
+      // past the URL limit of Supabase's proxy, which then rejects the request with a 400.
+      // Query the ids in chunks so each request stays small.
+      const CHUNK_SIZE = 100;
+      const jobs: JobRow[] = [];
+      for (let i = 0; i < workerIds.length; i += CHUNK_SIZE) {
+        const { data, error } = await supabase
+          .from('cs_jobs')
+          .select('*')
+          .in('worker_id', workerIds.slice(i, i + CHUNK_SIZE));
+        if (error) {
+          console.error('Error fetching Supabase job updates:', error);
+          return;
+        }
+        jobs.push(...(data ?? []));
       }
 
-      for (const job of data ?? []) {
+      for (const job of jobs) {
         try {
           await withWorkerLock(job.worker_id, () => processSingleTask(job));
         } catch (jobError) {
