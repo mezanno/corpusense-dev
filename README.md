@@ -161,7 +161,7 @@ Le projet est configuré pour déployer automatiquement via GitHub Pages lors d'
 
 - .github/workflows/deploy.yml (quality gate via ci.yml → build → deploy)
 
-Le build lit ses valeurs de configuration dans les **variables de dépôt** GitHub (et non plus dans un .env versionné) : VITE_BASE_PATH, VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_SUPABASE_STORAGE_URL, VITE_EMAILJS_PUBLIC_KEY, VITE_EMAILJS_SERVICE_ID, VITE_EMAILJS_TEMPLATE_ID — à déclarer dans Settings → Secrets and variables → Actions → Variables (valeurs publiques : ces variables sont incrustées dans le bundle client).
+Le build lit ses valeurs de configuration dans les **variables de dépôt** GitHub (et non plus dans un .env versionné) : VITE_BASE_PATH, VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_SUPABASE_STORAGE_URL, VITE_EMAILJS_PUBLIC_KEY, VITE_EMAILJS_SERVICE_ID, VITE_EMAILJS_TEMPLATE_ID — à déclarer dans Settings → Secrets and variables → Actions → Variables (valeurs publiques : ces variables sont incrustées dans le bundle client). L'assistant `scripts/setup-deploy-env.sh` vous y conduit pas à pas.
 
 Étapes :
 
