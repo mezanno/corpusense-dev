@@ -31,3 +31,8 @@ dist-ssr
 stats.html
 coverage
 tsconfig.tsbuildinfo
+
+# Playwright E2E (Q9) — artefacts de runs, jamais versionnés
+playwright-report/
+test-results/
+playwright/.cache/

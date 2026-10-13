@@ -10,7 +10,7 @@ export default tseslint.config(
   {
     languageOptions: {
       parserOptions: {
-        projectService: ['./tsconfig.node.json', './tsconfig.app.json'],
+        projectService: ['./tsconfig.node.json', './tsconfig.app.json', './tsconfig.e2e.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -27,6 +27,8 @@ export default tseslint.config(
       'public',
       'scripts',
       'archive',
+      'playwright-report',
+      'test-results',
     ],
   },
   {

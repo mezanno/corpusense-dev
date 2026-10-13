@@ -43,7 +43,9 @@ export default defineConfig(({ mode }) => {
         registerType: 'autoUpdate',
         base: basePath,
         devOptions: {
-          enabled: true,
+          // Q9 : en mode e2e, pas de service worker — il court-circuiterait
+          // l'interception réseau déterministe des tests Playwright.
+          enabled: mode !== 'e2e',
         },
         manifest: {
           name: 'CorpuSense',
@@ -99,6 +101,8 @@ export default defineConfig(({ mode }) => {
     test: {
       globals: true, // Activer les fonctions globales comme 'describe', 'it', etc.
       environment: 'jsdom', // Utiliser jsdom pour simuler un environnement de navigateur
+      // Les specs Playwright (e2e/**/*.spec.ts) sont collectées par playwright, jamais par vitest.
+      exclude: ['**/node_modules/**', '**/dist/**', '**/dev-dist/**', 'e2e/**', 'archive/**'],
       server: {
         deps: {
           // openseadragon est un module CJS importé avec des exports nommés par
@@ -115,7 +119,9 @@ export default defineConfig(({ mode }) => {
       },
     },
     server:
-      process.env.NODE_ENV === 'development'
+      // Q9 : le serveur e2e sert toujours en HTTP simple (pas de certs en CI ;
+      // les certs locaux `certs/` sont désindexés). Le mode dev habituel est inchangé.
+      process.env.NODE_ENV === 'development' && mode !== 'e2e'
         ? {
             https: {
               key: readFileSync('./certs/localhost+2-key.pem'),

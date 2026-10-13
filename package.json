@@ -6,6 +6,7 @@
   "packageManager": "npm@11.6.4",
   "scripts": {
     "dev": "vite",
+    "dev:e2e": "vite --mode e2e",
     "build": "node scripts/generate-env.js && tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
@@ -19,6 +20,8 @@
     "format-src-fix": "prettier src --write",
     "test": "vitest",
     "test:watch": "vitest --watch",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "test:coverage": "vitest --coverage.enabled=true",
     "ui": "vitest ui"
   },
@@ -115,6 +118,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@gradio/client": "^2.0.0",
+    "@playwright/test": "^1.64.0",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.1.17",
     "@tanstack/eslint-plugin-query": "^5.95.2",
