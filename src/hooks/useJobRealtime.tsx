@@ -27,14 +27,16 @@ const useJobRealtime = () => {
   const channelRef = useRef<RealtimeChannel | null>(null);
   const ctx = useWorkerContext();
   const { workers } = ctx;
-  // Workers with at least one task in POSTED/INPROGRESS: the only ones that can own rows in
-  // cs_jobs. All workers ever created live in IndexedDB (hundreds of completed ones); sending
-  // their ids on every catch-up would blow up the request URL (see fetchJobUpdates).
+  // Workers with at least one task in POSTED/INPROGRESS whose plugin runs jobs through Supabase
+  // (executionStrategy 'job'): the only ones that can own rows in cs_jobs. Synchronous plugins
+  // never create a row, so they never need a catch-up fetch.
   const trackedWorkersRef = useRef<Worker[]>([]);
   const fetchJobUpdatesRef = useRef<(() => Promise<void>) | null>(null);
 
   useEffect(() => {
-    trackedWorkersRef.current = ctx.getWorkersWithTrackedJobs();
+    trackedWorkersRef.current = ctx
+      .getWorkersWithTrackedJobs()
+      .filter((worker) => workerPlugins[worker.name]?.executionStrategy === 'job');
     void fetchJobUpdatesRef.current?.();
   }, [workers]);
 
