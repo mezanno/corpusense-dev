@@ -1,18 +1,20 @@
 import { expect, test } from '@playwright/test';
-import { blockExternalRequests } from './helpers/network';
+import { installE2ENetwork } from './helpers/network';
+import {
+  CREATE_COLLECTION,
+  EMPTY_COLLECTIONS,
+  SIDEBAR_TOGGLE,
+  WELCOME_TITLE,
+} from './helpers/selectors';
 
 // S0 — fumée (Q9) : la coquille, le routeur et la couche données (Dexie sur IndexedDB
 // vierge) démarrent sans erreur bloquante, sans réseau externe.
-// Les libellés sont les valeurs FR réelles de `public/locales/fr` : un scénario de
-// traduction ne doit casser qu'un seul fichier (centralisation prévue à l'étape 2).
-const WELCOME_TITLE = 'Bienvenue sur Corpusense';
-const SIDEBAR_TOGGLE = 'Basculer le menu latéral';
-const EMPTY_COLLECTIONS = "Vous n'avez aucune collection actuellement";
-const CREATE_COLLECTION = 'Créer une nouvelle collection';
+// Les libellés FR centralisés dans `helpers/selectors.ts` : un scénario de traduction
+// ne casse qu'un seul fichier (étape 2 du plan).
 
 test.describe('smoke', () => {
   test.beforeEach(async ({ page }) => {
-    await blockExternalRequests(page);
+    await installE2ENetwork(page);
   });
 
   test('accueil : le message de bienvenue et la barre latérale sont reachable', async ({
@@ -42,5 +44,15 @@ test.describe('smoke', () => {
     await expect(page.getByRole('alert')).toContainText(EMPTY_COLLECTIONS);
 
     expect(pageErrors).toEqual([]);
+  });
+
+  test('PWA : aucun service worker enregistré en mode e2e', async ({ page }) => {
+    // `vite.config.ts` désactive vite-plugin-pwa en mode e2e (enabled: mode !== 'e2e') ;
+    // ce test le vérifie à l'exécution — un SW actif court-circuiterait l'interception
+    // réseau et rendrait les rechargements non déterministes (plan Q9 § 6).
+    await page.goto('/');
+
+    const registrations = await page.evaluate(() => navigator.serviceWorker.getRegistrations());
+    expect(registrations).toHaveLength(0);
   });
 });
