@@ -3,9 +3,16 @@ import { E2E_IMAGE_SERVICE_URL, E2E_MANIFEST_URL } from './fixtures';
 import {
   ADD_NEW_DOCUMENT,
   ADD_TO_LIBRARY,
+  ANNOTATION_FORM,
+  ANNOTATION_LAYER,
+  ANNOTATION_SHAPE,
+  ANNOTATION_VALUE_LABEL,
+  BTN_ADD_ANNOTATION,
   BTN_CLOSE,
   BTN_CREATE,
+  BTN_EXPORT_COLLECTION,
   BTN_OPEN,
+  BTN_SAVE,
   CANVAS_GALLERY,
   COLLECTION_NAME_LABEL,
   CREATE_COLLECTION,
@@ -17,6 +24,7 @@ import {
   OPEN_MANIFEST,
   PAGE_TITLE_IIIF_STORAGE,
   TITLE_METADATA_COLLECTION,
+  TOAST_ANNOTATION_SAVED,
 } from './selectors';
 
 // Parcours réutilisables extraits de l'étape 3 (S1 + S2) pour que les scénarios
@@ -143,4 +151,94 @@ export async function displayFixtureCanvas(page: Page): Promise<void> {
       response.status() === 200,
   );
   await tileRequest;
+}
+
+/**
+ * S3 (partie dessin) — dessine le rectangle de contrôle dans le visualiseur
+ * ouvert sur le canvas de fixture. Geste déterministe extrait de la spec S3 :
+ * au niveau d'ouverture l'app est figée par `Viewport.reset` → `goHome(true)`
+ * sur le `defaultZoomLevel: 0.5`, l'image 1024×768 occupant ~512×384 px centrés
+ * dans la couche ; le rectangle (200×140) a donc pour centre EXACT le centre de
+ * la couche, ce qui permet de le retrouver au clic sans dépendre du DOM.
+ * `autoSave` : la fin du geste déclenche `createAnnotation` → l'app enregistre
+ * dans Dexie, revient en navigation (la bascule se dé-active) et laisse la forme
+ * sélectionnée, ce qui révèle le formulaire d'annotation.
+ * Post-condition : exactement une forme dessinée, bascule revenue en navigation.
+ */
+export async function drawControlRectangle(page: Page): Promise<void> {
+  const drawToggle = page.getByRole('button', { name: BTN_ADD_ANNOTATION });
+  await expect(drawToggle).toHaveAttribute('aria-pressed', 'false');
+  await drawToggle.click();
+  await expect(drawToggle).toHaveAttribute('aria-pressed', 'true');
+
+  const layer = await page.locator(ANNOTATION_LAYER).boundingBox();
+  if (layer === null) {
+    throw new Error('couche d’annotation introuvable avant le dessin');
+  }
+  const centerX = layer.x + layer.width / 2;
+  const centerY = layer.y + layer.height / 2;
+  await page.mouse.move(centerX - 100, centerY - 70);
+  await page.mouse.down();
+  await page.mouse.move(centerX - 90, centerY - 60, { steps: 3 });
+  await page.mouse.move(centerX + 100, centerY + 70, { steps: 8 });
+  await page.mouse.up();
+
+  await expect
+    .poll(async () => await drawToggle.getAttribute('aria-pressed'), {
+      message: 'le dessin doit déclencher la création (retour en navigation)',
+      timeout: 10_000,
+    })
+    .toBe('false');
+  await expect(page.locator(ANNOTATION_SHAPE)).toHaveCount(1);
+}
+
+/**
+ * S3 (partie formulaire) — saisit une valeur dans le formulaire d'annotation
+ * révélé par la sélection automatique de la forme qui vient d'être créée
+ * (`autoSave`), puis enregistre. La saisie se fait au clavier réel
+ * (`pressSequentially`) : enseignement des spikes S2/S3, `fill` ne valide pas
+ * react-hook-form.
+ * Post-condition : toast de sauvegarde visible (la relecture IndexedDB est à la
+ * charge de l'appelant, qui connaît sa donnée).
+ */
+export async function saveAnnotationValue(page: Page, value: string): Promise<void> {
+  const form = page.getByRole('region', { name: ANNOTATION_FORM });
+  await expect(form).toBeVisible();
+  const valueField = form.getByRole('textbox', { name: ANNOTATION_VALUE_LABEL });
+  await valueField.click();
+  await valueField.pressSequentially(value);
+  await form.getByRole('button', { name: BTN_SAVE, exact: true }).click();
+  await expect(page.getByText(TOAST_ANNOTATION_SAVED)).toBeVisible();
+}
+
+/**
+ * S1→S3 en chaîne — reconstruit l'état utile aux scénarios aval (export S4) :
+ * import du manifest de fixture, collection nommée depuis la source, ouverture
+ * de l'inspecteur, affichage du canvas, rectangle de contrôle dessiné et valeur
+ * enregistrée. Post-condition : toast de sauvegarde visible ; la relecture
+ * IndexedDB (preuve de contenu) reste à la charge de l'appelant.
+ */
+export async function createAnnotatedCollection(
+  page: Page,
+  collectionName: string,
+  annotationValue: string,
+): Promise<void> {
+  await importFixtureManifest(page);
+  await createCollectionFromSource(page, collectionName);
+  await openCollectionInspector(page, collectionName);
+  await displayFixtureCanvas(page);
+  await drawControlRectangle(page);
+  await saveAnnotationValue(page, annotationValue);
+}
+
+/**
+ * Ouvre le dialogue d'export depuis la barre d'outils de l'inspecteur (bouton
+ * d'export, dont le nom accessible vient de l'attribut `title` — l'attribut
+ * `aria-label` posé par le composant est une coquille non valide en ARIA).
+ * Post-condition : dialogue « Exporter la/les collection(s) » visible.
+ */
+export async function openExportDialog(page: Page): Promise<void> {
+  await page.getByRole('button', { name: BTN_EXPORT_COLLECTION }).click();
+  const dialog = page.getByRole('alertdialog');
+  await expect(dialog.getByRole('heading', { name: BTN_EXPORT_COLLECTION })).toBeVisible();
 }

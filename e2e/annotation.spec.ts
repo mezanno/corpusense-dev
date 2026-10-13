@@ -4,8 +4,10 @@ import { StoredAnnotation, readStoredAnnotations } from './helpers/indexeddb';
 import {
   createCollectionFromSource,
   displayFixtureCanvas,
+  drawControlRectangle,
   importFixtureManifest,
   openCollectionInspector,
+  saveAnnotationValue,
 } from './helpers/journeys';
 import { installE2ENetwork } from './helpers/network';
 import {
@@ -13,11 +15,8 @@ import {
   ANNOTATION_LAYER,
   ANNOTATION_SHAPE,
   ANNOTATION_VALUE_LABEL,
-  BTN_ADD_ANNOTATION,
-  BTN_SAVE,
   MENU_DUPLICATE_REGIONS,
   TITLE_METADATA_COLLECTION,
-  TOAST_ANNOTATION_SAVED,
 } from './helpers/selectors';
 
 // Étape 4 du plan Q9 — scénario S3 : annotation rectangulaire dessinée dans le
@@ -89,39 +88,9 @@ test.describe.serial('annotation persistée dans le visualiseur', () => {
   });
 
   test('S3 — le rectangle dessiné à la souris est visible, persisté et éditable', async () => {
-    // Activer le mode dessin : bascule de la barre d'outils (aria-pressed).
-    const drawToggle = page.getByRole('button', { name: BTN_ADD_ANNOTATION });
-    await expect(drawToggle).toHaveAttribute('aria-pressed', 'false');
-    await drawToggle.click();
-    await expect(drawToggle).toHaveAttribute('aria-pressed', 'true');
-
-    // Geste souris déterministe dans la zone KnownGood du viewport (voir en-tête) :
-    // départ en haut-gauche du rectangle, amorce engageant le tracé, diagonale en
-    // plusieurs points, relâcher en bas-droite.
-    const layer = await page.locator(ANNOTATION_LAYER).boundingBox();
-    if (layer === null) {
-      throw new Error('couche d’annotation introuvable avant le dessin');
-    }
-    const centerX = layer.x + layer.width / 2;
-    const centerY = layer.y + layer.height / 2;
-    await page.mouse.move(centerX - 100, centerY - 70);
-    await page.mouse.down();
-    await page.mouse.move(centerX - 90, centerY - 60, { steps: 3 });
-    await page.mouse.move(centerX + 100, centerY + 70, { steps: 8 });
-    await page.mouse.up();
-
-    // `autoSave` : la fin du geste déclenche `createAnnotation` (l'app enregistre
-    // dans Dexie puis revient en mode navigation) → la bascule se dé-active.
-    await expect
-      .poll(async () => await drawToggle.getAttribute('aria-pressed'), {
-        message: 'le dessin doit déclencher la création (retour en navigation)',
-        timeout: 10_000,
-      })
-      .toBe('false');
-
-    // Assertion visible : exactement une forme dessinée dans l'overlay annotorious.
-    const shape = page.locator(ANNOTATION_SHAPE);
-    await expect(shape).toHaveCount(1);
+    // Geste déterministe et retour en navigation (autoSave) : extraits dans
+    // `journeys.drawControlRectangle`, partagés avec le scénario S4 (export).
+    await drawControlRectangle(page);
 
     // Persistance bas niveau : une ligne dans `mezanno/annotations`, rattachée à
     // notre collection/canvas, de type TEXT_REGION (D-004, preuve Dexie directe).
@@ -138,13 +107,7 @@ test.describe.serial('annotation persistée dans le visualiseur', () => {
 
     // Saisie d'une valeur via le formulaire (révélé par la sélection automatique de
     // la forme) puis enregistrement : la valeur est relue depuis IndexedDB.
-    const form = page.getByRole('region', { name: ANNOTATION_FORM });
-    await expect(form).toBeVisible();
-    const valueField = form.getByRole('textbox', { name: ANNOTATION_VALUE_LABEL });
-    await valueField.click();
-    await valueField.pressSequentially(ANNOTATION_VALUE);
-    await form.getByRole('button', { name: BTN_SAVE, exact: true }).click();
-    await expect(page.getByText(TOAST_ANNOTATION_SAVED)).toBeVisible();
+    await saveAnnotationValue(page, ANNOTATION_VALUE);
     await expect
       .poll(async () => (await readStoredAnnotations(page))[0]?.value, {
         message: 'valeur de l’annotation non persistée',

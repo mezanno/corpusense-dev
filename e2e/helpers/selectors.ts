@@ -42,6 +42,13 @@ export const BTN_SAVE = 'Enregistrer'; // → btn_save (soumission du formulaire
 export const TOAST_ANNOTATION_SAVED = 'Annotation sauvegardée'; // → toast_annotation_saved
 export const MENU_DUPLICATE_REGIONS = 'Dupliquer les régions'; // → btn_duplicate_regions (menu contextuel de la vignette, visible quand la collection porte des régions)
 
+// --- Ajouts étape 5 (S4 : export de collection depuis l'inspecteur) ---
+export const BTN_EXPORT_COLLECTION = 'Exporter la/les collection(s)'; // → btn_export_collection (nom accessible du bouton d'export de la barre d'outils — via l'attribut `title` — et titre du dialogue)
+export const BTN_EXPORT = 'Exporter'; // → btn_export (libellé du bouton de confirmation du dialogue d'export)
+export const INCLUDE_ANNOTATIONS = 'Inclure les annotations'; // → form_label_include_annotations (case à cocher, défaut coché)
+export const INCLUDE_MANIFEST = 'Inclure un manifest IIIF (canvas + annotations)'; // → form_label_include_manifest (case à cocher, défaut décoché)
+export const LOG_EXPORT_COMPLETED = 'Export completed successfully.'; // ⚠️ constante de code (useCollectionIO.tsx), non traduite : message de fin d'export affiché dans le LoggerPanel du dialogue
+
 // --- Contrat DOM de la bibliothèque @annotorious (pas l'implémentation de l'app) ---
 // D-010 réserve `data-testid` en dernier recours documenté : ici, aucune cible
 // accessible n'expose les formes dessinées elles-mêmes. Le conteneur de l'API

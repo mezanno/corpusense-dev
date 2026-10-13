@@ -80,11 +80,7 @@ const ExportCollectionForm = ({ collectionIds, formRef }: ExportCollectionFormPr
             render={({ field }) => (
               <FormItem className='flex'>
                 <FormControl>
-                  <Checkbox
-                    id='annotations'
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
                 <FormLabel>{t('form_label_include_annotations')}</FormLabel>
               </FormItem>
@@ -96,7 +92,7 @@ const ExportCollectionForm = ({ collectionIds, formRef }: ExportCollectionFormPr
             render={({ field }) => (
               <FormItem className='flex'>
                 <FormControl>
-                  <Checkbox id='model' checked={field.value} onCheckedChange={field.onChange} />
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
                 <FormLabel>{t('form_label_include_model')}</FormLabel>
               </FormItem>
@@ -108,7 +104,7 @@ const ExportCollectionForm = ({ collectionIds, formRef }: ExportCollectionFormPr
             render={({ field }) => (
               <FormItem className='flex'>
                 <FormControl>
-                  <Checkbox id='workers' checked={field.value} onCheckedChange={field.onChange} />
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
                 <FormLabel>{t('form_label_include_workers')}</FormLabel>
               </FormItem>
@@ -154,7 +150,7 @@ const ExportCollectionForm = ({ collectionIds, formRef }: ExportCollectionFormPr
             render={({ field }) => (
               <FormItem className='flex'>
                 <FormControl>
-                  <Checkbox id='manifest' checked={field.value} onCheckedChange={field.onChange} />
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
                 <FormLabel>{t('form_label_include_manifest')}</FormLabel>
               </FormItem>
