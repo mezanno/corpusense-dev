@@ -33,6 +33,12 @@ jobs:
           node-version: 22
           cache: 'npm'
 
+      # Le lockfile est rédigé par npm 11.6.4 (packageManager de package.json) ;
+      # le npm 10.x bundled de Node 22 le juge désynchronisé. Même épinglage que
+      # le job build de deploy.yml.
+      - name: Setup npm
+        run: npm install --global npm@11.6.4
+
       - name: Install dependencies
         run: npm ci
 
