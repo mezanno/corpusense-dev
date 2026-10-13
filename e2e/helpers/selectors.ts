@@ -34,6 +34,27 @@ export const TITLE_METADATA_COLLECTION = 'Collection'; // → title_metadata_col
 export const NUMBER_OF_COLLECTIONS = 'Vous avez {{number}} collection(s)'; // → info_number_of_collections
 export const NUMBER_OF_ITEMS = '{{number}} élément(s)'; // → info_number_of_items
 
+// --- Ajouts étape 4 (S3 : annotation dans le visualiseur) ---
+export const BTN_ADD_ANNOTATION = 'Ajouter une annotation'; // → btn_add_annotation (bascule dessin de la barre d'outils du visualiseur)
+export const ANNOTATION_FORM = "formulaire d'annotation"; // → aria_label_annotation_form (section révélée quand une annotation est sélectionnée)
+export const ANNOTATION_VALUE_LABEL = 'Valeur'; // → form_label_value (textarea du formulaire d'annotation)
+export const BTN_SAVE = 'Enregistrer'; // → btn_save (soumission du formulaire d'annotation)
+export const TOAST_ANNOTATION_SAVED = 'Annotation sauvegardée'; // → toast_annotation_saved
+export const MENU_DUPLICATE_REGIONS = 'Dupliquer les régions'; // → btn_duplicate_regions (menu contextuel de la vignette, visible quand la collection porte des régions)
+
+// --- Contrat DOM de la bibliothèque @annotorious (pas l'implémentation de l'app) ---
+// D-010 réserve `data-testid` en dernier recours documenté : ici, aucune cible
+// accessible n'expose les formes dessinées elles-mêmes. Le conteneur de l'API
+// d'annotation (@annotorious/react, build React 19) est le `svg.a9s-annotationlayer`
+// posé sur le canvas OpenSeadragon — c'est l'« overlay annotorious » que le plan Q9
+// (étape 4) désigne comme cible d'attente web-first (le drawer WebGL n'émet jamais
+// `tile-drawn`). Les formes dessinées portent la classe `a9s-annotation` ; la
+// nomenclature `a9s-*` est la surface publique de @annotorious (son CSS distribué).
+// Vérifié au spike (2026-10-13) : `role="application"` n'est PAS posé sur ce svg,
+// d'où le recours à sa classe — pas un testid maison, un contrat de librairie.
+export const ANNOTATION_LAYER = 'svg.a9s-annotationlayer'; // overlay annotorious (conteneur de l'API)
+export const ANNOTATION_SHAPE = '.a9s-annotation'; // groupe SVG d'une forme dessinée
+
 export const numberOfCollections = (count: number): string =>
   NUMBER_OF_COLLECTIONS.replace('{{number}}', String(count));
 

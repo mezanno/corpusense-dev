@@ -1,25 +1,16 @@
 import { BrowserContext, Page, expect, test } from '@playwright/test';
 import { E2E_ORIGIN } from './helpers/config';
-import { E2E_IMAGE_SERVICE_URL, E2E_MANIFEST_URL } from './helpers/fixtures';
+import {
+  MANIFEST_FIXTURE_TITLE,
+  createCollectionFromSource,
+  displayFixtureCanvas,
+  importFixtureManifest,
+  openCollectionInspector,
+} from './helpers/journeys';
 import { installE2ENetwork } from './helpers/network';
 import {
-  ADD_NEW_DOCUMENT,
-  ADD_TO_LIBRARY,
-  BTN_CLOSE,
-  BTN_CREATE,
-  BTN_OPEN,
-  CANVAS_GALLERY,
-  COLLECTION_NAME_LABEL,
-  CREATE_COLLECTION,
-  CREATE_FROM_SELECTION,
-  DEFINE_SELECTION_START,
-  LOAD_MANIFEST_STEP_1,
-  LOAD_MANIFEST_STEP_2,
   MANIFEST_GRID,
-  MANIFEST_INPUT_PLACEHOLDER,
   NAV_SOURCES,
-  OPEN_MANIFEST,
-  PAGE_TITLE_IIIF_STORAGE,
   TITLE_METADATA_COLLECTION,
   numberOfCollections,
   numberOfItems,
@@ -36,20 +27,17 @@ import {
 // la sélection ») → collection listée dans /collections, ouvrable dans son inspecteur,
 // toujours présente après rechargement (preuve de persistance Dexie/IndexedDB).
 //
-// Enseignements du spike (2026-10-13), à connaître pour la maintenance :
+// Les gestes du parcours sont extraits dans `helpers/journeys.ts` (partagés avec S3) ;
+// la spec garde les assertions propres au scénario. Enseignements du spike (2026-10-13),
+// rappelés là où ils restent visibles :
 // - le nom de la source est PROPOSÉ (placeholder du champ de renommage), pas pré-rempli :
-//   il vient de getSummary() du manifest = « Manifeste de test E2E » ; on le saisit
-//   explicitement pour que le nom stocké soit déterministe ;
+//   on le saisit explicitement pour que le nom stocké soit déterministe ;
 // - le champ nom du dialogue NewCollectionForm (react-hook-form 7.79, mode onChange)
-//   n'active le bouton « Créer » qu'au clavier réel : `fill` (valeur injectée) ne
-//   déclenche pas la revérification — `pressSequentially` est le seul geste fiable,
-//   et il reproduit de toute façon l'usage réel ;
+//   n'active le bouton « Créer » qu'au clavier réel : `pressSequentially` est le seul
+//   geste fiable (voir journeys.createCollectionFromSource) ;
 // - les deux tests partagent UN SEUL contexte navigateur (créé dans `beforeAll`) :
 //   `test.describe.serial` seul ne suffit pas, Playwright crée un contexte (donc une
 //   IndexedDB) neuf par test. C'est ce qui fait de S2 la suite réelle de S1.
-
-/** Titre du manifest de fixture (`e2e/fixtures/manifest.json` → `label`). */
-const MANIFEST_FIXTURE_TITLE = 'Manifeste de test E2E';
 
 /** Nom de la collection créée par S2 (donnée de test, sans correspondance i18n). */
 const COLLECTION_NAME = 'Collection E2E Q9';
@@ -75,34 +63,10 @@ test.describe.serial('parcours import manifest → collection', () => {
   });
 
   test('S1 — le manifest importé rejoint la bibliothèque des sources', async () => {
-    await page.goto('/iiifSources');
-    await expect(
-      page.getByRole('heading', { level: 1, name: PAGE_TITLE_IIIF_STORAGE }),
-    ).toBeVisible();
-
-    // Carte pointillée « ajouter un document » → dialogue d'import (étape 1).
-    await page.getByText(ADD_NEW_DOCUMENT).click();
-    const dialog = page.getByRole('alertdialog');
-    await expect(dialog.getByText(LOAD_MANIFEST_STEP_1)).toBeVisible();
-    await expect(dialog.getByRole('button', { name: BTN_CLOSE })).toBeVisible();
-
-    await dialog.getByRole('textbox', { name: MANIFEST_INPUT_PLACEHOLDER }).fill(E2E_MANIFEST_URL);
-    const loadButton = dialog.getByRole('button', { name: OPEN_MANIFEST });
-    await expect(loadButton).toBeEnabled();
-    await loadButton.click();
-
-    // Étape 2 : le manifest chargé est présenté, son nom est proposé au champ de renommage.
-    await expect(dialog.getByText(LOAD_MANIFEST_STEP_2)).toBeVisible();
-    const nameField = dialog.getByRole('textbox', { name: MANIFEST_FIXTURE_TITLE });
-    await expect(nameField).toBeVisible();
-    await nameField.fill(MANIFEST_FIXTURE_TITLE);
-
-    const addToLibrary = dialog.getByRole('button', { name: ADD_TO_LIBRARY });
-    await expect(addToLibrary).toBeEnabled();
-    await addToLibrary.click();
-
-    // Le dialogue se ferme de lui-même une fois la source persistée (Dexie).
-    await expect(dialog).toBeHidden();
+    // Le helper rejoue l'import et attend lui-même les deux étapes du dialogue
+    // (« 1. Charger un manifest IIIF » puis « 2. Ajouter le manifest… ») ainsi que
+    // sa fermeture après persistance ; ici, la vérification clé du scénario :
+    await importFixtureManifest(page);
 
     // Bibliothèque en ligne : la source apparaît en carte, nommée d'après le manifest.
     await expect(page.getByRole('heading', { name: MANIFEST_FIXTURE_TITLE })).toBeVisible();
@@ -117,36 +81,7 @@ test.describe.serial('parcours import manifest → collection', () => {
   });
 
   test('S2 — collection créée depuis la source, inspectée et persistée', async () => {
-    // La source importée en S1 est toujours là (même contexte, IndexedDB conservée) :
-    // on y revient par la bibliothèque pour ouvrir l'explorateur comme un utilisateur.
-    await page.goto('/iiifSources');
-    const sourceCard = page.getByRole('heading', { name: MANIFEST_FIXTURE_TITLE });
-    await expect(sourceCard).toBeVisible();
-    await sourceCard.click();
-    await expect(page).toHaveURL(/\/manifest\?manifestId=/);
-
-    // Sélection du canvas unique dans la galerie (clic droit → « définir le début »).
-    const gallery = page.getByRole('region', { name: CANVAS_GALLERY });
-    const canvasItem = gallery.getByRole('listitem').first();
-    await expect(canvasItem).toBeVisible();
-    await canvasItem.click({ button: 'right' });
-    await page.getByRole('menuitem', { name: DEFINE_SELECTION_START }).click();
-
-    // Second clic droit : le menu propose désormais la création depuis la sélection.
-    await canvasItem.click({ button: 'right' });
-    await page.getByRole('menuitem', { name: CREATE_FROM_SELECTION }).click();
-
-    // Dialogue « Créer une nouvelle collection » — nom saisi au clavier (voir en-tête
-    // du fichier : `fill` ne suffit pas à activer la validation react-hook-form).
-    const dialog = page.getByRole('alertdialog');
-    await expect(dialog.getByRole('heading', { name: CREATE_COLLECTION })).toBeVisible();
-    const collectionNameField = dialog.getByRole('textbox', { name: COLLECTION_NAME_LABEL });
-    await collectionNameField.click();
-    await collectionNameField.pressSequentially(COLLECTION_NAME);
-    const createButton = dialog.getByRole('button', { name: BTN_CREATE, exact: true });
-    await expect(createButton).toBeEnabled();
-    await createButton.click();
-    await expect(dialog).toBeHidden();
+    await createCollectionFromSource(page, COLLECTION_NAME);
 
     // Gestionnaire de collections : une collection, listée, avec son compteur d'éléments.
     await page.goto('/collections');
@@ -156,8 +91,7 @@ test.describe.serial('parcours import manifest → collection', () => {
     await expect(collectionRow).toContainText(numberOfItems(1));
 
     // Inspecteur : en-tête « Collection » + nom + compteur, et le canvas de la source.
-    await collectionRow.getByRole('button', { name: BTN_OPEN }).click();
-    await expect(page).toHaveURL(/\/collections\/[0-9a-f-]+/);
+    await openCollectionInspector(page, COLLECTION_NAME);
     const inspectorHeader = page.getByRole('button', {
       name: new RegExp(`${TITLE_METADATA_COLLECTION}.*${COLLECTION_NAME}`),
     });
@@ -167,12 +101,7 @@ test.describe.serial('parcours import manifest → collection', () => {
 
     // « la source y figure » : afficher le canvas de la collection fait recharger son
     // service IIIF depuis l'hôte de fixture — la source est bien rattachée à la page.
-    const infoRequest = page.waitForResponse(
-      (response) =>
-        response.url() === `${E2E_IMAGE_SERVICE_URL}/info.json` && response.status() === 200,
-    );
-    await page.getByRole('listitem').filter({ hasText: 'Page 1' }).first().click();
-    await infoRequest;
+    await displayFixtureCanvas(page);
 
     // Persistance : après rechargement complet (nouvelle ouverture d'IndexedDB),
     // la collection est toujours listée avec son contenu.
