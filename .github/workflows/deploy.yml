@@ -29,6 +29,18 @@ jobs:
     permissions:
       pages: read # Requis pour le déploiement Pages natif
       contents: read # Droit de lecture uniquement sur le dépôt
+    # Variables de dépôt (Settings → Secrets and variables → Actions → Variables).
+    # Publiques par conception : tout VITE_* est incrusté dans le bundle client.
+    # Elles vivaient dans .env (déindexé par Q5) ; sans elles, jobs distants
+    # Supabase et formulaire EmailJS se cassent silencieusement au runtime.
+    env:
+      VITE_BASE_PATH: ${{ vars.VITE_BASE_PATH }}
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+      VITE_SUPABASE_STORAGE_URL: ${{ vars.VITE_SUPABASE_STORAGE_URL }}
+      VITE_EMAILJS_PUBLIC_KEY: ${{ vars.VITE_EMAILJS_PUBLIC_KEY }}
+      VITE_EMAILJS_SERVICE_ID: ${{ vars.VITE_EMAILJS_SERVICE_ID }}
+      VITE_EMAILJS_TEMPLATE_ID: ${{ vars.VITE_EMAILJS_TEMPLATE_ID }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -48,6 +60,17 @@ jobs:
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+
+      - name: Vérifier les variables de dépôt requises
+        run: |
+          missing=0
+          for v in VITE_BASE_PATH VITE_SUPABASE_URL VITE_SUPABASE_ANON_KEY VITE_SUPABASE_STORAGE_URL VITE_EMAILJS_PUBLIC_KEY VITE_EMAILJS_SERVICE_ID VITE_EMAILJS_TEMPLATE_ID; do
+            if [ -z "${!v}" ]; then
+              echo "::error::Variable de dépôt $v non définie — déclarez-la dans Settings → Secrets and variables → Actions → Variables."
+              missing=1
+            fi
+          done
+          exit $missing
 
       - name: Build Project
         run: npm run build
