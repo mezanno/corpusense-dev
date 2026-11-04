@@ -36,7 +36,7 @@ import { CanvasScope, Scope } from '@/data/models/scope/scope';
 import { Source, SourceWithContent } from '@/data/models/source/source';
 import { Worker } from '@/data/models/worker/worker';
 import { ModifierChainData } from '@/data/utils/modifierChain';
-import { ReactNode, RefObject } from 'react';
+import { createRef, ReactNode, RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export type FormProps<TResult = unknown> = {
@@ -46,159 +46,158 @@ export type FormProps<TResult = unknown> = {
   onResult?: (result: TResult) => void;
 };
 
-type FormDialogOptions = {
-  title: string;
+type DialogFormProps = {
+  importCollection: Record<string, never>;
+  newCollection: { params?: NewCollectionFormParams };
+  duplicateCollection: { collection: CollectionDetails };
+  selectFormat: { worker: Worker };
+  selectLlm: Record<string, never>;
+  login: Record<string, never>;
+  openManifest: { existingSource?: SourceWithContent };
+  convertPdf: Record<string, never>;
+  contactUs: Record<string, never>;
+  importModel: Record<string, never>;
+  createModel: Record<string, never>;
+  removeAnnotations: { scope: Scope };
+  duplicateLayout: { scope: CanvasScope };
+  exportCollection: { collectionIds: string[] };
+  saveModifierChain: {
+    modifiers: AnyModifier[];
+    modifiersValues: Record<string, unknown>;
+    name?: string;
+  };
+  loadModifierChain: Record<string, never>;
+  startWorker: { workerName: string; scope: Scope };
+  uploadSource: UploadSourceFormParams;
+  createProject: Record<string, never>;
+  changeSourceName: { source: Source };
+  addLlmProfile: Record<string, never>;
+  editLlmProfile: { profile: LLMProfile };
+};
+
+type DialogFormResult = {
+  importCollection: void;
+  newCollection: void;
+  duplicateCollection: void;
+  selectFormat: void;
+  selectLlm: string;
+  login: void;
+  openManifest: string;
+  convertPdf: string;
+  contactUs: void;
+  importModel: void;
+  createModel: void;
+  removeAnnotations: void;
+  duplicateLayout: void;
+  exportCollection: void;
+  saveModifierChain: void;
+  loadModifierChain: ModifierChainData;
+  startWorker: void;
+  uploadSource: void;
+  createProject: Project;
+  changeSourceName: true;
+  addLlmProfile: LLMProfileFormValues;
+  editLlmProfile: LLMProfileFormValues;
+};
+
+type DialogFormName = keyof DialogFormProps;
+type DialogFormDefinition<Props, Result> = {
+  title: (props: Props) => string;
   confirmLabel?: string;
   cancelLabel?: string;
-  renderForm: (
-    formRef: RefObject<HTMLFormElement | null>, //référence au formulaire pour pouvoir déclencher le submit
-    setCanSubmit: (can: boolean) => void, //indique si le bouton de confirmation doit être actif (en fonction de la validité du formulaire)
-    closeDialog?: () => void, //fonction de fermeture du dialog à passer aux formulaires qui en auraient besoin
+  closeOnAction?: boolean;
+  expectsResult: boolean;
+  render: (
+    props: Props,
+    formRef: RefObject<HTMLFormElement | null>,
+    onResult: (result: Result) => void,
   ) => ReactNode;
-  closeOnAction?: boolean; //Permet de spécifier si le dialog doit se fermer après l'action de confirmation (défaut true)
 };
 
 const useDialog = () => {
   const { t } = useTranslation();
   const { openDialog, setCanSubmit, closeDialog } = useAlertDialogContext();
-  // const formRef = useRef<HTMLFormElement | null>(null); //! Not to do: Moved inside function to avoid stale ref issue
 
-  //fonction permettant l'ouverture d'un dialog avec un formulaire
-  const openFormDialog = ({
-    title,
-    confirmLabel,
-    cancelLabel,
-    renderForm,
-    closeOnAction,
-  }: FormDialogOptions) => {
-    const formRef = { current: null } as RefObject<HTMLFormElement | null>; // Create a new ref for each dialog
-    openDialog({
-      title,
-      children: renderForm(formRef, setCanSubmit, closeDialog),
-      onConfirm:
-        confirmLabel !== undefined
-          ? {
-              message: confirmLabel,
-              action: () => formRef.current?.requestSubmit(),
-              closeOnAction,
-            }
-          : undefined,
-      onCancel:
-        cancelLabel !== undefined
-          ? {
-              message: cancelLabel,
-              action: () => closeDialog(),
-            }
-          : undefined,
-    });
-  };
-
-  const openImportCollectionDialog = () => {
-    openFormDialog({
-      title: t('btn_import_collection'),
+  const formRegistry = {
+    importCollection: {
+      title: () => t('btn_import_collection'),
       confirmLabel: t('btn_import_collection'),
-      renderForm: (formRef) => (
+      closeOnAction: false,
+      expectsResult: false,
+      render: (_props, formRef) => (
         <ImportCollectionForm formRef={formRef} setCanSubmit={setCanSubmit} />
       ),
-      closeOnAction: false, //ne pas fermer le dialog automatiquement après l'import, pour permettre de voir les logs
-    });
-  };
-
-  const openNewCollectionDialog = (params?: NewCollectionFormParams) => {
-    const extraProps =
-      params?.selection !== undefined && params.sourceId !== undefined
-        ? {
-            selection: params.selection,
-            sourceId: params.sourceId,
-          }
-        : {};
-    openFormDialog({
-      title: t('btn_create_collection'),
+    },
+    newCollection: {
+      title: () => t('btn_create_collection'),
       confirmLabel: t('btn_create'),
-      renderForm: (formRef) => (
+      expectsResult: false,
+      render: ({ params }, formRef) => (
         <NewCollectionForm
           formRef={formRef}
           setCanSubmit={setCanSubmit}
-          {...extraProps}
+          {...params}
           closeDialog={closeDialog}
         />
       ),
-    });
-  };
-
-  const openDupicateCollectionDialog = (collection: CollectionDetails) => {
-    openFormDialog({
-      title: t('title_duplicate_collection', { name: collection.name }),
+    },
+    duplicateCollection: {
+      title: ({ collection }) => t('title_duplicate_collection', { name: collection.name }),
       confirmLabel: t('btn_duplicate'),
-      renderForm: (formRef) => (
+      expectsResult: false,
+      render: ({ collection }, formRef) => (
         <DuplicateCollectionForm
           collection={collection}
           formRef={formRef}
           setCanSubmit={setCanSubmit}
         />
       ),
-    });
-  };
-
-  const openSelectFormatDialog = (worker: Worker) => {
-    openFormDialog({
-      title: t('title_export_worker_result', { name: worker.name }),
+    },
+    selectFormat: {
+      title: ({ worker }) => t('title_export_worker_result', { name: worker.name }),
       confirmLabel: t('btn_export'),
-      renderForm: (formRef) => (
+      expectsResult: false,
+      render: ({ worker }, formRef) => (
         <ExportFormatSelectionForm worker={worker} formRef={formRef} setCanSubmit={setCanSubmit} />
       ),
-    });
-  };
-
-  const openSelectLLMDialog = (onResult: (llmId: string) => void) => {
-    openFormDialog({
-      title: t('title_select_llm'),
+    },
+    selectLlm: {
+      title: () => t('title_select_llm'),
       confirmLabel: t('btn_start'),
-      renderForm: (formRef) => (
+      expectsResult: true,
+      render: (_props, formRef, onResult) => (
         <SelectLlmForm formRef={formRef} setCanSubmit={setCanSubmit} onResult={onResult} />
       ),
-    });
-  };
-
-  const openLoginDialog = () => {
-    openFormDialog({
-      title: t('title_login'),
+    },
+    login: {
+      title: () => t('title_login'),
       confirmLabel: t('btn_login'),
-      renderForm: (formRef) => (
+      closeOnAction: false,
+      expectsResult: false,
+      render: (_props, formRef) => (
         <LoginForm formRef={formRef} setCanSubmit={setCanSubmit} closeDialog={closeDialog} />
       ),
-      closeOnAction: false,
-    });
-  };
-
-  type OpenManifestDialogOptions = {
-    onResult?: (sourceAddedId: string) => void;
-    existingSource?: SourceWithContent;
-  };
-
-  const openOpenManifestDialog = (options: OpenManifestDialogOptions) => {
-    openFormDialog({
-      title:
-        options.existingSource === undefined ? t('btn_open_manifest') : t('title_rename_source'),
+    },
+    openManifest: {
+      title: ({ existingSource }) =>
+        existingSource === undefined ? t('btn_open_manifest') : t('title_rename_source'),
       cancelLabel: t('btn_close'),
-      renderForm: (formRef) => (
+      closeOnAction: false,
+      expectsResult: true,
+      render: ({ existingSource }, formRef, onResult) => (
         <OpenManifestForm
           formRef={formRef}
           setCanSubmit={setCanSubmit}
           closeDialog={closeDialog}
-          onResult={options.onResult}
-          existingSource={options.existingSource}
+          onResult={onResult}
+          existingSource={existingSource}
         />
       ),
-      closeOnAction: false,
-    });
-  };
-
-  const openConvertPdfDialog = (onResult: (sourceAddedId: string) => void) => {
-    openFormDialog({
-      title: t('title_import_pdf'),
-      // description: t('description_select_pdf'),
-      renderForm: (formRef) => (
+    },
+    convertPdf: {
+      title: () => t('title_import_pdf'),
+      expectsResult: true,
+      render: (_props, formRef, onResult) => (
         <ConvertPdfForm
           formRef={formRef}
           setCanSubmit={setCanSubmit}
@@ -206,54 +205,44 @@ const useDialog = () => {
           onResult={onResult}
         />
       ),
-    });
-  };
-
-  const openContactUsDialog = () => {
-    openFormDialog({
-      title: t('title_contact'),
+    },
+    contactUs: {
+      title: () => t('title_contact'),
       confirmLabel: t('btn_send'),
-      renderForm: (formRef) => (
+      closeOnAction: false,
+      expectsResult: false,
+      render: (_props, formRef) => (
         <ContactForm formRef={formRef} setCanSubmit={setCanSubmit} closeDialog={closeDialog} />
       ),
-      closeOnAction: false,
-    });
-  };
-
-  const openImportModelDialog = () => {
-    openFormDialog({
-      title: t('btn_import_model'),
+    },
+    importModel: {
+      title: () => t('btn_import_model'),
       confirmLabel: t('btn_import_model'),
-      renderForm: (formRef) => (
+      closeOnAction: false,
+      expectsResult: false,
+      render: (_props, formRef) => (
         <ImportModelForm formRef={formRef} setCanSubmit={setCanSubmit} closeDialog={closeDialog} />
       ),
-      closeOnAction: false,
-    });
-  };
-
-  const openCreateModelDialog = () => {
-    openFormDialog({
-      title: t('btn_create_model'),
+    },
+    createModel: {
+      title: () => t('btn_create_model'),
       confirmLabel: t('btn_create'),
-      renderForm: (formRef) => <NewModelForm formRef={formRef} setCanSubmit={setCanSubmit} />,
-    });
-  };
-
-  const openRemoveAnnotationsDialog = (scope: Scope) => {
-    openFormDialog({
-      title: t('title_remove_annotations'),
+      expectsResult: false,
+      render: (_props, formRef) => <NewModelForm formRef={formRef} setCanSubmit={setCanSubmit} />,
+    },
+    removeAnnotations: {
+      title: () => t('title_remove_annotations'),
       confirmLabel: t('btn_delete'),
-      renderForm: (formRef) => (
+      expectsResult: false,
+      render: ({ scope }, formRef) => (
         <RemoveAnnotationsForm formRef={formRef} scope={scope} setCanSubmit={setCanSubmit} />
       ),
-    });
-  };
-
-  const openDuplicateLayoutDialog = (scope: CanvasScope) => {
-    openFormDialog({
-      title: t('btn_duplicate_regions'),
+    },
+    duplicateLayout: {
+      title: () => t('btn_duplicate_regions'),
       confirmLabel: t('btn_apply'),
-      renderForm: (formRef) => (
+      expectsResult: false,
+      render: ({ scope }, formRef) => (
         <DuplicateLayoutForm
           formRef={formRef}
           setCanSubmit={setCanSubmit}
@@ -261,21 +250,163 @@ const useDialog = () => {
           scope={scope}
         />
       ),
-    });
-  };
-
-  const openExportCollectionDialog = (collectionIds: string[]) => {
-    openFormDialog({
-      title: t('btn_export_collection'),
+    },
+    exportCollection: {
+      title: () => t('btn_export_collection'),
       confirmLabel: t('btn_export'),
-      renderForm: (formRef) => (
+      closeOnAction: false,
+      expectsResult: false,
+      render: ({ collectionIds }, formRef) => (
         <ExportCollectionForm
           formRef={formRef}
           collectionIds={collectionIds}
           setCanSubmit={setCanSubmit}
         />
       ),
-      closeOnAction: false, //ne pas fermer le dialog automatiquement après l'export, pour permettre de voir les logs
+    },
+    saveModifierChain: {
+      title: () => t('btn_save_modifierchain'),
+      confirmLabel: t('btn_save'),
+      expectsResult: false,
+      render: ({ modifiers, modifiersValues, name }, formRef) => (
+        <SaveModifierChainForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          modifiers={modifiers}
+          modifierValues={modifiersValues}
+          name={name}
+        />
+      ),
+    },
+    loadModifierChain: {
+      title: () => t('btn_load_modifiers'),
+      confirmLabel: t('btn_open'),
+      expectsResult: true,
+      render: (_props, formRef, onResult) => (
+        <LoadModifierChainForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          closeDialog={closeDialog}
+          onResult={onResult}
+        />
+      ),
+    },
+    startWorker: {
+      title: ({ workerName }) => {
+        const plugin = workerPlugins[workerName];
+        return `${t('btn_start_analysis')} - ${plugin.info.displayName}`;
+      },
+      confirmLabel: t('btn_start'),
+      expectsResult: false,
+      render: ({ workerName, scope }, formRef) => (
+        <StartWorkerForm
+          formRef={formRef}
+          scope={scope}
+          workerName={workerName}
+          setCanSubmit={setCanSubmit}
+        />
+      ),
+    },
+    uploadSource: {
+      title: () => t('btn_upload_to_cloud'),
+      confirmLabel: t('btn_upload'),
+      closeOnAction: false,
+      expectsResult: false,
+      render: (props, formRef) => (
+        <UploadSourceForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          {...props}
+          closeDialog={closeDialog}
+        />
+      ),
+    },
+    createProject: {
+      title: () => t('btn_create_project'),
+      confirmLabel: t('bnt_create_project'),
+      expectsResult: true,
+      render: (_props, formRef, onResult) => (
+        <NewProjectForm formRef={formRef} setCanSubmit={setCanSubmit} onResult={onResult} />
+      ),
+    },
+    changeSourceName: {
+      title: () => t('title_rename_source'),
+      confirmLabel: t('btn_rename'),
+      expectsResult: true,
+      render: ({ source }, formRef, onResult) => (
+        <UpdateSourceNameForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          source={source}
+          onResult={() => onResult(true)}
+        />
+      ),
+    },
+    addLlmProfile: {
+      title: () => t('dialog_llm_profile_add'),
+      confirmLabel: t('btn_save'),
+      expectsResult: true,
+      render: (_props, formRef, onResult) => (
+        <LLMProfileForm formRef={formRef} setCanSubmit={setCanSubmit} onResult={onResult} />
+      ),
+    },
+    editLlmProfile: {
+      title: () => t('dialog_llm_profile_edit'),
+      confirmLabel: t('btn_save'),
+      expectsResult: true,
+      render: ({ profile }, formRef, onResult) => (
+        <LLMProfileForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          onResult={onResult}
+          defaultValues={profile}
+        />
+      ),
+    },
+  } satisfies {
+    [K in DialogFormName]: DialogFormDefinition<DialogFormProps[K], DialogFormResult[K]>;
+  };
+
+  const openForm = <K extends DialogFormName>(
+    name: K,
+    props: DialogFormProps[K],
+  ): Promise<DialogFormResult[K] | undefined> => {
+    const definition = formRegistry[name] as DialogFormDefinition<
+      DialogFormProps[K],
+      DialogFormResult[K]
+    >;
+    if (name === 'startWorker') {
+      const { workerName } = props as DialogFormProps['startWorker'];
+      const plugin = workerPlugins[workerName];
+      if (plugin.runtimeParametersSchema === undefined) {
+        console.error(`Plugin ${workerName} does not have a runtime parameters schema`);
+        return Promise.resolve(undefined);
+      }
+    }
+
+    return new Promise((resolve) => {
+      const finish = (result: unknown) => resolve(result as DialogFormResult[K] | undefined);
+      const formRef = createRef<HTMLFormElement>();
+      openDialog({
+        title: definition.title(props),
+        children: definition.render(props, formRef, finish),
+        onConfirmComplete: () => {
+          if (!definition.expectsResult) finish(undefined);
+        },
+        onDismiss: () => finish(undefined),
+        onConfirm:
+          definition.confirmLabel === undefined
+            ? undefined
+            : {
+                message: definition.confirmLabel,
+                action: () => formRef.current?.requestSubmit(),
+                closeOnAction: definition.closeOnAction,
+              },
+        onCancel:
+          definition.cancelLabel === undefined
+            ? undefined
+            : { message: definition.cancelLabel, action: closeDialog },
+      });
     });
   };
 
@@ -295,157 +426,7 @@ const useDialog = () => {
     });
   };
 
-  const openSaveModifierChainDialog = (
-    modifiers: AnyModifier[],
-    modifiersValues: Record<string, unknown>,
-    name?: string,
-  ) => {
-    openFormDialog({
-      title: t('btn_save_modifierchain'),
-      confirmLabel: t('btn_save'),
-      renderForm: (formRef) => (
-        <SaveModifierChainForm
-          formRef={formRef}
-          setCanSubmit={setCanSubmit}
-          modifiers={modifiers}
-          modifierValues={modifiersValues}
-          name={name}
-        />
-      ),
-    });
-  };
-
-  const openLoadModifierChainDialog = (onResult: (result: ModifierChainData) => void) => {
-    openFormDialog({
-      title: t('btn_load_modifiers'),
-      confirmLabel: t('btn_open'),
-      renderForm: (formRef) => (
-        <LoadModifierChainForm
-          formRef={formRef}
-          setCanSubmit={setCanSubmit}
-          closeDialog={closeDialog}
-          onResult={onResult}
-        />
-      ),
-    });
-  };
-
-  const openStartWorkerDialog = (workerName: string, scope: Scope) => {
-    const plugin = workerPlugins[workerName];
-    if (plugin.runtimeParametersSchema === undefined) {
-      console.error(`Plugin ${workerName} does not have a runtime parameters schema`);
-      return;
-    }
-
-    openFormDialog({
-      title: `${t('btn_start_analysis')} - ${plugin.info.displayName}`,
-      confirmLabel: t('btn_start'),
-      renderForm: (formRef) => (
-        <StartWorkerForm
-          formRef={formRef}
-          scope={scope}
-          workerName={workerName}
-          setCanSubmit={setCanSubmit}
-        />
-      ),
-    });
-  };
-
-  const openUploadSourceDialog = (params: UploadSourceFormParams) => {
-    openFormDialog({
-      title: t('btn_upload_to_cloud'),
-      confirmLabel: t('btn_upload'),
-      closeOnAction: false,
-      renderForm: (formRef) => (
-        <UploadSourceForm
-          formRef={formRef}
-          setCanSubmit={setCanSubmit}
-          {...params}
-          closeDialog={closeDialog}
-        />
-      ),
-    });
-  };
-
-  const openCreateProjectDialog = (onResult: (project: Project) => void) => {
-    openFormDialog({
-      title: t('btn_create_project'),
-      confirmLabel: t('bnt_create_project'),
-      renderForm: (formRef) => (
-        <NewProjectForm formRef={formRef} setCanSubmit={setCanSubmit} onResult={onResult} />
-      ),
-    });
-  };
-
-  const openChangeSourceNameDialog = (source: Source, onResult: (result: void) => void) => {
-    openFormDialog({
-      title: t('title_rename_source'),
-      confirmLabel: t('btn_rename'),
-      renderForm: (formRef) => (
-        <UpdateSourceNameForm
-          formRef={formRef}
-          setCanSubmit={setCanSubmit}
-          source={source}
-          onResult={onResult}
-        />
-      ),
-    });
-  };
-
-  const openAddLLMProfileDialog = (onResult: (values: LLMProfileFormValues) => void) => {
-    openFormDialog({
-      title: t('dialog_llm_profile_add'),
-      confirmLabel: t('btn_save'),
-      renderForm: (formRef) => (
-        <LLMProfileForm formRef={formRef} setCanSubmit={setCanSubmit} onResult={onResult} />
-      ),
-    });
-  };
-
-  const openEditLLMProfileDialog = (
-    profile: LLMProfile,
-    onResult: (values: LLMProfileFormValues) => void,
-  ) => {
-    openFormDialog({
-      title: t('dialog_llm_profile_edit'),
-      confirmLabel: t('btn_save'),
-      renderForm: (formRef) => (
-        <LLMProfileForm
-          formRef={formRef}
-          setCanSubmit={setCanSubmit}
-          onResult={onResult}
-          defaultValues={profile}
-        />
-      ),
-    });
-  };
-
-  return {
-    openOpenManifestDialog,
-    openImportCollectionDialog,
-    openNewCollectionDialog,
-    openSelectFormatDialog,
-    openLoginDialog,
-    openImportModelDialog,
-    openCreateModelDialog,
-    openModelPreviewDialog,
-    openModelUsageList,
-    openContactUsDialog,
-    openDuplicateLayoutDialog,
-    openRemoveAnnotationsDialog,
-    openExportCollectionDialog,
-    openConvertPdfDialog,
-    openSaveModifierChainDialog,
-    openLoadModifierChainDialog,
-    openStartWorkerDialog,
-    openDupicateCollectionDialog,
-    openUploadSourceDialog,
-    openCreateProjectDialog,
-    openChangeSourceNameDialog,
-    openAddLLMProfileDialog,
-    openEditLLMProfileDialog,
-    openSelectLLMDialog,
-  };
+  return { openForm, openModelPreviewDialog, openModelUsageList };
 };
 
 export default useDialog;

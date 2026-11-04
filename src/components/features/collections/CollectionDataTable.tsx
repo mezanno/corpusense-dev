@@ -60,7 +60,7 @@ const CollectionDataTable = ({ data, columns }: CollectionDataTableProps) => {
       columnFilters,
     },
   });
-  const { openExportCollectionDialog } = useDialog();
+  const { openForm } = useDialog();
   const { openDialog } = useAlertDialogContext();
   const { removeMultipleCollections } = useCollections();
 
@@ -76,7 +76,7 @@ const CollectionDataTable = ({ data, columns }: CollectionDataTableProps) => {
 
   const handleExport = () => {
     const selectedCollectionIds = table.getSelectedRowModel().rows.map((row) => row.original.id);
-    openExportCollectionDialog(selectedCollectionIds);
+    void openForm('exportCollection', { collectionIds: selectedCollectionIds });
   };
 
   const handleDelete = () => {

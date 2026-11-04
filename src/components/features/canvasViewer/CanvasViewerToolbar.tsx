@@ -39,11 +39,11 @@ const CanvasViewerToolbar = ({
   setAnnotationScale: (scale: number) => void;
 }) => {
   const { t } = useTranslation();
-  const { openRemoveAnnotationsDialog } = useDialog();
+  const { openForm } = useDialog();
   const isWorkerRunning = useWorkerContext().isWorkerOrTaskRunning({ collectionId });
 
   const handleDeleteAllAnnotations = () => {
-    openRemoveAnnotationsDialog({ canvasId: canvas.id, collectionId });
+    void openForm('removeAnnotations', { scope: { canvasId: canvas.id, collectionId } });
   };
 
   const handleAddAnnotation = () => {

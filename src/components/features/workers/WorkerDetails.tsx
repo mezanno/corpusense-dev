@@ -20,7 +20,7 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
   const worker = useWorkerContext().getWorkerById(workerId);
   const resultExists = useWorkerContext().hasResult(workerId);
   const { removeResult } = useWorkers();
-  const { openSelectFormatDialog } = useDialog();
+  const { openForm } = useDialog();
   const { openDialog } = useAlertDialogContext();
 
   if (worker === undefined) {
@@ -41,7 +41,7 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
   };
 
   const handleExportResult = () => {
-    openSelectFormatDialog(worker);
+    void openForm('selectFormat', { worker });
   };
 
   const handleRemoveResult = (taskId: number) => {

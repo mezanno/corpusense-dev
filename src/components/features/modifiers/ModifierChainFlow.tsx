@@ -52,7 +52,7 @@ const ModifierChainFlow = ({
   initialChainId?: string | null;
 }) => {
   const { t } = useTranslation();
-  const { openSaveModifierChainDialog, openLoadModifierChainDialog } = useDialog();
+  const { openForm } = useDialog();
   const [modifiers, setModifiers] = useState<AnyModifier[]>([]);
   const [modifierValues, setModifierValues] = useState<Record<string, unknown>>({});
   const [currentChainName, setCurrentChainName] = useState<string>(''); // pour afficher le nom de la chaîne chargée ou sauvegardée
@@ -151,19 +151,22 @@ const ModifierChainFlow = ({
   };
 
   const saveChain = () => {
-    openSaveModifierChainDialog(modifiers, modifierValues, currentChainName);
+    void openForm('saveModifierChain', {
+      modifiers,
+      modifiersValues: modifierValues,
+      name: currentChainName,
+    });
   };
 
-  const handleLoadChain = () => {
-    openLoadModifierChainDialog(
-      ({ modifiers: loadedModifiers, modifierValues: loadedValues, name }) => {
-        setNodes([]);
-        setEdges([]);
-        setModifiers(loadedModifiers);
-        setModifierValues(loadedValues);
-        if (name !== undefined) setCurrentChainName(name);
-      },
-    );
+  const handleLoadChain = async () => {
+    const result = await openForm('loadModifierChain', {});
+    if (result === undefined) return;
+    const { modifiers: loadedModifiers, modifierValues: loadedValues, name } = result;
+    setNodes([]);
+    setEdges([]);
+    setModifiers(loadedModifiers);
+    setModifierValues(loadedValues);
+    if (name !== undefined) setCurrentChainName(name);
   };
 
   useEffect(() => {
@@ -281,7 +284,7 @@ const ModifierChainFlow = ({
         {scope && (
           <>
             <button
-              onClick={handleLoadChain}
+              onClick={() => void handleLoadChain()}
               className='soft-button'
               title={t('btn_load_modifiers')}
             >

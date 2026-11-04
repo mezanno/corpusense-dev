@@ -7,10 +7,10 @@ import { useTranslation } from 'react-i18next';
 const CollectionsManagerPage = () => {
   const { t } = useTranslation();
   const { collections } = useCollections();
-  const { openImportCollectionDialog, openNewCollectionDialog } = useDialog();
+  const { openForm } = useDialog();
 
   const handleNewCollection = () => {
-    openNewCollectionDialog();
+    void openForm('newCollection', {});
   };
 
   return (
@@ -27,7 +27,7 @@ const CollectionsManagerPage = () => {
         <button
           className='soft-button'
           title={t('btn_import_collection')}
-          onClick={openImportCollectionDialog}
+          onClick={() => void openForm('importCollection', {})}
         >
           <Import />
           {t('btn_import_collection')}

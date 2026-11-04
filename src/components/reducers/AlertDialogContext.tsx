@@ -14,6 +14,8 @@ type DialogProps = {
   title: string;
   description?: string;
   children?: ReactNode;
+  onConfirmComplete?: () => void;
+  onDismiss?: () => void;
   onConfirm?: {
     message: string;
     action: () => void;
@@ -40,10 +42,16 @@ export const AlertDialogProvider = ({ children }: { children: React.ReactNode })
   const [canSubmit, setCanSubmit] = useState<boolean>(true);
 
   const openDialog = (props: DialogProps) => {
+    dialogProps?.onDismiss?.();
     setCanSubmit(true); //initialise canSubmit à true par défaut
     setDialogProps(props);
   }; //fonction permettant d'ouvrir le dialog avec les propriétés spécifiées
   const closeDialog = () => setDialogProps(null);
+
+  const dismissDialog = () => {
+    dialogProps?.onDismiss?.();
+    closeDialog();
+  };
 
   const onConfirm = () => {
     /*
@@ -56,20 +64,21 @@ export const AlertDialogProvider = ({ children }: { children: React.ReactNode })
     if (dialogProps?.onConfirm?.closeOnAction ?? true) {
       closeDialog();
     }
+    dialogProps?.onConfirmComplete?.();
   };
 
   const onCancel = () => {
     if (dialogProps?.onCancel?.action) {
       dialogProps.onCancel.action();
     }
-    closeDialog();
+    dismissDialog();
   };
 
   return (
     <AlertDialogContext.Provider value={{ openDialog, setCanSubmit, closeDialog }}>
       {children}
       {dialogProps !== null && (
-        <AlertDialog open={true} onOpenChange={closeDialog}>
+        <AlertDialog open={true} onOpenChange={dismissDialog}>
           <AlertDialogContent className='flex max-h-[80vh] flex-col duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95'>
             <AlertDialogHeader>
               <AlertDialogTitle>{dialogProps?.title}</AlertDialogTitle>

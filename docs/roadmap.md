@@ -6,9 +6,9 @@ _Travail ouvert, consolidé à partir des plans exécutés partiellement (`plan-
 
 | État                 | Chantiers                                                                                             |
 | -------------------- | ----------------------------------------------------------------------------------------------------- |
-| Livrés               | R1 (statuts), R7 (organisation des composants), Q5 (nettoyage), Q9 (harnais E2E)                      |
+| Livrés               | R1 (statuts), R6 (`openForm`), R7 (organisation des composants), Q5 (nettoyage), Q9 (harnais E2E)     |
 | Partiellement livrés | R3 (tests et transaction du repository Worker), Q1 (ratchet), Q2 (couverture), Q3 (CI et déploiement) |
-| Ouverts              | R2, R4–R6, Q4, Q6–Q8 ; risques de sécurité dans le [registre](./securite.md)                          |
+| Ouverts              | R2, R4–R5, Q4, Q6–Q8 ; risques de sécurité dans le [registre](./securite.md)                          |
 
 R1 est le prérequis réalisé de R2. La protection de branche et les variables de déploiement sont des réglages externes au dépôt : leur état doit être vérifié sur chaque dépôt, et aucun workflow seul ne garantit une fusion bloquée.
 
@@ -41,9 +41,11 @@ R1 étant terminé, le prérequis est satisfait : extraire de `sagas/workers.ts`
 
 Donner un foyer au concept « blob + sa forme base64 » (~40 lignes dupliquées dans ~15 fichiers, cinq types d'adaptateurs sans module pour les encapsuler, deux mécanismes de miniature différents portant le même nom). Interface cible : `put / get / remove / asBase64 / fromBase64` derrière l'agrégat Sources ; import/export sérialisent les attachments comme une unité.
 
-### R6 — `useDialog` : une interface de découplage `openForm` (candidate 6)
+### R6 — `useDialog` : une interface de découplage `openForm` ✅
 
-`hooks/ui/useDialog.tsx` : 447 lignes, 23 méthodes wrapper, ~43 sites d'import, point chaud du dépôt. Cible : un registre de formulaires + `result = await openForm(name, props)` qui absorbe allocation de ref, `requestSubmit`, close-on-action, titres i18n.
+**Livré (2026-11-04)** : `useDialog` expose `openForm(name, props)` typé par nom de formulaire. Le registre centralise le rendu, les titres et libellés i18n, l'allocation de la ref, `requestSubmit` et `closeOnAction`. Les formulaires à résultat résolvent une promesse à la soumission ; annulation/fermeture résout `undefined`. Les consommateurs utilisent désormais l'API du registre et attendent les résultats plutôt que de fournir des callbacks. Les dialogues de contenu non-formulaire (aperçu et usages de modèle) restent des actions dédiées.
+
+**Validation** : tests ciblés couvrant le retour d'un résultat et la confirmation sans résultat ; TSC et tests ciblés passent.
 
 ### R7 — Restructuration feature-first (D-009) ✅
 

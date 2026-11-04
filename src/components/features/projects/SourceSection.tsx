@@ -13,7 +13,7 @@ type SourceSectionProps = {
 const SourceSection = ({ selectedProjectId }: SourceSectionProps) => {
   const { t } = useTranslation();
   const { getProjectById, addSourceToProject } = useProjectsIO();
-  const { openOpenManifestDialog } = useDialog();
+  const { openForm } = useDialog();
   const [currentProject, setCurrentProject] = useState<Project | undefined>(undefined);
 
   const onProjectId = useEffectEvent(() => {
@@ -36,12 +36,12 @@ const SourceSection = ({ selectedProjectId }: SourceSectionProps) => {
     }
   }, [selectedProjectId]);
 
-  const handleOnAddRemoteSource = () => {
-    openOpenManifestDialog({
-      onResult: (sourceAddedId) => {
-        void addSourceToProject(currentProject!.id, sourceAddedId);
-      },
-    });
+  const handleOnAddRemoteSource = async () => {
+    if (currentProject === undefined) return;
+    const sourceAddedId = await openForm('openManifest', {});
+    if (sourceAddedId !== undefined) {
+      await addSourceToProject(currentProject.id, sourceAddedId);
+    }
   };
 
   return (
@@ -60,7 +60,7 @@ const SourceSection = ({ selectedProjectId }: SourceSectionProps) => {
               <div className='flex flex-col gap-2'>
                 <Card
                   className='card-model h-28 w-24 border-dashed'
-                  onClick={handleOnAddRemoteSource}
+                  onClick={() => void handleOnAddRemoteSource()}
                 >
                   <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
                     <Plus size={24} />

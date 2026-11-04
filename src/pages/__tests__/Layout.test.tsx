@@ -18,9 +18,7 @@ vi.mock('@/components/reducers/WorkerContext');
 vi.mock('@/components/reducers/ConnectedUserContext');
 vi.mock('@/hooks/ui/useDialog', () => ({
   default: () => ({
-    openOpenManifestDialog: vi.fn(),
-    openContactUsDialog: vi.fn(),
-    openLoginDialog: vi.fn(),
+    openForm: vi.fn(),
   }),
 }));
 

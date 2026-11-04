@@ -7,7 +7,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Project } from '@/data/models/project';
 import useProjects from '@/hooks/data/projects/useProjects';
 import useDialog from '@/hooks/ui/useDialog';
 import { Plus } from 'lucide-react';
@@ -21,10 +20,11 @@ type ProjectSectionProps = {
 const ProjectSection = ({ selectedProjectId, setSelectedProjectId }: ProjectSectionProps) => {
   const { t } = useTranslation();
   const { projects } = useProjects();
-  const { openCreateProjectDialog } = useDialog();
+  const { openForm } = useDialog();
 
-  const onProjectCreated = (project: Project) => {
-    setSelectedProjectId(project.id);
+  const onCreateProject = async () => {
+    const project = await openForm('createProject', {});
+    if (project !== undefined) setSelectedProjectId(project.id);
   };
 
   return (
@@ -38,7 +38,7 @@ const ProjectSection = ({ selectedProjectId, setSelectedProjectId }: ProjectSect
           <div className='flex w-1/2 flex-col items-center justify-center gap-4'>
             <Card
               className='card-model h-20 w-[180px] border-dashed'
-              onClick={() => openCreateProjectDialog(onProjectCreated)}
+              onClick={() => void onCreateProject()}
             >
               <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
                 <Plus size={36} />

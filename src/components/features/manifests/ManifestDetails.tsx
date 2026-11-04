@@ -18,14 +18,15 @@ const ManifestDetails = ({
   manifest: Manifest;
 }) => {
   const { t } = useTranslation();
-  const { openChangeSourceNameDialog } = useDialog();
+  const { openForm } = useDialog();
   const queryClient = useQueryClient();
 
   const parsed = Cozy.parse(manifest);
   const summary = parsed.type === 'manifest' ? parsed.resource.getSummary() : undefined;
 
   const handleRenameClick = () => {
-    openChangeSourceNameDialog(source, () => {
+    void openForm('changeSourceName', { source }).then((result) => {
+      if (result === undefined) return;
       //invalidate current source query to update the name in the UI after renaming
       void queryClient.invalidateQueries({ queryKey: [QUERY_KEY_CURRENT_SOURCE] });
     });

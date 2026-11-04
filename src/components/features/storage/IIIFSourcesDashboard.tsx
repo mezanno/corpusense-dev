@@ -15,7 +15,7 @@ import { ManifestCard } from './ManifestCard';
 
 const IIIFSourcesDashboard = () => {
   const { t } = useTranslation();
-  const { openOpenManifestDialog } = useDialog();
+  const { openForm } = useDialog();
   const { remoteSources, removeUnusedSources } = useLiveSources();
   const [lastManifestAddedId, setLastManifestAddedId] = useState<string | null>(null);
 
@@ -50,7 +50,11 @@ const IIIFSourcesDashboard = () => {
         {/* max-h-[70vh] */}
         <Card
           className='card-file border-dashed'
-          onClick={() => openOpenManifestDialog({ onResult: onManifestAdded })}
+          onClick={() => {
+            void openForm('openManifest', {}).then((sourceId) => {
+              if (sourceId !== undefined) onManifestAdded(sourceId);
+            });
+          }}
         >
           <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
             <Plus size={48} />

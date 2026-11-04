@@ -25,7 +25,7 @@ const LoginForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
   const { t } = useTranslation();
   const { status, login } = useConnectedUserContext();
   const newlyOpened = useRef(true);
-  const { openContactUsDialog } = useDialog();
+  const { openForm } = useDialog();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -50,7 +50,7 @@ const LoginForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
   const handleContactUs = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     closeDialog?.();
-    openContactUsDialog();
+    void openForm('contactUs', {});
   };
 
   return (

@@ -52,7 +52,7 @@ const ManifestCanvasGalleryItem = ({
     setSelection,
   } = useCanvasSelection();
 
-  const { openNewCollectionDialog } = useDialog();
+  const { openForm } = useDialog();
   const [search, setSearch] = useState<string>('');
   const [loadedThumbUrl, setLoadedThumbUrl] = useState<string | undefined>(undefined);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -107,8 +107,10 @@ const ManifestCanvasGalleryItem = ({
   }, [canvas.items]);
 
   const handleCreateCollection = useCallback(() => {
-    openNewCollectionDialog({ selection: getSelectedCanvases(), sourceId });
-  }, [openNewCollectionDialog, getSelectedCanvases, sourceId]);
+    void openForm('newCollection', {
+      params: { selection: getSelectedCanvases(), sourceId },
+    });
+  }, [openForm, getSelectedCanvases, sourceId]);
 
   const idDisplayed = canvasToDisplay?.id === canvas?.id;
   const match = canvas.id.match(/f\d+/);

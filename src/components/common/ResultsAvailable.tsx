@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 
 const ResultsAvailable = ({ scope, showTitle }: { scope: Scope; showTitle?: boolean }) => {
   const { t } = useTranslation();
-  const { openSelectFormatDialog } = useDialog();
+  const { openForm } = useDialog();
   const { getWorkersByScope, hasResult } = useWorkerContext();
 
   const workersWithResults = getWorkersByScope(scope);
@@ -24,7 +24,7 @@ const ResultsAvailable = ({ scope, showTitle }: { scope: Scope; showTitle?: bool
   }
 
   const handleExportResult = (worker: Worker) => {
-    openSelectFormatDialog(worker);
+    void openForm('selectFormat', { worker });
   };
 
   return (

@@ -218,7 +218,7 @@ const LayoutSideBar = () => {
   const { t } = useTranslation();
   const { logout, user } = useConnectedUserContext();
   const { collections } = useCollections();
-  const { openLoginDialog } = useDialog();
+  const { openForm } = useDialog();
   const { experimentalFeaturesActivated } = useExperimental();
   const { pathname } = useLocation();
 
@@ -257,7 +257,7 @@ const LayoutSideBar = () => {
                         {t('btn_logout')}
                       </DropdownMenuItem>
                     ) : (
-                      <DropdownMenuItem onClick={openLoginDialog}>
+                      <DropdownMenuItem onClick={() => void openForm('login', {})}>
                         {t('btn_login')}
                       </DropdownMenuItem>
                     )}

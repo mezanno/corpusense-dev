@@ -20,7 +20,7 @@ export function ManifestCard({ source, isHighlighted }: ManifestCardProps) {
   const { t } = useTranslation();
   const { goToManifestExplorer } = useAppNavigation();
   const { openDialog } = useAlertDialogContext();
-  const { openOpenManifestDialog, openUploadSourceDialog } = useDialog();
+  const { openForm } = useDialog();
   const { removeSourceFromLibrary } = useSources();
   const { thumbUrl } = useBlob(source.thumbnailBlobId);
   const { sourceWithContent } = useSource(source.id);
@@ -40,12 +40,14 @@ export function ManifestCard({ source, isHighlighted }: ManifestCardProps) {
 
   const handleUploadToCloud: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.stopPropagation();
-    openUploadSourceDialog({ sourceId: source.id });
+    void openForm('uploadSource', { sourceId: source.id });
   };
 
   const handleEditRemoteSource: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.stopPropagation();
-    openOpenManifestDialog({ existingSource: sourceWithContent });
+    if (sourceWithContent !== undefined) {
+      void openForm('openManifest', { existingSource: sourceWithContent });
+    }
   };
 
   const handleCopyToClipBoard: React.MouseEventHandler<HTMLDivElement> = (event) => {

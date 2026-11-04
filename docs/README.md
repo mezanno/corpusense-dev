@@ -23,7 +23,7 @@ Règle : rien de technique ou d'interne dans `public/doc/` (c'est un répertoire
 | [developpement.md](./developpement.md)                  | Guide pratique : démarrage, commandes de vérification, conventions, guides d'extension, pièges.                     |
 | [DECISIONS.md](./DECISIONS.md)                          | Journal des décisions d'architecture (ADR) — le « pourquoi », avec déclencheurs de réouverture.                     |
 | [securite.md](./securite.md)                            | Registre de sécurité vivant (menaces assumées, points ouverts vérifiés, priorités).                                 |
-| [roadmap.md](./roadmap.md)                              | Avancement et travail restant : R1 et R7 livrés, R2–R6 ouverts ; qualité/outillage Q1–Q9.                           |
+| [roadmap.md](./roadmap.md)                              | Avancement et travail restant : R1, R6 et R7 livrés ; R2, R4–R5 ouverts ; qualité/outillage Q1–Q9.                  |
 | [foundation/FOUNDATION.md](../foundation/FOUNDATION.md) | Point d'entrée des fondations destinées à un nouveau projet ; les constats sur CorpuSense sont historiques.         |
 
 ## Historique de la documentation

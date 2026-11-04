@@ -13,13 +13,12 @@ const CollectionToolbar = memo(function CollectionToolbarFunc({
   collection: Collection;
 }) {
   const { t } = useTranslation();
-  const { openRemoveAnnotationsDialog, openDupicateCollectionDialog, openExportCollectionDialog } =
-    useDialog();
+  const { openForm } = useDialog();
 
   const { recomputeRegions } = useAnnotationActions();
 
   const handleDeleteAllAnnotations = () => {
-    openRemoveAnnotationsDialog({ collectionId: collection.id });
+    void openForm('removeAnnotations', { scope: { collectionId: collection.id } });
   };
 
   const handleRecomputeRegions = () => {
@@ -29,11 +28,11 @@ const CollectionToolbar = memo(function CollectionToolbarFunc({
   };
 
   const handleDuplicate = () => {
-    openDupicateCollectionDialog(collection);
+    void openForm('duplicateCollection', { collection });
   };
 
   const handleExport = () => {
-    openExportCollectionDialog([collection.id]);
+    void openForm('exportCollection', { collectionIds: [collection.id] });
   };
 
   return (

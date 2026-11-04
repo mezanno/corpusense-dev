@@ -29,9 +29,7 @@ describe('CollectionsManagerPage', () => {
       getLabelById: vi.fn((id: string) => id),
     });
     (useDialog as Mock).mockReturnValue({
-      openImportCollectionDialog: vi.fn(),
-      openNewCollectionDialog: vi.fn(),
-      openExportCollectionDialog: vi.fn(),
+      openForm: vi.fn(),
     });
   });
 
@@ -78,11 +76,9 @@ describe('CollectionsManagerPage', () => {
   });
 
   it('affiche le formulaire de création de liste', async () => {
-    const openNewCollectionDialog = vi.fn();
+    const openForm = vi.fn();
     (useDialog as Mock).mockReturnValue({
-      openImportCollectionDialog: vi.fn(),
-      openNewCollectionDialog,
-      openExportCollectionDialog: vi.fn(),
+      openForm,
     });
 
     renderWithProviders(<CollectionsManagerPage />);
@@ -90,6 +86,6 @@ describe('CollectionsManagerPage', () => {
     const btn = screen.getByRole('button', { name: 'btn_create_collection' });
     await user.click(btn);
 
-    expect(openNewCollectionDialog).toHaveBeenCalled();
+    expect(openForm).toHaveBeenCalledWith('newCollection', {});
   });
 });

@@ -17,7 +17,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from '../components/ui/
 const Layout = () => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
-  const { openContactUsDialog } = useDialog();
+  const { openForm } = useDialog();
   const lastInfo = useAppSelector(selectLastInfoEvent);
   const lastError = useAppSelector(selectLastErrorEvent);
   const { pendingCount, isMigrating, migrateAll } = usePendingMigration();
@@ -64,7 +64,7 @@ const Layout = () => {
                 <button
                   className='soft-button'
                   aria-label={t('btn_open_contact')}
-                  onClick={openContactUsDialog}
+                  onClick={() => void openForm('contactUs', {})}
                 >
                   <Mail size={16} />
                   {t('btn_open_contact')}

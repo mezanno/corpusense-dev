@@ -10,7 +10,7 @@ import { PocketKnife, ScanText } from 'lucide-react';
 const WorkersMenu = ({ scope }: { scope: Scope }) => {
   const appDispatch = useAppDispatch();
   const pluginsInfo = useAppSelector(selectWorkerPluginsInfo);
-  const { openStartWorkerDialog, openSelectLLMDialog } = useDialog();
+  const { openForm } = useDialog();
 
   const params = {
     name: 'btn_start_analysis',
@@ -30,10 +30,11 @@ const WorkersMenu = ({ scope }: { scope: Scope }) => {
           }
 
           if (workerPlugin.runtimeParametersSchema !== undefined) {
-            openStartWorkerDialog(plugin.name, scope);
+            void openForm('startWorker', { workerName: plugin.name, scope });
           } else {
             if (plugin.category === 'llm' && plugin.name !== 'mistral') {
-              openSelectLLMDialog((profileId) => {
+              void openForm('selectLlm', {}).then((profileId) => {
+                if (profileId === undefined) return;
                 appDispatch(
                   startWorkerProcessRequest({
                     workerName: plugin.name,

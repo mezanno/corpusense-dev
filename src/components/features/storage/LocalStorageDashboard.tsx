@@ -8,7 +8,7 @@ import { ManifestCard } from './ManifestCard';
 
 const LocalStorageDashboard = () => {
   const { t } = useTranslation();
-  const { openConvertPdfDialog } = useDialog();
+  const { openForm } = useDialog();
   const { localSources } = useLiveSources();
 
   const [lastManifestAddedId, setLastManifestAddedId] = useState<string | null>(null);
@@ -26,7 +26,11 @@ const LocalStorageDashboard = () => {
       <div className='flex h-full flex-wrap gap-2 overflow-y-auto'>
         <Card
           className='card-file border-dashed'
-          onClick={() => openConvertPdfDialog(onManifestAdded)}
+          onClick={() => {
+            void openForm('convertPdf', {}).then((sourceId) => {
+              if (sourceId !== undefined) onManifestAdded(sourceId);
+            });
+          }}
         >
           <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
             <Plus size={48} />

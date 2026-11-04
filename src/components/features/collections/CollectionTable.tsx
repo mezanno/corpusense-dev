@@ -20,7 +20,7 @@ const CollectionTable = () => {
   const { t } = useTranslation();
   const navigation = useAppNavigation();
   const { openDialog } = useAlertDialogContext();
-  const { openDupicateCollectionDialog } = useDialog();
+  const { openForm } = useDialog();
   const { removeCollection } = useCollections();
   const { collections } = useCollections();
   const { getLabelById } = useTags();
@@ -41,7 +41,7 @@ const CollectionTable = () => {
   };
 
   const handleDuplicate = (collection: CollectionDetails) => {
-    openDupicateCollectionDialog(collection);
+    void openForm('duplicateCollection', { collection });
   };
 
   const columns: ColumnDef<CollectionDetails, unknown>[] = [

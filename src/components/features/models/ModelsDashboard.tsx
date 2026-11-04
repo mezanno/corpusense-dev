@@ -14,20 +14,26 @@ const ModelsDashboard = ({
   setSelectedModelId: (id: string | null) => void;
 }) => {
   const { t } = useTranslation();
-  const { openCreateModelDialog, openImportModelDialog } = useDialog();
+  const { openForm } = useDialog();
   const { models } = useModels();
 
   return (
     <ScrollArea className='h-full w-full pr-3'>
       <div className='flex w-full flex-col space-y-2'>
         <div className='flex gap-1'>
-          <Card className='card-model w-1/2 border-dashed p-1' onClick={openCreateModelDialog}>
+          <Card
+            className='card-model w-1/2 border-dashed p-1'
+            onClick={() => void openForm('createModel', {})}
+          >
             <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
               <Plus size={20} />
               <span className='text-center text-sm'>{t('btn_create_model')}</span>
             </CardContent>
           </Card>
-          <Card className='card-model w-1/2 border-dashed' onClick={openImportModelDialog}>
+          <Card
+            className='card-model w-1/2 border-dashed'
+            onClick={() => void openForm('importModel', {})}
+          >
             <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
               <Download size={20} />
               <span className='text-center text-sm'>{t('btn_import_model')}</span>

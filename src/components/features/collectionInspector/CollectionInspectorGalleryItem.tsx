@@ -29,7 +29,7 @@ const CollectionInspectorGalleryItem = ({
   setCanvasToDisplay: (canvas: CanvasWithSourceId | null) => void;
 }) => {
   const { t } = useTranslation();
-  const { openDuplicateLayoutDialog } = useDialog();
+  const { openForm } = useDialog();
   const { getAnnotationsByTypes } = useAnnotationContext();
 
   const regionAnnotations = getAnnotationsByTypes([ElementType.TEXT_REGION]);
@@ -43,9 +43,8 @@ const CollectionInspectorGalleryItem = ({
   });
 
   const handleDuplicateLayout = () => {
-    openDuplicateLayoutDialog({
-      canvasId: canvasWithSourceId.canvas.id,
-      collectionId,
+    void openForm('duplicateLayout', {
+      scope: { canvasId: canvasWithSourceId.canvas.id, collectionId },
     });
   };
 

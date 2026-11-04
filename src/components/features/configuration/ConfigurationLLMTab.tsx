@@ -1,4 +1,3 @@
-import { LLMProfileFormValues } from '@/components/common/forms/LLMProfileForm';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import { LLMProfile } from '@/data/models/LLMProfile';
 import useDialog from '@/hooks/ui/useDialog';
@@ -23,7 +22,7 @@ function saveProfiles(profiles: LLMProfile[]): void {
 
 const ConfigurationLLMTab = () => {
   const { t } = useTranslation();
-  const { openAddLLMProfileDialog, openEditLLMProfileDialog } = useDialog();
+  const { openForm } = useDialog();
   const [profiles, setProfiles] = useState<LLMProfile[]>(loadProfiles);
   const { openDialog } = useAlertDialogContext();
 
@@ -32,16 +31,16 @@ const ConfigurationLLMTab = () => {
     saveProfiles(updated);
   };
 
-  const handleAdd = () => {
-    openAddLLMProfileDialog((values: LLMProfileFormValues) => {
-      persist([...profiles, { id: crypto.randomUUID(), ...values }]);
-    });
+  const handleAdd = async () => {
+    const values = await openForm('addLlmProfile', {});
+    if (values !== undefined) persist([...profiles, { id: crypto.randomUUID(), ...values }]);
   };
 
-  const handleEdit = (profile: LLMProfile) => {
-    openEditLLMProfileDialog(profile, (values: LLMProfileFormValues) => {
+  const handleEdit = async (profile: LLMProfile) => {
+    const values = await openForm('editLlmProfile', { profile });
+    if (values !== undefined) {
       persist(profiles.map((p) => (p.id === profile.id ? { ...profile, ...values } : p)));
-    });
+    }
   };
 
   const handleDuplicate = (profile: LLMProfile) => {
@@ -64,7 +63,7 @@ const ConfigurationLLMTab = () => {
     <div className='mt-2'>
       <div className='mb-2 flex items-center justify-between'>
         <h2>{t('section_llm_profiles')}</h2>
-        <button className='soft-button' onClick={handleAdd}>
+        <button className='soft-button' onClick={() => void handleAdd()}>
           <Plus size={16} />
           {t('btn_add_llm_profile')}
         </button>
@@ -92,7 +91,7 @@ const ConfigurationLLMTab = () => {
                   <div className='flex gap-1'>
                     <button
                       className='soft-button'
-                      onClick={() => handleEdit(profile)}
+                      onClick={() => void handleEdit(profile)}
                       title={t('btn_edit')}
                     >
                       <Pencil size={14} />
