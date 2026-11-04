@@ -2,7 +2,7 @@
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
-import { clearDatabase } from '@/data/repositories/indexeddb/db';
+import { getDatabaseRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { GITHUB_TOKEN_STORAGE_KEY } from '@/hooks/data/convertedFiles/useRepository';
 import useSources from '@/hooks/data/sources/useSources';
 import { useAppDispatch } from '@/hooks/hooks';
@@ -52,7 +52,7 @@ const ConfigurationGeneralTab = () => {
       description: t('info_reset_indexeddb'),
       onConfirm: {
         action: async () => {
-          await clearDatabase();
+          await getDatabaseRepository().clear();
           appDispatch(pushInfo(t('toast_indexeddb_cleared')));
         },
         message: t('btn_yes'),

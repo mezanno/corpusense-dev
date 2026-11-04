@@ -1,6 +1,7 @@
 import { IndexedDBAnnotationRepository } from './annotations';
 import { IndexedDBAnnotationTempRepository } from './annotationsTemp';
 import { IndexedDBCollectionRepository } from './collections';
+import { IndexedDBDatabaseRepository } from './database';
 import { IndexedDBFSHandleRepository } from './fsHandle';
 import { IndexedDBAnnotationLiveRepository } from './liveQuery/annotations.live';
 import { IndexedDBAnnotationTempLiveRepository } from './liveQuery/annotationsTemp.live';
@@ -44,6 +45,10 @@ export function getCollectionRepository() {
 
 export function getCollectionLiveRepository() {
   return new IndexedDBCollectionLiveRepository();
+}
+
+export function getDatabaseRepository() {
+  return new IndexedDBDatabaseRepository();
 }
 
 export function getSourceRepository() {

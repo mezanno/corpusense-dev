@@ -60,12 +60,86 @@ export default tseslint.config(
   },
   {
     files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/data/repositories/indexeddb/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'dexie',
+              message: 'Les accès Dexie doivent passer par les repositories IndexedDB.',
+            },
+            {
+              name: '@/data/repositories/indexeddb/db',
+              message: 'La base Dexie est réservée aux repositories IndexedDB.',
+            },
+          ],
+          patterns: [
+            {
+              group: ['**/repositories/indexeddb/db'],
+              message: 'La base Dexie est réservée aux repositories IndexedDB.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-syntax': [
         'error',
         'NewExpression[callee.name="Error"]',
         'ClassDeclaration[superClass.name="Error"]',
         'ClassExpression[superClass.name="Error"]',
+      ],
+    },
+  },
+  {
+    files: ['src/data/**/*.{ts,tsx}'],
+    ignores: ['src/data/repositories/indexeddb/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@/App',
+              message: 'La couche data ne doit pas dépendre de l’application ou de son interface.',
+            },
+            {
+              name: 'dexie',
+              message: 'Les accès Dexie doivent passer par les repositories IndexedDB.',
+            },
+            {
+              name: '@/data/repositories/indexeddb/db',
+              message: 'La base Dexie est réservée aux repositories IndexedDB.',
+            },
+          ],
+          patterns: [
+            {
+              group: ['**/repositories/indexeddb/db'],
+              message: 'La base Dexie est réservée aux repositories IndexedDB.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/data/repositories/indexeddb/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@/App',
+              message: 'La couche data ne doit pas dépendre de l’application ou de son interface.',
+            },
+          ],
+        },
       ],
     },
   },

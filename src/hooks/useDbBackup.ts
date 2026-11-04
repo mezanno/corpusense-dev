@@ -1,8 +1,7 @@
-import { db } from '@/data/repositories/indexeddb/db';
+import { getDatabaseRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { useAppDispatch } from '@/hooks/hooks';
 import { pushError, pushInfo } from '@/state/reducers/events';
-import { exportDB, importInto } from 'dexie-export-import';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 // Matches both ExportProgress and ImportProgress from dexie-export-import (same shape)
@@ -17,6 +16,7 @@ interface DbOperationProgress {
 const useDbBackup = () => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
+  const databaseRepository = useMemo(() => getDatabaseRepository(), []);
   const importInputRef = useRef<HTMLInputElement>(null);
   const [exportProgress, setExportProgress] = useState<DbOperationProgress | null>(null);
   const [importProgress, setImportProgress] = useState<DbOperationProgress | null>(null);
@@ -25,11 +25,9 @@ const useDbBackup = () => {
 
   const exportDatabase = async () => {
     try {
-      const blob = await exportDB(db, {
-        progressCallback: (progress: DbOperationProgress) => {
-          setExportProgress(progress);
-          return true;
-        },
+      const blob = await databaseRepository.export((progress: DbOperationProgress) => {
+        setExportProgress(progress);
+        return true;
       });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -50,13 +48,9 @@ const useDbBackup = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      await importInto(db, file, {
-        clearTablesBeforeImport: true,
-        overwriteValues: true,
-        progressCallback: (progress: DbOperationProgress) => {
-          setImportProgress(progress);
-          return true;
-        },
+      await databaseRepository.import(file, (progress: DbOperationProgress) => {
+        setImportProgress(progress);
+        return true;
       });
       appDispatch(pushInfo(t('toast_import_success')));
       window.location.reload();

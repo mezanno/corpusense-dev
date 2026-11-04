@@ -1,3 +1,4 @@
+import { workerPlugins } from '@/App';
 import ScopeLabel from '@/components/common/ScopeLabel';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Worker, WorkerStatus } from '@/data/models/worker/worker';
-import { getWorkerCategory } from '@/data/models/worker/worker.utils';
 import useWorkers from '@/hooks/data/workers/useWorkers';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, MoreHorizontal, Trash } from 'lucide-react';
@@ -51,7 +51,7 @@ const WorkerTable = (props: WorkerTableProps) => {
       },
     },
     {
-      accessorFn: (row: Worker) => getWorkerCategory(row.name),
+      accessorFn: (row: Worker) => workerPlugins[row.name]?.info.category,
       accessorKey: 'type',
       header: t('list_title_worker_category'),
     },

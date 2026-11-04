@@ -47,7 +47,8 @@ Interface → (hooks/abonnements | commandes) → Repositories → Persistance
 Interface → Orchestrateur → Plugins → Services externes
 Loi d'état  ←  tout le monde peut l'importer ; elle n'importe rien
 INTERDIT : Interface → Persistance directe
-INTERDIT : Persistance/Modèles → Interface (imports inverses ; 2 violations connues, roadmap R3.6/Q4)
+INTERDIT : Persistance/Modèles → Interface (imports inverses ; garde ESLint `src/data/**` → `@/App`, roadmap Q4)
+INTERDIT : Accès Dexie hors repositories IndexedDB (garde ESLint, roadmap Q4)
 ```
 
 - Toute accès données passe par une **factory de module** retournant des repositories ; pas de conteneur d'injection (D-003, décision assumée pour un projet solo).

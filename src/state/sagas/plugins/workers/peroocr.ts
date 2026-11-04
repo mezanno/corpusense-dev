@@ -98,7 +98,11 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       }
     }
 
-    const peroUrl = getValueForPluginParam(pluginName, 'apiUrl');
+    const peroUrl = getValueForPluginParam(
+      pluginName,
+      'apiUrl',
+      pluginConfigurationParams.apiUrl.defaultValue,
+    );
     if (peroUrl === null) {
       return {
         event: WorkerEvent.RESULT_ERR,

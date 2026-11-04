@@ -192,8 +192,4 @@ db.version(32)
       });
   });
 
-export const clearDatabase = async () => {
-  await Dexie.delete('mezanno');
-};
-
 export { db };

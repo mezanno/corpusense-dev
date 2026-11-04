@@ -1,7 +1,6 @@
-import { db } from '@/data/repositories/indexeddb/db';
 import { getSourceRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 /**
  * Detects legacy data still present in storedManifests or convertedFiles
@@ -10,18 +9,14 @@ import { useCallback, useState } from 'react';
  */
 const usePendingMigration = () => {
   const [isMigrating, setIsMigrating] = useState(false);
+  const sourceRepository = useMemo(() => getSourceRepository(), []);
 
-  // Re-runs whenever storedManifests or convertedFiles tables change
-  const pendingCount =
-    useLiveQuery<number>(async () => {
-      const sourceRepository = getSourceRepository();
-      return sourceRepository.getPendingMigrationCount();
-    }, [db.storedManifests, db.convertedFiles]) ?? 0;
+  // Dexie tracks the tables queried by the repository and reruns this live query when they change.
+  const pendingCount = useLiveQuery<number>(() => sourceRepository.getPendingMigrationCount()) ?? 0;
 
   const migrateAll = useCallback(async () => {
     setIsMigrating(true);
     try {
-      const sourceRepository = getSourceRepository();
       await sourceRepository.migrateAllSources();
     } finally {
       setIsMigrating(false);

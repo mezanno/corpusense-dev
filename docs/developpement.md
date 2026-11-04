@@ -119,7 +119,7 @@ npm run test:e2e:ui        # mode interactif
 2. **Mock i18n** : ajouter une fonction i18n utilisée par un composant testé ⇒ l'ajouter au mock, sinon l'import explose.
 3. **Plugins expérimentaux** : invisibles tant que le drapeau `experimental_features` (localStorage) est désactivé.
 4. **Deux registries de plugins** : `App.tsx` (UI) et `sagas/workers.ts` (exécution) chargent chacun leur copie — dette roadmap Q6.
-5. **Imports transverses interdits** (future règle de lint d'architecture, roadmap Q4) : `src/data/**` ne doit rien importer de `@/App` ni des stores UI ; deux violations existent (`data/utils/plugins.ts`, `data/models/worker/worker.utils.ts`).
+5. **Frontières d'architecture** (roadmap Q4) : ESLint interdit les imports de `@/App` depuis `src/data/**` et les accès directs à Dexie hors de `src/data/repositories/indexeddb/`. Utiliser les repositories fournis par `dbFactory` ; la règle passe dans le lint ratchet de CI.
 6. **Documentation de l'app** : `DocumentationPage` sert les Markdown de `public/doc/` listés dans `index.json` — la doc technique n'y a pas sa place (voir [README.md](./README.md)).
 7. **E2E Playwright** (Q9, enseignements des specs `e2e/`) :
    - `download.path()` est la fin autoritaire du flux en Node — `download.finished()` n'existe pas côté JS ;
