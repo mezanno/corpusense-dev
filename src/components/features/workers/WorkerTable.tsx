@@ -1,4 +1,3 @@
-import { workerPlugins } from '@/App';
 import ScopeLabel from '@/components/common/ScopeLabel';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import { Button } from '@/components/ui/button';
@@ -11,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Worker, WorkerStatus } from '@/data/models/worker/worker';
 import useWorkers from '@/hooks/data/workers/useWorkers';
+import { workerPlugins } from '@/state/sagas/plugins/registry';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, MoreHorizontal, Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';

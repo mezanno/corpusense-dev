@@ -58,11 +58,9 @@ import {
   startWorkerProcessRequest,
   stopWorkerProcessRequest,
 } from '../reducers/workers';
-import { loadWorkerPlugins, WorkerPlugin } from './plugins/loader';
+import { workerPlugins } from './plugins/registry';
 
 const POST_TIMEOUT_MS = 60000;
-
-export const workerPlugins: Record<string, WorkerPlugin> = loadWorkerPlugins();
 
 async function findJobForTask(workerId: string, taskId: number): Promise<JobRow | undefined> {
   const { data, error } = await supabase

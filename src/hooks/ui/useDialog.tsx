@@ -1,4 +1,3 @@
-import { workerPlugins } from '@/App';
 import ContactForm from '@/components/common/forms/ContactForm';
 import ConvertPdfForm from '@/components/common/forms/ConvertPdfForm';
 import DuplicateCollectionForm from '@/components/common/forms/DuplicateCollectionForm';
@@ -36,6 +35,7 @@ import { CanvasScope, Scope } from '@/data/models/scope/scope';
 import { Source, SourceWithContent } from '@/data/models/source/source';
 import { Worker } from '@/data/models/worker/worker';
 import { ModifierChainData } from '@/data/utils/modifierChain';
+import { workerPlugins } from '@/state/sagas/plugins/registry';
 import { createRef, ReactNode, RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 

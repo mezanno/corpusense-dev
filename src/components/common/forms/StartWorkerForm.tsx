@@ -1,4 +1,3 @@
-import { workerPlugins } from '@/App';
 import { Checkbox } from '@/components/ui/checkbox';
 import { FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -6,6 +5,7 @@ import { Scope } from '@/data/models/scope/scope';
 import { useAppDispatch } from '@/hooks/hooks';
 import { FormProps } from '@/hooks/ui/useDialog';
 import { startWorkerProcessRequest } from '@/state/reducers/workers';
+import { workerPlugins } from '@/state/sagas/plugins/registry';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';

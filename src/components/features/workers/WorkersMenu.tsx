@@ -1,9 +1,9 @@
-import { workerPlugins } from '@/App';
 import MultiOptionsMenu from '@/components/common/menu/MultiOptionsMenu';
 import { Scope } from '@/data/models/scope/scope';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
 import { startWorkerProcessRequest } from '@/state/reducers/workers';
+import { workerPlugins } from '@/state/sagas/plugins/registry';
 import { selectWorkerPluginsInfo } from '@/state/selectors/workers';
 import { PocketKnife, ScanText } from 'lucide-react';
 

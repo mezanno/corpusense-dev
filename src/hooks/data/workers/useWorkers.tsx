@@ -2,7 +2,7 @@ import { Worker } from '@/data/models/worker/worker';
 import { getResultRepository, getWorkerRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { useAppDispatch } from '@/hooks/hooks';
 import { pushError } from '@/state/reducers/events';
-import { workerPlugins } from '@/state/sagas/workers';
+import { workerPlugins } from '@/state/sagas/plugins/registry';
 import { getErrorMessage } from '@/utils/utils';
 
 const useWorkers = () => {

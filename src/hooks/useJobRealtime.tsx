@@ -1,4 +1,3 @@
-import { workerPlugins } from '@/App';
 import { useWorkerContext } from '@/components/reducers/WorkerContext';
 import { TaskStatus, Worker, WorkerEvent } from '@/data/models/worker/worker';
 import type { TaskEvent } from '@/data/models/worker/workerStatusLaw';
@@ -8,6 +7,7 @@ import {
   taskStatusOfJobStatus,
 } from '@/data/models/worker/workerStatusLaw';
 import { getWorkerRepository } from '@/data/repositories/indexeddb/dbFactory';
+import { workerPlugins } from '@/state/sagas/plugins/registry';
 import { deleteFile } from '@/state/sagas/plugins/workers/supabase/utils';
 import { JobRow, supabase } from '@/utils/config';
 import { getErrorMessage } from '@/utils/utils';

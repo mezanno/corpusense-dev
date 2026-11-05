@@ -1,6 +1,6 @@
-import { importerPlugins } from '@/App';
 import { ConvertedFile } from '@/data/models/convertedFile';
 import { getSourceRepository } from '@/data/repositories/indexeddb/dbFactory';
+import { importerPlugins } from '@/state/sagas/plugins/registry';
 import { convertPresentation2 } from '@iiif/parser/presentation-2';
 import { Manifest } from '@iiif/presentation-3';
 import i18n from 'i18next';

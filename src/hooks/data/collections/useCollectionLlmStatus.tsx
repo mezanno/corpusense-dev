@@ -1,9 +1,9 @@
-import { workerPlugins } from '@/App';
 import {
   getResultRepository,
   getWorkerLiveRepository,
   getWorkerRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
+import { workerPlugins } from '@/state/sagas/plugins/registry';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
 
