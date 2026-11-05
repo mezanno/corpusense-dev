@@ -55,7 +55,7 @@ Les onze modules `liveQuery/` : annotations, annotations temporaires, collection
 | 1 — repositories simples            | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 2 |
 | 2 — Worker                          | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 3 |
 | 3 — annotations                     | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 4 |
-| 4 — sources                         | À faire              | À documenter à la clôture du lot          |
+| 4 — sources                         | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 5 |
 | 5 — collections                     | À faire              | À documenter à la clôture du lot          |
 | 6 — export/import/effacement        | À faire              | À documenter à la clôture du lot          |
 | 7 — `liveQuery`                     | À faire              | Clôture finale à documenter               |
@@ -95,6 +95,16 @@ Les onze modules `liveQuery/` : annotations, annotations temporaires, collection
 - **Vérifications** : tests ciblés annotations (2 fichiers, 11 tests réussis) ; `npx vitest run` (34 fichiers réussis, 1 ignoré ; 140 tests réussis, 1 todo) ; `npx tsc -b` ; Prettier ciblé sur les tests et ce plan ; `git diff --check` — tout passe. Le contrôle Prettier de `docs/roadmap.md` signale un écart de formatage préexistant sur l'ensemble du tableau Q1–Q9 ; il est laissé intact pour éviter un reformatage sans rapport avec ce lot.
 - **Couverture / limites** : pas de mesure de couverture recalculée à ce lot ; la mesure correctement bornée reste à faire au bilan final.
 - **Restant / relais précis** : après le commit de ce lot, ouvrir une nouvelle session, relire ce plan, `docs/roadmap.md` et l'état Git, puis réaliser uniquement le lot 4 : créer `sources.test.ts` et tester les écritures groupées source/contenu/blob, les lectures et erreurs typées, les mises à jour, les suppressions, le comptage et les migrations décrits ci-dessous. Stubber seulement les helpers à la frontière IO si nécessaire ; ne pas démarrer le lot 5.
+
+### Relais — lot 4 terminé (2026-11-05)
+
+- **Comportements couverts** : ajout local et distant sur les stores `sources`/`sourceContents`/`storedBlobs` ; import avec miniature base64 ; lecture jointe source/contenu/miniature, recherche par URL de manifeste et canvas ; erreurs typées pour absences source/contenu/blob/canvas ; mises à jour du nom, des métadonnées et du `githubManifestUrl` local ; suppression unitaire et globale ; rollback d'un import lorsque l'id du contenu entre en conflit ; décompte des migrations restantes ; migration des manifests distants et fichiers locaux, mise à jour des références de collection et nettoyage des anciennes entrées.
+- **Correctifs révélés par TDD** : `migrateAllSources` omettait le `githubManifestUrl` des fichiers convertis et laissait tout le contenu des anciennes tables (le nettoyage était commenté). Le champ est désormais conservé ; seules les entrées effectivement migrées sont supprimées, ce qui garde les entrées sans contenu associées disponibles pour une nouvelle tentative au lieu de perdre des données.
+- **Frontières IO** : les tests ne simulent ni Dexie ni les repositories. Ils stubent `blobToBase64` et `getManifestFromConvertedFile` uniquement à leurs frontières navigateur/fichier ; le chemin de reconstruction locale et les transactions Dexie restent réels.
+- **Fichiers** : `src/data/repositories/indexeddb/__tests__/sources.test.ts`, `src/data/repositories/indexeddb/sources.ts`.
+- **Vérifications** : test Sources (11 réussis) ; `npx vitest run src/data/repositories/indexeddb` (11 fichiers, 58 tests réussis) ; `npx vitest run` (35 fichiers réussis, 1 ignoré ; 151 tests réussis, 1 todo) ; `npx tsc -b` ; Prettier ciblé ; `git diff --check` — tout passe.
+- **Couverture / limites** : pas de mesure de couverture recalculée à ce lot ; la mesure correctement bornée reste à faire au bilan final.
+- **Restant / relais précis** : après le commit de ce lot, ouvrir une nouvelle session, relire ce plan, `docs/roadmap.md` et l'état Git, constater les lots 0 à 4 clôturés, puis réaliser uniquement le lot 5 : créer `collections.test.ts` avec les repositories réels et couvrir créations/lectures, tags/sources/canvases/scopes, déplacements, duplication, suppression d'élément et de collections avec nettoyage des dépendances, ainsi que l'atomicité des écritures multi-tables. Ne pas démarrer le lot 6.
 
 ## Lots d’exécution
 
@@ -145,7 +155,9 @@ Créer `annotations.test.ts` et `annotationsTemp.test.ts` :
 
 ### Lot 4 — Sources et contenu/blob
 
-Créer `sources.test.ts`. Prioriser les invariants de stockage groupé :
+✅ Terminé (2026-11-05) ; détails et relais vers le lot 5 ci-dessus.
+
+`sources.test.ts` couvre les invariants de stockage groupé :
 
 - ajout d’une source locale et distante et persistance cohérente dans `sources`, `sourceContents` et `storedBlobs` ;
 - vérification des lectures jointes (contenu, miniature/base64), des erreurs d’absence et de la recherche par URL de manifeste/canvas ;

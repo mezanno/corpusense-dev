@@ -269,6 +269,8 @@ export class IndexedDBSourceRepository implements SourceRepository {
 
     // Build an id mapping to update collection references after migration
     const manifestIdMap = new Map<string, string>();
+    const migratedManifestIds = new Set<string>();
+    const migratedFileIds = new Set<string>();
 
     // ----------------------------
     // 🔁 Remote manifests (storedManifests → sources)
@@ -307,6 +309,7 @@ export class IndexedDBSourceRepository implements SourceRepository {
           });
         });
         manifestIdMap.set(manifest.id, sourceId);
+        migratedManifestIds.add(manifest.id);
       } catch (error) {
         console.error(`Error migrating manifest ${manifest.id}:`, error);
       }
@@ -342,9 +345,13 @@ export class IndexedDBSourceRepository implements SourceRepository {
               manifestName: file.manifestName,
               folderName: file.folderName,
             },
+            ...(file.githubManifestUrl === undefined
+              ? {}
+              : { githubManifestUrl: file.githubManifestUrl }),
           } as SourceContent);
         });
         manifestIdMap.set(file.id, file.id);
+        migratedFileIds.add(file.id);
       } catch (error) {
         console.error(`Error migrating converted file ${file.id}:`, error);
       }
@@ -370,10 +377,10 @@ export class IndexedDBSourceRepository implements SourceRepository {
     });
 
     // ----------------------------
-    // 🧹 Clear legacy tables
+    // 🧹 Clear only legacy entries that were migrated successfully
     // ----------------------------
-    // await db.storedManifests.clear();
-    // await db.storedManifestContents.clear();
-    // await db.convertedFiles.clear();
+    await db.storedManifests.bulkDelete([...migratedManifestIds]);
+    await db.storedManifestContents.bulkDelete([...migratedManifestIds]);
+    await db.convertedFiles.bulkDelete([...migratedFileIds]);
   }
 }
