@@ -49,16 +49,16 @@ Les onze modules `liveQuery/` : annotations, annotations temporaires, collection
 
 ### Suivi des lots et prochain relais
 
-| Lot                                 | État    | Relais vers la session suivante  |
-| ----------------------------------- | ------- | -------------------------------- |
+| Lot                                 | État                 | Relais vers la session suivante           |
+| ----------------------------------- | -------------------- | ----------------------------------------- |
 | 0 — contrats ambigus et régressions | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 1 |
 | 1 — repositories simples            | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 2 |
 | 2 — Worker                          | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 3 |
-| 3 — annotations                     | À faire | À documenter à la clôture du lot |
-| 4 — sources                         | À faire | À documenter à la clôture du lot |
-| 5 — collections                     | À faire | À documenter à la clôture du lot |
-| 6 — export/import/effacement        | À faire | À documenter à la clôture du lot |
-| 7 — `liveQuery`                     | À faire | Clôture finale à documenter      |
+| 3 — annotations                     | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 4 |
+| 4 — sources                         | À faire              | À documenter à la clôture du lot          |
+| 5 — collections                     | À faire              | À documenter à la clôture du lot          |
+| 6 — export/import/effacement        | À faire              | À documenter à la clôture du lot          |
+| 7 — `liveQuery`                     | À faire              | Clôture finale à documenter               |
 
 ### Relais — lot 0 terminé (2026-11-05)
 
@@ -85,6 +85,16 @@ Les onze modules `liveQuery/` : annotations, annotations temporaires, collection
 - **Fichiers** : `workers.test.ts`, `workers.ts`.
 - **Vérifications** : test Worker (16 réussis) ; `npx vitest run src/data/repositories/indexeddb` (8 fichiers, 36 tests réussis) ; `npx vitest run` (32 fichiers réussis, 1 ignoré ; 129 tests réussis, 1 todo) ; `npx tsc -b` ; Prettier ciblé ; `git diff --check` — tout passe.
 - **Décisions / restant** : aucun doublon de la loi pure de statut ; la couverture exploratoire sera recalculée au bilan final. Après le commit de ce lot, ouvrir une nouvelle session, relire ce plan, `docs/roadmap.md` et l'état Git, puis réaliser uniquement le lot 3 : créer `annotations.test.ts` et `annotationsTemp.test.ts` et couvrir les contrats listés ci-dessous, en TDD, en commençant par les recherches, ordres et isolement des scopes/types. Ne pas démarrer le lot 4.
+
+### Relais — lot 3 terminé (2026-11-05)
+
+- **Comportements couverts — annotations permanentes** : lecture par id (présent/absent typé), scopes annotation/canvas/collection, tri par ordre au canvas, filtre de type et isolement des scopes ; prochain ordre pour type vide/non vide et affectation indépendante par type ; mise à jour sans changement de type et réindexation lors d'un changement de type ; permutation d'ordre ; suppression par ids (dont ids absents), id, scope et type, avec réindexation et conservation des autres canvas/types ; recherche du parent contenant de plus petite surface, absence de parent et type non éligible.
+- **Comportements couverts — annotations temporaires** : lecture complète et par canvas triée, insertion, séparation du store permanent, suppression par collection avec conservation des autres collections.
+- **Fichiers** : `annotations.test.ts`, `annotationsTemp.test.ts` et helper partagé `annotationFixtures.ts`. Aucun correctif de production n'a été nécessaire : les tests n'ont pas révélé de régression supplémentaire.
+- **Décisions / limites** : les assertions n'imposent pas d'ordre pour `getAll()` des temporaires ni entre canvases où les ordres peuvent être égaux ; les fixtures `addAll` permanentes restent dans un scope homogène, conformément au contrat d'affectation d'ordre du repository.
+- **Vérifications** : tests ciblés annotations (2 fichiers, 11 tests réussis) ; `npx vitest run` (34 fichiers réussis, 1 ignoré ; 140 tests réussis, 1 todo) ; `npx tsc -b` ; Prettier ciblé sur les tests et ce plan ; `git diff --check` — tout passe. Le contrôle Prettier de `docs/roadmap.md` signale un écart de formatage préexistant sur l'ensemble du tableau Q1–Q9 ; il est laissé intact pour éviter un reformatage sans rapport avec ce lot.
+- **Couverture / limites** : pas de mesure de couverture recalculée à ce lot ; la mesure correctement bornée reste à faire au bilan final.
+- **Restant / relais précis** : après le commit de ce lot, ouvrir une nouvelle session, relire ce plan, `docs/roadmap.md` et l'état Git, puis réaliser uniquement le lot 4 : créer `sources.test.ts` et tester les écritures groupées source/contenu/blob, les lectures et erreurs typées, les mises à jour, les suppressions, le comptage et les migrations décrits ci-dessous. Stubber seulement les helpers à la frontière IO si nécessaire ; ne pas démarrer le lot 5.
 
 ## Lots d’exécution
 
