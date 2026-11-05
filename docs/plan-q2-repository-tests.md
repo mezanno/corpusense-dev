@@ -41,24 +41,25 @@ Les onze modules `liveQuery/` : annotations, annotations temporaires, collection
 
 - **Chaque lot, y compris le lot 0, doit être réalisé dans une nouvelle session OpenCode.** Ne pas enchaîner deux lots dans la même session, même si le premier semble terminé rapidement. Toutes les sessions continuent sur la branche `plan/q2-repository-tests`.
 - **À la clôture de chaque lot, créer un commit dédié** contenant les changements du lot, les tests et le relais documentaire. Ne pas inclure de changements étrangers au lot ; s'il y en a dans l'arbre de travail, les préserver et isoler le commit.
-- **Après le commit d'un lot, passer automatiquement au lot suivant dans une nouvelle session OpenCode**, sans attendre une nouvelle demande de l'utilisateur. La nouvelle session doit repartir du relais documenté et du commit du lot précédent. Répéter ce cycle jusqu'à la clôture du lot 7 ; ne pas faire deux lots dans une session.
+- **Après le commit d'un lot, passer automatiquement au lot suivant dans une nouvelle session OpenCode**, sans attendre une nouvelle demande de l'utilisateur. La nouvelle session doit repartir du relais documenté et du commit du lot précédent. Répéter ce cycle jusqu'à la clôture du lot 8 ; ne pas faire deux lots dans une session.
 - À l’ouverture d’une session, relire ce plan, `docs/roadmap.md` et l’état Git. Ne commencer que le lot indiqué comme prochain dans la section de suivi ci-dessous ; vérifier que son lot précédent est clôturé et documenté.
 - **La clôture d’un lot comprend obligatoirement une mise à jour documentaire avant son commit et l’ouverture de la session suivante.** Mettre à jour ce plan : statut du lot, fichiers/comportements couverts, décisions prises, commandes et résultats de vérification, problèmes restants et instructions précises pour le lot suivant.
 - Mettre aussi à jour `docs/roadmap.md` lorsque les preuves changent l’état ou le bilan de Q2. Si un lot tranche une décision architecturale qui dépasse le plan, consigner la décision dans `docs/DECISIONS.md` et la référencer ici.
-- Ne pas marquer un lot terminé, le commiter ni démarrer le suivant tant que ses tests et vérifications ne sont pas exécutés et que le relais documentaire n’est pas à jour. Une fois le commit confirmé, ouvrir automatiquement une nouvelle session pour le prochain lot. Cette session doit pouvoir reprendre à partir des documents, du commit et de l’état du dépôt, sans dépendre de l’historique de conversation.
+- Ne pas marquer un lot terminé, le commiter ni démarrer le suivant tant que ses tests et vérifications ne sont pas exécutés et que le relais documentaire n'est pas à jour. Une fois le commit confirmé, ouvrir automatiquement une nouvelle session pour le prochain lot. Cette session doit pouvoir reprendre à partir des documents, du commit et de l'état du dépôt, sans dépendre de l'historique de conversation.
 
 ### Suivi des lots et prochain relais
 
-| Lot                                 | État                 | Relais vers la session suivante           |
-| ----------------------------------- | -------------------- | ----------------------------------------- |
-| 0 — contrats ambigus et régressions | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 1 |
-| 1 — repositories simples            | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 2 |
-| 2 — Worker                          | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 3 |
-| 3 — annotations                     | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 4 |
-| 4 — sources                         | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 5 |
-| 5 — collections                     | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 6 |
-| 6 — export/import/effacement        | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 7 |
-| 7 — `liveQuery`                     | Terminé (2026-11-05) | Plan Q2 repository-tests clôturé          |
+| Lot                                 | État                 | Relais vers la session suivante              |
+| ----------------------------------- | -------------------- | -------------------------------------------- |
+| 0 — contrats ambigus et régressions | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 1    |
+| 1 — repositories simples            | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 2    |
+| 2 — Worker                          | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 3    |
+| 3 — annotations                     | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 4    |
+| 4 — sources                         | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 5    |
+| 5 — collections                     | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 6    |
+| 6 — export/import/effacement        | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 7    |
+| 7 — `liveQuery`                     | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 8    |
+| 8 — audit qualité transversal       | À faire              | Clôturer le plan après mise à jour du relais |
 
 ### Relais — lot 0 terminé (2026-11-05)
 
@@ -128,10 +129,11 @@ Les onze modules `liveQuery/` : annotations, annotations temporaires, collection
 - **Comportements couverts** : les onze modules `liveQuery` sont observés via `Dexie.liveQuery()` et un abonnement réel sur `fake-indexeddb`. Les tests couvrent les valeurs initiales et les émissions après ajout, mise à jour et suppression ; les requêtes filtrées vérifient la séparation des collections, canvases, types, sources et annotations. Les cas incluent `hasResult`, les deux formes de présence OCR, les lectures de collection avec contenu/canvases et les trois formes de scope des annotations permanentes et temporaires.
 - **Désabonnement** : chaque test libère ses abonnements dans `finally` ; les tests dédiés vérifient que l’abonnement est fermé après `unsubscribe()`. Les mutations hors scope et hors store ne contaminent pas le résultat des requêtes.
 - **Fichiers / correctif révélé** : onze nouveaux fichiers de test sous `src/data/repositories/indexeddb/liveQuery/__tests__/` (25 scénarios nommés) et le helper `liveQueryTestUtils.ts`. L’audit a révélé un doublon dans `IndexedDBNamedEntityLiveRepository.getByAnnotationIds()` quand une entité correspond à plusieurs ids recherchés ; `.distinct()` est ajouté au repository réactif, et le test échouait avant ce correctif.
-- **Audit rétroactif des lots 1–7 (2026-11-05)** : les onze tests `liveQuery` initiaux mélangeaient plusieurs comportements dans un seul `it` et le contrôle des émissions négatives dépendait d’un délai fixe de 30 ms. Ils sont maintenant séparés en 25 scénarios nommés ; le délai arbitraire est supprimé, les scopes sont vérifiés par les résultats des requêtes, et les tests dédiés vérifient la fermeture des abonnements. L’audit a aussi ajouté des scénarios directs pour `CollectionRepository.addContentToCollection` et `delete`, supprimé une hypothèse d’ordre non contractuelle sur `WorkerRepository.getAll`, et corrigé le test `clear()` : il rouvrait auparavant la base via `createTestDb()`, qui la supprimait et pouvait donc masquer une implémentation défectueuse. Il appelle désormais `db.open()` après l’effacement. Enfin, `lint:ratchet` avait détecté 21 erreurs nouvelles dans le périmètre des lots 1–7 ; les assertions de matchers non typées, la fixture Worker, le masquage de nom et les assertions superflues sont corrigés. Le ratchet revient à sa baseline (48 erreurs / 2 warnings), sans changement de baseline. Aucun autre écart notable aux règles D-004/D-010 ou aux critères du plan n’a été relevé.
+- **Audit rétroactif initial des lots 1–7 (2026-11-05)** : les onze tests `liveQuery` initiaux mélangeaient plusieurs comportements dans un seul `it` et le contrôle des émissions négatives dépendait d’un délai fixe de 30 ms. Ils sont maintenant séparés en 25 scénarios nommés ; le délai arbitraire est supprimé, les scopes sont vérifiés par les résultats des requêtes, et les tests dédiés vérifient la fermeture des abonnements. L’audit a aussi ajouté des scénarios directs pour `CollectionRepository.addContentToCollection` et `delete`, supprimé une hypothèse d’ordre non contractuelle sur `WorkerRepository.getAll`, et corrigé le test `clear()` : il rouvrait auparavant la base via `createTestDb()`, qui la supprimait et pouvait donc masquer une implémentation défectueuse. Il appelle désormais `db.open()` après l’effacement. Enfin, `lint:ratchet` avait détecté 21 erreurs nouvelles dans le périmètre des lots 1–7 ; les assertions de matchers non typées, la fixture Worker, le masquage de nom et les assertions superflues sont corrigés. Le ratchet revient à sa baseline (48 erreurs / 2 warnings), sans changement de baseline. Le présent audit confirme le bon état général, mais a relevé une assertion d’ordre encore non contractuelle dans `fsHandle.test.ts` ; sa correction et le balayage final des assertions d’ordre sont confiés au lot 8 ci-dessous.
+- **Audit transversal en cours (2026-11-05)** : la revue des tests confirme l’usage de Dexie + `fake-indexeddb`, l’absence de mocks du stockage et de délais artificiels, ainsi que le nettoyage des abonnements `liveQuery` dans des blocs `finally`. Une assertion d’ordre sans contrat a toutefois été confirmée dans `src/data/repositories/indexeddb/__tests__/fsHandle.test.ts`. Vérifications indépendantes : ESLint ciblé sans erreur ; `npm run lint:ratchet` à la baseline (48 erreurs / 2 warnings) ; `npx vitest run src/data/repositories/indexeddb` (24 fichiers, 97 tests réussis) ; `npx vitest run` (48 fichiers réussis, 1 ignoré ; 190 tests réussis, 1 todo) ; `npx tsc -b` ; Prettier ciblé et `git diff --check` passent. Le lot 8 doit corriger ce point et finir le balayage des assertions d’ordre et des fixtures avant clôture.
 - **Couverture comparative bornée** : même commande et périmètre `src/data/repositories/indexeddb/**/*.ts` (hors tests), sur le commit de départ `001e2c5` puis sur l’état final : **8,67 % → 93,05 % lignes** (634 lignes instrumentées au départ et à la fin ; soit +84,38 points). Au final : 93,28 % statements, 85,71 % branches, 88,41 % fonctions. Ce chiffre est exploratoire, n’est pas un seuil CI et ne se compare pas directement aux 10,76 % historiques (repositories + saga + plugins).
 - **Vérifications finales** : `npx vitest run src/data/repositories/indexeddb/liveQuery/__tests__` (25 tests) ; `npx vitest run src/data/repositories/indexeddb` (24 fichiers, 97 tests) ; `npx vitest run` (48 fichiers réussis, 1 ignoré ; 190 tests réussis, 1 todo) ; `npx tsc -b` ; `npm run lint:ratchet` (48 erreurs / 2 warnings, égal à la baseline) ; Prettier ciblé sur les tests et ce plan ; `git diff --check` ; couverture ciblée — tout passe. Prettier sur `docs/roadmap.md` conserve son écart préexistant sur le tableau Q1–Q9, également présent dans `HEAD` ; aucun reformatage sans rapport n’est effectué.
-- **Restant / bilan** : le périmètre de ce plan est terminé. La saga worker, `useJobRealtime`, les plugins, Excel et le client OpenAI restent les sujets Q2 distincts déjà recensés dans la roadmap ; ils ne sont pas inclus dans ce lot.
+- **Restant / bilan** : les tests fonctionnels des repositories sont terminés ; le lot 8 reste à réaliser avant de clôturer ce plan. La saga worker, `useJobRealtime`, les plugins, Excel et le client OpenAI restent les sujets Q2 distincts déjà recensés dans la roadmap ; ils ne sont pas inclus dans ce lot.
 
 ## Lots d’exécution
 
@@ -227,12 +229,22 @@ Ajouter un fichier de test par module réactif, en commençant par workers, coll
 
 Ne pas monter de composants React dans ces tests si le repository expose directement une query observable. Les comportements de hooks UI restent dans leur propre suite.
 
+### Lot 8 — Audit qualité transversal et mise au propre
+
+Auditer tous les tests ajoutés ou modifiés dans le cadre des lots 0 à 7, sous `src/data/repositories/indexeddb/**/__tests__/`, puis ne corriger que les écarts de qualité de test confirmés. Le premier écart constaté est dans `__tests__/fsHandle.test.ts` : `getAll()` est un simple `toArray()` sans contrat d’ordre, mais le test exige `[first, second]`. Remplacer cette assertion par une vérification du contenu et du nombre d’éléments, sans ordre implicite.
+
+- Repasser toutes les assertions qui comparent des listes et ne conserver un ordre strict que lorsqu’il fait partie du contrat testé (par exemple l’ordre des annotations, des résultats explicitement triés ou des canvases de collection). Pour les autres listes, vérifier les éléments et la cardinalité sans sur-spécifier leur ordre.
+- Revoir les fixtures et assertions de type/test-only, notamment les casts vers des types de plateforme navigateur, pour s’assurer qu’ils sont confinés aux frontières nécessaires et ne masquent pas des données invalides. Éviter les casts et helpers supplémentaires lorsqu’ils n’apportent pas de sûreté ou de lisibilité ; ne pas créer de framework de test.
+- Confirmer l’absence de mocks du stockage, de délais arbitraires, de fuites d’abonnements, d’assertions redondantes ou de scénarios mêlant des comportements sans raison. Ne pas modifier le code de production sauf si l’audit révèle un défaut fonctionnel distinct ; dans ce cas, documenter le défaut et son test de non-régression.
+- Mettre à jour ce relais avec les écarts examinés, les corrections, les fichiers et les vérifications. Vérifier les tests ciblés, `npx vitest run`, `npx tsc -b`, ESLint ciblé, `npm run lint:ratchet`, Prettier ciblé et `git diff --check`.
+
 ## Critères de sortie
 
 - Chaque repository du périmètre possède des tests directs sur Dexie + `fake-indexeddb`, sans mock du stockage.
 - Chaque méthode publique a au moins un scénario représentatif ; les méthodes qui retournent un `FunctionResult` couvrent succès et absence/erreur pertinente.
 - Les opérations multi-tables couvrent l’invariant de cohérence et, quand applicable, leur atomicité.
 - Les deux points du lot 0 ont une décision explicite et des tests de non-régression.
+- Le lot 8 confirme que les tests n’imposent pas de comportements non contractuels et que leurs fixtures, assertions et ressources asynchrones suivent les conventions du dépôt.
 - Tests ciblés, `npx vitest run`, `npx tsc -b` et `git diff --check` passent.
 - Le relevé de couverture est comparé à la base de départ pour les repositories, sans transformer le pourcentage exploratoire en seuil CI implicite.
 
