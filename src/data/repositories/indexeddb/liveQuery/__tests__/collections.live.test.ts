@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { createTestDb } from '../../__tests__/testDb';
 import { db } from '../../db';
 import { IndexedDBCollectionLiveRepository } from '../collections.live';
-import { observe, settleLiveQuery } from './liveQueryTestUtils';
+import { observe } from './liveQueryTestUtils';
 
 const details = (id: string, name: string): CollectionDetails => ({
   id,
@@ -25,17 +25,15 @@ const manifest = {
 describe('IndexedDBCollectionLiveRepository', () => {
   beforeEach(createTestDb);
 
-  it('emits details and collection content changes, and unsubscribes cleanly', async () => {
+  it('emits collection details and content additions, updates and removals', async () => {
     const repository = new IndexedDBCollectionLiveRepository();
     const all = observe(repository.getAllDetails());
     const selected = observe(repository.getAllDetailsByIds(['c1']));
     const collection = observe(repository.getById('c1'));
-    const canvases = observe(repository.getCanvasesByCollectionId('c1'));
     try {
       expect(await all.next()).toEqual([]);
       expect(await selected.next()).toEqual([]);
       expect(await collection.next()).toBeUndefined();
-      expect(await canvases.next()).toEqual([]);
 
       await db.collections.put(details('c1', 'Alpha'));
       expect(await all.until((items) => items.length === 1)).toMatchObject([
@@ -60,6 +58,26 @@ describe('IndexedDBCollectionLiveRepository', () => {
         id: 'c1',
       });
 
+      await db.transaction('rw', db.collections, db.collectionContents, async () => {
+        await db.collections.delete('c1');
+        await db.collectionContents.delete('c1');
+      });
+      expect(await all.until((items) => items.length === 0)).toEqual([]);
+      expect(await selected.until((items) => items.length === 0)).toEqual([]);
+      expect(await collection.until((item) => item === undefined)).toBeUndefined();
+    } finally {
+      all.unsubscribe();
+      selected.unsubscribe();
+      collection.unsubscribe();
+    }
+  });
+
+  it('emits canvas resolution changes and closes its subscription when unsubscribed', async () => {
+    const canvases = observe(
+      new IndexedDBCollectionLiveRepository().getCanvasesByCollectionId('c1'),
+    );
+    try {
+      expect(await canvases.next()).toEqual([]);
       await db.sourceContents.put({ id: 'source-1', type: 'remote', manifest });
       await db.collectionContents.put({
         id: 'c1',
@@ -69,22 +87,11 @@ describe('IndexedDBCollectionLiveRepository', () => {
         { sourceId: 'source-1', canvas: { id: 'canvas-1' } },
       ]);
 
-      all.unsubscribe();
-      selected.unsubscribe();
-      collection.unsubscribe();
+      await db.collectionContents.delete('c1');
+      expect(await canvases.until((items) => items.length === 0)).toEqual([]);
       canvases.unsubscribe();
-      const emissionCounts = [all, selected, collection, canvases].map(
-        ({ values }) => values.length,
-      );
-      await db.collections.delete('c1');
-      await settleLiveQuery();
-      expect([all, selected, collection, canvases].map(({ values }) => values.length)).toEqual(
-        emissionCounts,
-      );
+      expect(canvases.closed).toBe(true);
     } finally {
-      all.unsubscribe();
-      selected.unsubscribe();
-      collection.unsubscribe();
       canvases.unsubscribe();
     }
   });

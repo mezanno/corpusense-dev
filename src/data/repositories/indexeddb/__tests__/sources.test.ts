@@ -11,13 +11,12 @@ import { createTestDb } from './testDb';
 
 const repository = new IndexedDBSourceRepository();
 
-const manifest = (id: string, canvasIds: string[] = []): Manifest =>
-  ({
-    id,
-    type: 'Manifest',
-    label: { en: [id] },
-    items: canvasIds.map((canvasId) => ({ id: canvasId, type: 'Canvas', items: [] })),
-  }) as Manifest;
+const manifest = (id: string, canvasIds: string[] = []): Manifest => ({
+  id,
+  type: 'Manifest',
+  label: { en: [id] },
+  items: canvasIds.map((canvasId) => ({ id: canvasId, type: 'Canvas', items: [] })),
+});
 
 const localFile = {
   outputDirectoryHandle: {} as FileSystemDirectoryHandle,
@@ -57,23 +56,24 @@ describe('IndexedDBSourceRepository', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
 
-    expect(await repository.getById(result.value.id)).toEqual({
-      ok: true,
-      value: expect.objectContaining({
-        id: result.value.id,
-        name: 'Remote source',
-        type: 'remote',
-        thumbnailBlobId: result.value.thumbnailBlobId,
-      }),
+    const storedSource = await repository.getById(result.value.id);
+    expect(storedSource.ok).toBe(true);
+    if (!storedSource.ok) return;
+    expect(storedSource.value).toMatchObject({
+      id: result.value.id,
+      name: 'Remote source',
+      type: 'remote',
+      thumbnailBlobId: result.value.thumbnailBlobId,
     });
     expect(await repository.getContentById(result.value.id)).toEqual({
       ok: true,
       value: { id: result.value.id, type: 'remote', manifest: sourceManifest },
     });
-    expect(await repository.getBlob(result.value.thumbnailBlobId)).toMatchObject({
-      ok: true,
-      value: { id: result.value.thumbnailBlobId, blob: expect.anything() },
-    });
+    const storedThumbnail = await repository.getBlob(result.value.thumbnailBlobId);
+    expect(storedThumbnail.ok).toBe(true);
+    if (!storedThumbnail.ok) return;
+    expect(storedThumbnail.value).toMatchObject({ id: result.value.thumbnailBlobId });
+    expect(storedThumbnail.value.blob).toBeDefined();
   });
 
   it('stores a local source with its filesystem metadata', async () => {

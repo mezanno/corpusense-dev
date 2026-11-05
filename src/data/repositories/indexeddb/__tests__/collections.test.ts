@@ -69,9 +69,9 @@ describe('IndexedDBCollectionRepository', () => {
     expect(created.value).toMatchObject({
       name: 'Research set',
       content: [{ canvasId: 'canvas-1', sourceId: 'source-1' }],
-      createdAt: expect.any(String),
-      updatedAt: expect.any(String),
     });
+    expect(typeof created.value.createdAt).toBe('string');
+    expect(typeof created.value.updatedAt).toBe('string');
     expect(await repository.getById(created.value.id)).toEqual({ ok: true, value: created.value });
     expect(await repository.getAllDetails()).toEqual([
       expect.objectContaining({ id: created.value.id, name: 'Research set' }),
@@ -107,6 +107,24 @@ describe('IndexedDBCollectionRepository', () => {
     expect(await repository.getById('collection-1')).toMatchObject({
       ok: true,
       value: { tags: ['tag-2'] },
+    });
+  });
+
+  it('adds or replaces collection details and content together', async () => {
+    await repository.add(makeCollection('collection-1'));
+    const replacement = {
+      ...makeCollection('collection-1', [{ canvasId: 'canvas-2', sourceId: 'source-2' }]),
+      name: 'Replaced collection',
+    };
+
+    await repository.addContentToCollection(replacement);
+
+    expect(await repository.getById('collection-1')).toMatchObject({
+      ok: true,
+      value: {
+        name: 'Replaced collection',
+        content: [{ canvasId: 'canvas-2', sourceId: 'source-2' }],
+      },
     });
   });
 
@@ -243,9 +261,12 @@ describe('IndexedDBCollectionRepository', () => {
     expect(await annotations.getByScope({ collectionId: 'collection-1' })).toMatchObject([
       { id: 'annotation-1', collectionId: 'collection-1' },
     ]);
-    expect(await annotations.getByScope({ collectionId: duplicated.value.id })).toMatchObject([
-      { id: expect.not.stringMatching('annotation-1'), collectionId: duplicated.value.id },
-    ]);
+    const duplicatedAnnotations = await annotations.getByScope({
+      collectionId: duplicated.value.id,
+    });
+    expect(duplicatedAnnotations).toHaveLength(1);
+    expect(duplicatedAnnotations[0].id).not.toBe('annotation-1');
+    expect(duplicatedAnnotations[0].collectionId).toBe(duplicated.value.id);
     expect(await repository.duplicate('missing', 'Copy')).toMatchObject({
       ok: false,
       error: { name: 'EntityNotFoundError' },
@@ -350,6 +371,18 @@ describe('IndexedDBCollectionRepository', () => {
     expect(await db.annotations.toArray()).toEqual([]);
     expect(await db.workers.toArray()).toEqual([]);
     expect((await db.results.toArray()).map(({ id }) => id)).toEqual([]);
+  });
+
+  it('deletes a collection supplied by value', async () => {
+    const collection = makeCollection('collection-1');
+    await repository.add(collection);
+
+    expect(await repository.delete(collection)).toEqual({
+      ok: true,
+      value: { workersIds: [], collectionId: 'collection-1' },
+    });
+    expect(await repository.getById('collection-1')).toMatchObject({ ok: false });
+    expect(await db.collectionContents.get('collection-1')).toBeUndefined();
   });
 
   it('rolls back collection details when writing collection content fails', async () => {

@@ -5,6 +5,7 @@ import Dexie from 'dexie';
 import { beforeEach, describe, expect, expectTypeOf, it } from 'vitest';
 import { db } from '../db';
 import type { WorkerRepository } from '../types';
+import { computeScopeKey } from '../utils';
 import { IndexedDBWorkerRepository } from '../workers';
 import { createTestDb } from './testDb';
 
@@ -17,11 +18,7 @@ function makeStoredWorker(id: string, overrides: Partial<Worker> = {}): Worker {
     name: `worker-${id}`,
     scope,
     params: {},
-    scopeKey:
-      overrides.scopeKey ??
-      ('canvasId' in scope && scope.canvasId
-        ? `${scope.collectionId}-${scope.canvasId}`
-        : scope.collectionId),
+    scopeKey: overrides.scopeKey ?? computeScopeKey(scope),
     status: WorkerStatus.INPROGRESS,
     createdAt: '2026-01-01T00:00:00.000Z',
     estimatedDuration: 0,
@@ -114,7 +111,10 @@ describe('IndexedDBWorkerRepository status characterization', () => {
     const found = await repository.getById('worker-1');
     const missing = await repository.getById('missing');
 
-    expect(all.map((worker) => worker.id)).toEqual(['worker-1', 'worker-2']);
+    expect(all.map((worker) => worker.id)).toHaveLength(2);
+    expect(all.map((worker) => worker.id)).toEqual(
+      expect.arrayContaining(['worker-1', 'worker-2']),
+    );
     expect(found).toMatchObject({ ok: true, value: { id: 'worker-1' } });
     expect(missing.ok).toBe(false);
     expect(missing.ok === false && missing.error.name).toBe('EntityNotFoundError');

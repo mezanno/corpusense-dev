@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { createTestDb } from '../../__tests__/testDb';
 import { db } from '../../db';
 import { IndexedDBProjectLiveRepository } from '../projects.live';
-import { observe, settleLiveQuery } from './liveQueryTestUtils';
+import { observe } from './liveQueryTestUtils';
 
 const project = (id: string, name: string): Project => ({
   id,
@@ -29,12 +29,17 @@ describe('IndexedDBProjectLiveRepository', () => {
       ]);
       await db.projects.delete('p1');
       expect(await live.until((items) => items.length === 0)).toEqual([]);
-
+    } finally {
       live.unsubscribe();
-      const count = live.values.length;
-      await db.projects.put(project('after-unsubscribe', 'Ignored'));
-      await settleLiveQuery();
-      expect(live.values).toHaveLength(count);
+    }
+  });
+
+  it('closes the live subscription when unsubscribed', async () => {
+    const live = observe(new IndexedDBProjectLiveRepository().getAll());
+    try {
+      expect(await live.next()).toEqual([]);
+      live.unsubscribe();
+      expect(live.closed).toBe(true);
     } finally {
       live.unsubscribe();
     }

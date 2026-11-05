@@ -1,14 +1,12 @@
 import { liveQuery } from 'dexie';
 
 export function observe<T>(query: () => Promise<T>) {
-  const values: T[] = [];
   const queue: T[] = [];
   const waiters: { resolve: (value: T) => void; reject: (error: unknown) => void }[] = [];
-  let failure: unknown;
+  let failure: Error | undefined;
 
   const subscription = liveQuery(query).subscribe({
     next(value) {
-      values.push(value);
       const waiter = waiters.shift();
       if (waiter) {
         waiter.resolve(value);
@@ -17,8 +15,9 @@ export function observe<T>(query: () => Promise<T>) {
       }
     },
     error(error: unknown) {
-      failure = error;
-      waiters.splice(0).forEach((waiter) => waiter.reject(error));
+      const normalizedError = error instanceof Error ? error : Error(String(error));
+      failure = normalizedError;
+      waiters.splice(0).forEach((waiter) => waiter.reject(normalizedError));
     },
   });
 
@@ -33,7 +32,6 @@ export function observe<T>(query: () => Promise<T>) {
   };
 
   return {
-    values,
     next,
     async until(predicate: (value: T) => boolean): Promise<T> {
       while (true) {
@@ -46,12 +44,8 @@ export function observe<T>(query: () => Promise<T>) {
     unsubscribe() {
       subscription.unsubscribe();
     },
-    get latest(): T | undefined {
-      return values.at(-1);
+    get closed(): boolean {
+      return subscription.closed;
     },
   };
-}
-
-export function settleLiveQuery(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, 30));
 }

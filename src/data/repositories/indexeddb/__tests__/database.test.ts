@@ -33,13 +33,13 @@ describe('IndexedDBDatabaseRepository', () => {
 
     expect(backup).toBeInstanceOf(Blob);
     expect(exportProgress.length).toBeGreaterThan(0);
-    expect(exportProgress.at(-1)).toMatchObject({
-      totalTables: expect.any(Number),
-      completedTables: expect.any(Number),
-      totalRows: expect.any(Number),
-      completedRows: expect.any(Number),
-      done: true,
-    });
+    const finalExportProgress = exportProgress.at(-1);
+    expect(finalExportProgress).toBeDefined();
+    expect(typeof finalExportProgress?.totalTables).toBe('number');
+    expect(typeof finalExportProgress?.completedTables).toBe('number');
+    expect(typeof finalExportProgress?.totalRows).toBe('number');
+    expect(typeof finalExportProgress?.completedRows).toBe('number');
+    expect(finalExportProgress?.done).toBe(true);
 
     await db.tags.put({ id: 'tag-1', label: 'Stale tag' });
     await db.tags.add({ id: 'stale-tag', label: 'Must be removed by import' });
@@ -73,13 +73,13 @@ describe('IndexedDBDatabaseRepository', () => {
       },
     ]);
     expect(importProgress.length).toBeGreaterThan(0);
-    expect(importProgress.at(-1)).toMatchObject({
-      totalTables: expect.any(Number),
-      completedTables: expect.any(Number),
-      totalRows: expect.any(Number),
-      completedRows: expect.any(Number),
-      done: true,
-    });
+    const finalImportProgress = importProgress.at(-1);
+    expect(finalImportProgress).toBeDefined();
+    expect(typeof finalImportProgress?.totalTables).toBe('number');
+    expect(typeof finalImportProgress?.completedTables).toBe('number');
+    expect(typeof finalImportProgress?.totalRows).toBe('number');
+    expect(typeof finalImportProgress?.completedRows).toBe('number');
+    expect(finalImportProgress?.done).toBe(true);
   });
 
   it('clears the database and allows it to be reopened cleanly', async () => {
@@ -94,7 +94,7 @@ describe('IndexedDBDatabaseRepository', () => {
     });
 
     await repository.clear();
-    await createTestDb();
+    await db.open();
 
     expect(await db.tags.toArray()).toEqual([]);
     expect(await db.projects.toArray()).toEqual([]);

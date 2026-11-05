@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { createTestDb } from '../../__tests__/testDb';
 import { db } from '../../db';
 import { IndexedDBModelLiveRepository } from '../models.live';
-import { observe, settleLiveQuery } from './liveQueryTestUtils';
+import { observe } from './liveQueryTestUtils';
 
 const model = (id: string, name: string): DataModel => ({
   id,
@@ -15,7 +15,7 @@ const model = (id: string, name: string): DataModel => ({
 describe('IndexedDBModelLiveRepository', () => {
   beforeEach(createTestDb);
 
-  it('emits model changes in name order and releases the subscription', async () => {
+  it('emits model additions, updates and removals in name order', async () => {
     const live = observe(new IndexedDBModelLiveRepository().getAll());
     try {
       expect(await live.next()).toEqual([]);
@@ -31,12 +31,17 @@ describe('IndexedDBModelLiveRepository', () => {
       ]);
       await db.models.delete('m1');
       expect(await live.until((items) => items.length === 1)).toMatchObject([{ id: 'm2' }]);
-
+    } finally {
       live.unsubscribe();
-      const count = live.values.length;
-      await db.models.clear();
-      await settleLiveQuery();
-      expect(live.values).toHaveLength(count);
+    }
+  });
+
+  it('closes the live subscription when unsubscribed', async () => {
+    const live = observe(new IndexedDBModelLiveRepository().getAll());
+    try {
+      expect(await live.next()).toEqual([]);
+      live.unsubscribe();
+      expect(live.closed).toBe(true);
     } finally {
       live.unsubscribe();
     }

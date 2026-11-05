@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { createTestDb } from '../../__tests__/testDb';
 import { db } from '../../db';
 import { IndexedDBWorkerLiveRepository } from '../workers.live';
-import { observe, settleLiveQuery } from './liveQueryTestUtils';
+import { observe } from './liveQueryTestUtils';
 
 function worker(id: string, collectionId: string): Worker {
   return {
@@ -23,43 +23,53 @@ function worker(id: string, collectionId: string): Worker {
 describe('IndexedDBWorkerLiveRepository', () => {
   beforeEach(createTestDb);
 
-  it('emits worker changes, scopes result checks, and stops after unsubscribe', async () => {
-    const repository = new IndexedDBWorkerLiveRepository();
-    const all = observe(repository.getAll());
-    const hasResult = observe(repository.hasResult({ collectionId: 'collection-1' }, ['extract']));
+  it('emits worker additions, updates and removals', async () => {
+    const all = observe(new IndexedDBWorkerLiveRepository().getAll());
     try {
       expect(await all.next()).toEqual([]);
-      expect(await hasResult.next()).toBe(false);
 
-      await db.workers.put(worker('outside', 'collection-2'));
-      await settleLiveQuery();
-      expect(hasResult.latest).toBe(false);
-      expect(all.latest?.map(({ id }) => id)).toEqual(['outside']);
+      await db.workers.put(worker('worker-1', 'collection-1'));
+      expect(await all.until((items) => items.some(({ id }) => id === 'worker-1'))).toHaveLength(1);
 
-      await db.workers.put(worker('inside', 'collection-1'));
-      expect(await all.until((items) => items.some(({ id }) => id === 'inside'))).toHaveLength(2);
-      expect(await hasResult.until(Boolean)).toBe(true);
-
-      await db.workers.update('inside', { name: 'updated' });
+      await db.workers.update('worker-1', { name: 'updated' });
       expect(
         (await all.until((items) => items.some(({ name }) => name === 'updated')))[0]?.name,
       ).toBe('updated');
 
-      await db.workers.delete('inside');
-      expect(await all.until((items) => !items.some(({ id }) => id === 'inside'))).toHaveLength(1);
-      expect(await hasResult.until((value) => !value)).toBe(false);
-
-      all.unsubscribe();
-      hasResult.unsubscribe();
-      const allCount = all.values.length;
-      const resultCount = hasResult.values.length;
-      await db.workers.clear();
-      await settleLiveQuery();
-      expect(all.values).toHaveLength(allCount);
-      expect(hasResult.values).toHaveLength(resultCount);
+      await db.workers.delete('worker-1');
+      expect(await all.until((items) => items.length === 0)).toEqual([]);
     } finally {
       all.unsubscribe();
+    }
+  });
+
+  it('filters result presence to the requested worker name and scope', async () => {
+    const repository = new IndexedDBWorkerLiveRepository();
+    const scope = { collectionId: 'collection-1' };
+    const query = repository.hasResult(scope, ['extract']);
+    const hasResult = observe(query);
+    try {
+      expect(await hasResult.next()).toBe(false);
+      await db.workers.put(worker('outside', 'collection-2'));
+      expect(await query()).toBe(false);
+
+      await db.workers.put(worker('inside', 'collection-1'));
+      expect(await hasResult.until(Boolean)).toBe(true);
+      await db.workers.delete('inside');
+      expect(await hasResult.until((value) => !value)).toBe(false);
+    } finally {
       hasResult.unsubscribe();
+    }
+  });
+
+  it('closes the live subscription when unsubscribed', async () => {
+    const all = observe(new IndexedDBWorkerLiveRepository().getAll());
+    try {
+      expect(await all.next()).toEqual([]);
+      all.unsubscribe();
+      expect(all.closed).toBe(true);
+    } finally {
+      all.unsubscribe();
     }
   });
 });

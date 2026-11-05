@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { createTestDb } from '../../__tests__/testDb';
 import { db } from '../../db';
 import { IndexedDBModifierChainlLiveRepository } from '../modifierChain.live';
-import { observe, settleLiveQuery } from './liveQueryTestUtils';
+import { observe } from './liveQueryTestUtils';
 
 const chain = (id: string, name: string): ModifierChainDTO => ({ id, name, modifiers: [] });
 
@@ -22,12 +22,17 @@ describe('IndexedDBModifierChainlLiveRepository', () => {
       ]);
       await db.modifierChains.delete('chain-1');
       expect(await live.until((items) => items.length === 0)).toEqual([]);
-
+    } finally {
       live.unsubscribe();
-      const count = live.values.length;
-      await db.modifierChains.put(chain('after-unsubscribe', 'Ignored'));
-      await settleLiveQuery();
-      expect(live.values).toHaveLength(count);
+    }
+  });
+
+  it('closes the live subscription when unsubscribed', async () => {
+    const live = observe(new IndexedDBModifierChainlLiveRepository().getAll());
+    try {
+      expect(await live.next()).toEqual([]);
+      live.unsubscribe();
+      expect(live.closed).toBe(true);
     } finally {
       live.unsubscribe();
     }

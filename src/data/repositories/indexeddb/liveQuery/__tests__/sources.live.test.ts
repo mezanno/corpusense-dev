@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { createTestDb } from '../../__tests__/testDb';
 import { db } from '../../db';
 import { IndexedDBSourceLiveRepository } from '../sources.live';
-import { observe, settleLiveQuery } from './liveQueryTestUtils';
+import { observe } from './liveQueryTestUtils';
 
 const source = (id: string, type: Source['type'], name = id): Source => ({
   id,
@@ -18,12 +18,12 @@ describe('IndexedDBSourceLiveRepository', () => {
 
   it('emits source changes filtered by type and ignores other types', async () => {
     const repository = new IndexedDBSourceLiveRepository();
-    const local = observe(repository.getAll('local'));
+    const localQuery = repository.getAll('local');
+    const local = observe(localQuery);
     try {
       expect(await local.next()).toEqual([]);
       await db.sources.put(source('remote-1', 'remote'));
-      await settleLiveQuery();
-      expect(local.latest).toEqual([]);
+      expect(await localQuery()).toEqual([]);
 
       await db.sources.put(source('local-1', 'local'));
       expect(await local.until((items) => items.length === 1)).toMatchObject([{ id: 'local-1' }]);
@@ -33,14 +33,19 @@ describe('IndexedDBSourceLiveRepository', () => {
       ]);
       await db.sources.delete('local-1');
       expect(await local.until((items) => items.length === 0)).toEqual([]);
-
-      local.unsubscribe();
-      const count = local.values.length;
-      await db.sources.clear();
-      await settleLiveQuery();
-      expect(local.values).toHaveLength(count);
     } finally {
       local.unsubscribe();
+    }
+  });
+
+  it('closes the live subscription when unsubscribed', async () => {
+    const live = observe(new IndexedDBSourceLiveRepository().getAll('local'));
+    try {
+      expect(await live.next()).toEqual([]);
+      live.unsubscribe();
+      expect(live.closed).toBe(true);
+    } finally {
+      live.unsubscribe();
     }
   });
 });

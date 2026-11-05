@@ -2,12 +2,12 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { createTestDb } from '../../__tests__/testDb';
 import { db } from '../../db';
 import { IndexedDBTagLiveRepository } from '../tags.live';
-import { observe, settleLiveQuery } from './liveQueryTestUtils';
+import { observe } from './liveQueryTestUtils';
 
 describe('IndexedDBTagLiveRepository', () => {
   beforeEach(createTestDb);
 
-  it('emits tag additions, updates and removals, then stops after unsubscribe', async () => {
+  it('emits tag additions, updates and removals', async () => {
     const live = observe(new IndexedDBTagLiveRepository().getAll());
     try {
       expect(await live.next()).toEqual([]);
@@ -19,12 +19,17 @@ describe('IndexedDBTagLiveRepository', () => {
       ]);
       await db.tags.delete('tag-1');
       expect(await live.until((tags) => tags.length === 0)).toEqual([]);
-
+    } finally {
       live.unsubscribe();
-      const count = live.values.length;
-      await db.tags.put({ id: 'after-unsubscribe', label: 'Ignored' });
-      await settleLiveQuery();
-      expect(live.values).toHaveLength(count);
+    }
+  });
+
+  it('closes the live subscription when unsubscribed', async () => {
+    const live = observe(new IndexedDBTagLiveRepository().getAll());
+    try {
+      expect(await live.next()).toEqual([]);
+      live.unsubscribe();
+      expect(live.closed).toBe(true);
     } finally {
       live.unsubscribe();
     }

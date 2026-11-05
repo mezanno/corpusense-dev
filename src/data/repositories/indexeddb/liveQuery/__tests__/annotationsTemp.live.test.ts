@@ -6,7 +6,7 @@ import { makeAnnotation } from '../../__tests__/annotationFixtures';
 import { createTestDb } from '../../__tests__/testDb';
 import { db } from '../../db';
 import { IndexedDBAnnotationTempLiveRepository } from '../annotationsTemp.live';
-import { observe, settleLiveQuery } from './liveQueryTestUtils';
+import { observe } from './liveQueryTestUtils';
 
 describe('IndexedDBAnnotationTempLiveRepository', () => {
   beforeEach(createTestDb);
@@ -14,9 +14,12 @@ describe('IndexedDBAnnotationTempLiveRepository', () => {
   it('emits temporary annotations for a scope without leaking other scopes or permanent rows', async () => {
     const repository = new IndexedDBAnnotationTempLiveRepository();
     const scope = { collectionId: 'c1', canvasId: 'canvas-1' };
-    const live = observe(repository.getByScope(scope));
-    const byCollection = observe(repository.getByScope({ collectionId: 'c1' }));
-    const byAnnotation = observe(repository.getByScope({ ...scope, annotationId: 'temp-1' }));
+    const canvasQuery = repository.getByScope(scope);
+    const collectionQuery = repository.getByScope({ collectionId: 'c1' });
+    const annotationQuery = repository.getByScope({ ...scope, annotationId: 'temp-1' });
+    const live = observe(canvasQuery);
+    const byCollection = observe(collectionQuery);
+    const byAnnotation = observe(annotationQuery);
     try {
       expect(await live.next()).toEqual([]);
       expect(await byCollection.next()).toEqual([]);
@@ -26,10 +29,9 @@ describe('IndexedDBAnnotationTempLiveRepository', () => {
         canvasId: 'canvas-1',
       });
       await db.annotationsTemp.put(outside);
-      await settleLiveQuery();
-      expect(live.latest).toEqual([]);
-      expect(byCollection.latest).toEqual([]);
-      expect(byAnnotation.latest).toEqual([]);
+      expect(await canvasQuery()).toEqual([]);
+      expect(await collectionQuery()).toEqual([]);
+      expect(await annotationQuery()).toEqual([]);
 
       const temporary = makeAnnotation('temp-1', ElementType.TEMP, scope);
       await db.annotationsTemp.put(temporary);
@@ -42,13 +44,14 @@ describe('IndexedDBAnnotationTempLiveRepository', () => {
       ]);
 
       await db.annotations.put(makeAnnotation('permanent', ElementType.TEXT_LINE, scope));
-      await settleLiveQuery();
-      expect(live.latest).toEqual([temporary]);
+      expect(await canvasQuery()).toEqual([temporary]);
+      expect(await collectionQuery()).toEqual([temporary]);
+      expect(await annotationQuery()).toEqual([temporary]);
 
       await db.annotationsTemp.put(changeValue(temporary, 'edited'));
       expect(
         getAnnotationValue(
-          (await live.until((items) => getAnnotationValue(items[0]!) === 'edited'))[0],
+          (await live.until((items) => getAnnotationValue(items[0]) === 'edited'))[0],
         ),
       ).toBe('edited');
       await db.annotationsTemp.delete(temporary.id);
@@ -59,6 +62,22 @@ describe('IndexedDBAnnotationTempLiveRepository', () => {
       live.unsubscribe();
       byCollection.unsubscribe();
       byAnnotation.unsubscribe();
+    }
+  });
+
+  it('closes the live subscription when unsubscribed', async () => {
+    const live = observe(
+      new IndexedDBAnnotationTempLiveRepository().getByScope({
+        collectionId: 'c1',
+        canvasId: 'canvas-1',
+      }),
+    );
+    try {
+      expect(await live.next()).toEqual([]);
+      live.unsubscribe();
+      expect(live.closed).toBe(true);
+    } finally {
+      live.unsubscribe();
     }
   });
 });

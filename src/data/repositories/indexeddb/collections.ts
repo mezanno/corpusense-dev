@@ -68,7 +68,9 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     const canvasResults = await Promise.all(
       content.map((element) => sourceRepository.getCanvasById(element.sourceId, element.canvasId)),
     );
-    const canvases: Canvas[] = canvasResults.flatMap((result) => (result.ok ? [result.value] : []));
+    const canvases: Canvas[] = canvasResults.flatMap((canvasResult) =>
+      canvasResult.ok ? [canvasResult.value] : [],
+    );
 
     return FunctionResult.ok(canvases);
   }
