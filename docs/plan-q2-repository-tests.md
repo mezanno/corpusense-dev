@@ -49,17 +49,17 @@ Les onze modules `liveQuery/` : annotations, annotations temporaires, collection
 
 ### Suivi des lots et prochain relais
 
-| Lot                                 | État                 | Relais vers la session suivante              |
-| ----------------------------------- | -------------------- | -------------------------------------------- |
-| 0 — contrats ambigus et régressions | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 1    |
-| 1 — repositories simples            | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 2    |
-| 2 — Worker                          | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 3    |
-| 3 — annotations                     | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 4    |
-| 4 — sources                         | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 5    |
-| 5 — collections                     | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 6    |
-| 6 — export/import/effacement        | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 7    |
-| 7 — `liveQuery`                     | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 8    |
-| 8 — audit qualité transversal       | À faire              | Clôturer le plan après mise à jour du relais |
+| Lot                                 | État                 | Relais vers la session suivante                    |
+| ----------------------------------- | -------------------- | -------------------------------------------------- |
+| 0 — contrats ambigus et régressions | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 1          |
+| 1 — repositories simples            | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 2          |
+| 2 — Worker                          | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 3          |
+| 3 — annotations                     | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 4          |
+| 4 — sources                         | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 5          |
+| 5 — collections                     | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 6          |
+| 6 — export/import/effacement        | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 7          |
+| 7 — `liveQuery`                     | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 8          |
+| 8 — audit qualité transversal       | Terminé (2026-11-05) | Plan clôturé ; sujets Q2 distincts dans la roadmap |
 
 ### Relais — lot 0 terminé (2026-11-05)
 
@@ -130,10 +130,10 @@ Les onze modules `liveQuery/` : annotations, annotations temporaires, collection
 - **Désabonnement** : chaque test libère ses abonnements dans `finally` ; les tests dédiés vérifient que l’abonnement est fermé après `unsubscribe()`. Les mutations hors scope et hors store ne contaminent pas le résultat des requêtes.
 - **Fichiers / correctif révélé** : onze nouveaux fichiers de test sous `src/data/repositories/indexeddb/liveQuery/__tests__/` (25 scénarios nommés) et le helper `liveQueryTestUtils.ts`. L’audit a révélé un doublon dans `IndexedDBNamedEntityLiveRepository.getByAnnotationIds()` quand une entité correspond à plusieurs ids recherchés ; `.distinct()` est ajouté au repository réactif, et le test échouait avant ce correctif.
 - **Audit rétroactif initial des lots 1–7 (2026-11-05)** : les onze tests `liveQuery` initiaux mélangeaient plusieurs comportements dans un seul `it` et le contrôle des émissions négatives dépendait d’un délai fixe de 30 ms. Ils sont maintenant séparés en 25 scénarios nommés ; le délai arbitraire est supprimé, les scopes sont vérifiés par les résultats des requêtes, et les tests dédiés vérifient la fermeture des abonnements. L’audit a aussi ajouté des scénarios directs pour `CollectionRepository.addContentToCollection` et `delete`, supprimé une hypothèse d’ordre non contractuelle sur `WorkerRepository.getAll`, et corrigé le test `clear()` : il rouvrait auparavant la base via `createTestDb()`, qui la supprimait et pouvait donc masquer une implémentation défectueuse. Il appelle désormais `db.open()` après l’effacement. Enfin, `lint:ratchet` avait détecté 21 erreurs nouvelles dans le périmètre des lots 1–7 ; les assertions de matchers non typées, la fixture Worker, le masquage de nom et les assertions superflues sont corrigés. Le ratchet revient à sa baseline (48 erreurs / 2 warnings), sans changement de baseline. Le présent audit confirme le bon état général, mais a relevé une assertion d’ordre encore non contractuelle dans `fsHandle.test.ts` ; sa correction et le balayage final des assertions d’ordre sont confiés au lot 8 ci-dessous.
-- **Audit transversal en cours (2026-11-05)** : la revue des tests confirme l’usage de Dexie + `fake-indexeddb`, l’absence de mocks du stockage et de délais artificiels, ainsi que le nettoyage des abonnements `liveQuery` dans des blocs `finally`. Une assertion d’ordre sans contrat a toutefois été confirmée dans `src/data/repositories/indexeddb/__tests__/fsHandle.test.ts`. Vérifications indépendantes : ESLint ciblé sans erreur ; `npm run lint:ratchet` à la baseline (48 erreurs / 2 warnings) ; `npx vitest run src/data/repositories/indexeddb` (24 fichiers, 97 tests réussis) ; `npx vitest run` (48 fichiers réussis, 1 ignoré ; 190 tests réussis, 1 todo) ; `npx tsc -b` ; Prettier ciblé et `git diff --check` passent. Le lot 8 doit corriger ce point et finir le balayage des assertions d’ordre et des fixtures avant clôture.
+- **Audit transversal terminé (2026-11-05)** : balayage des 24 fichiers de tests de commandes et `liveQuery`. `fsHandle.test.ts` vérifie maintenant le contenu et la cardinalité sans ordre implicite ; `annotations.test.ts` ne suppose plus l’ordre de retour inter-types de `addAll` ; `workers.test.ts` et `database.test.ts` vérifient les contenus des tables sans dépendre de l’ordre des lignes. Les assertions d’ordre conservées couvrent des tris explicites ou des contrats métier (ordre annotation, tâche/résultat, worker, modèle et canvas de collection). Les casts `FileSystemDirectoryHandle` restent confinés aux fixtures opaques des repositories de handles et sources ; le manifeste de `collections.live.test.ts` est désormais directement typé `Manifest`. Aucun mock de stockage, délai artificiel ni fuite d’abonnement n’a été trouvé ; les frontières IO stubées dans les tests Sources restent limitées aux helpers navigateur/fichier documentés au lot 4.
 - **Couverture comparative bornée** : même commande et périmètre `src/data/repositories/indexeddb/**/*.ts` (hors tests), sur le commit de départ `001e2c5` puis sur l’état final : **8,67 % → 93,05 % lignes** (634 lignes instrumentées au départ et à la fin ; soit +84,38 points). Au final : 93,28 % statements, 85,71 % branches, 88,41 % fonctions. Ce chiffre est exploratoire, n’est pas un seuil CI et ne se compare pas directement aux 10,76 % historiques (repositories + saga + plugins).
-- **Vérifications finales** : `npx vitest run src/data/repositories/indexeddb/liveQuery/__tests__` (25 tests) ; `npx vitest run src/data/repositories/indexeddb` (24 fichiers, 97 tests) ; `npx vitest run` (48 fichiers réussis, 1 ignoré ; 190 tests réussis, 1 todo) ; `npx tsc -b` ; `npm run lint:ratchet` (48 erreurs / 2 warnings, égal à la baseline) ; Prettier ciblé sur les tests et ce plan ; `git diff --check` ; couverture ciblée — tout passe. Prettier sur `docs/roadmap.md` conserve son écart préexistant sur le tableau Q1–Q9, également présent dans `HEAD` ; aucun reformatage sans rapport n’est effectué.
-- **Restant / bilan** : les tests fonctionnels des repositories sont terminés ; le lot 8 reste à réaliser avant de clôturer ce plan. La saga worker, `useJobRealtime`, les plugins, Excel et le client OpenAI restent les sujets Q2 distincts déjà recensés dans la roadmap ; ils ne sont pas inclus dans ce lot.
+- **Vérifications finales après audit** : tests ciblés des quatre fichiers ajustés (29 réussis) ; `npx vitest run src/data/repositories/indexeddb` (24 fichiers, 97 tests réussis) ; `npx vitest run` (48 fichiers réussis, 1 ignoré ; 190 tests réussis, 1 todo) ; `npx tsc -b` ; ESLint ciblé sans erreur ; `npm run lint:ratchet` (48 erreurs / 2 warnings, égal à la baseline) ; Prettier ciblé ; `git diff --check` — tout passe. Prettier sur `docs/roadmap.md` conserve son écart préexistant sur le tableau Q1–Q9, également présent dans `HEAD` ; aucun reformatage sans rapport n’est effectué.
+- **Bilan / relais** : les lots 0 à 8 et les critères de sortie de ce plan sont clôturés. La saga worker, `useJobRealtime`, les plugins, Excel et le client OpenAI restent les sujets Q2 distincts recensés dans la roadmap ; ils ne sont pas inclus dans ce plan.
 
 ## Lots d’exécution
 
@@ -230,6 +230,8 @@ Ajouter un fichier de test par module réactif, en commençant par workers, coll
 Ne pas monter de composants React dans ces tests si le repository expose directement une query observable. Les comportements de hooks UI restent dans leur propre suite.
 
 ### Lot 8 — Audit qualité transversal et mise au propre
+
+✅ Terminé (2026-11-05) ; audit et vérifications consignés dans le relais ci-dessus. Aucun correctif de production n’a été nécessaire.
 
 Auditer tous les tests ajoutés ou modifiés dans le cadre des lots 0 à 7, sous `src/data/repositories/indexeddb/**/__tests__/`, puis ne corriger que les écarts de qualité de test confirmés. Le premier écart constaté est dans `__tests__/fsHandle.test.ts` : `getAll()` est un simple `toArray()` sans contrat d’ordre, mais le test exige `[first, second]`. Remplacer cette assertion par une vérification du contenu et du nombre d’éléments, sans ordre implicite.
 

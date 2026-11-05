@@ -116,11 +116,14 @@ describe('IndexedDBAnnotationRepository', () => {
         ElementType.TEXT_LINE,
       ),
     ).toBe(5);
-    expect(newAnnotations.map(({ id, order }) => [id, order])).toEqual([
-      ['region-2', 2],
-      ['line-3', 3],
-      ['line-4', 4],
-    ]);
+    expect(newAnnotations).toHaveLength(3);
+    expect(newAnnotations.map(({ id, order }) => [id, order])).toEqual(
+      expect.arrayContaining([
+        ['region-2', 2],
+        ['line-3', 3],
+        ['line-4', 4],
+      ]),
+    );
   });
 
   it('updates annotation data in place when its type does not change', async () => {

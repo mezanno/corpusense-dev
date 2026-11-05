@@ -15,12 +15,12 @@ const details = (id: string, name: string): CollectionDetails => ({
   updatedAt: '2026-01-01T00:00:00.000Z',
 });
 
-const manifest = {
+const manifest: Manifest = {
   id: 'manifest-1',
   type: 'Manifest',
   label: { en: ['Manifest'] },
   items: [{ id: 'canvas-1', type: 'Canvas', items: [] }],
-} as Manifest;
+};
 
 describe('IndexedDBCollectionLiveRepository', () => {
   beforeEach(createTestDb);

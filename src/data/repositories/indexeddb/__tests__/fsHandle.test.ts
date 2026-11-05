@@ -17,7 +17,9 @@ describe('IndexedDBFSHandleRepository', () => {
     await repository.put(first);
     await repository.put(second);
 
-    expect(await repository.getAll()).toEqual([first, second]);
+    const stored = await repository.getAll();
+    expect(stored).toHaveLength(2);
+    expect(stored).toEqual(expect.arrayContaining([first, second]));
   });
 
   it('replaces an existing handle with the same id', async () => {

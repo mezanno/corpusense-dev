@@ -58,20 +58,28 @@ describe('IndexedDBDatabaseRepository', () => {
       return true;
     });
 
-    expect(await db.tags.toArray()).toEqual([
-      { id: 'tag-1', label: 'Exported tag' },
-      { id: 'tag-2', label: 'Another exported tag' },
-    ]);
-    expect(await db.projects.toArray()).toEqual([
-      {
-        id: 'project-1',
-        name: 'Exported project',
-        createdAt: new Date('2026-01-01T00:00:00.000Z'),
-        updatedAt: new Date('2026-01-02T00:00:00.000Z'),
-        sources: ['source-1'],
-        collections: ['collection-1'],
-      },
-    ]);
+    const importedTags = await db.tags.toArray();
+    expect(importedTags).toHaveLength(2);
+    expect(importedTags).toEqual(
+      expect.arrayContaining([
+        { id: 'tag-1', label: 'Exported tag' },
+        { id: 'tag-2', label: 'Another exported tag' },
+      ]),
+    );
+    const importedProjects = await db.projects.toArray();
+    expect(importedProjects).toHaveLength(1);
+    expect(importedProjects).toEqual(
+      expect.arrayContaining([
+        {
+          id: 'project-1',
+          name: 'Exported project',
+          createdAt: new Date('2026-01-01T00:00:00.000Z'),
+          updatedAt: new Date('2026-01-02T00:00:00.000Z'),
+          sources: ['source-1'],
+          collections: ['collection-1'],
+        },
+      ]),
+    );
     expect(importProgress.length).toBeGreaterThan(0);
     const finalImportProgress = importProgress.at(-1);
     expect(finalImportProgress).toBeDefined();

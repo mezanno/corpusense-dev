@@ -137,6 +137,7 @@ describe('IndexedDBWorkerRepository status characterization', () => {
     const descendants = await repository.getByScope({ collectionId: 'collection-1' }, true);
 
     expect(exact.map((worker) => worker.id)).toEqual(['worker-collection']);
+    expect(descendants).toHaveLength(2);
     expect(descendants.map((worker) => worker.id)).toEqual(
       expect.arrayContaining(['worker-collection', 'worker-canvas']),
     );
@@ -264,7 +265,9 @@ describe('IndexedDBWorkerRepository status characterization', () => {
 
     await repository.deleteResultById('worker-1', 0);
 
-    expect((await db.results.toArray()).map((result) => result.id)).toEqual([2, 3]);
+    const remainingResults = (await db.results.toArray()).map((result) => result.id);
+    expect(remainingResults).toHaveLength(2);
+    expect(remainingResults).toEqual(expect.arrayContaining([2, 3]));
   });
 
   it('persists a task transition and derives the worker status', async () => {
@@ -396,7 +399,9 @@ describe('IndexedDBWorkerRepository status characterization', () => {
     expect((await repository.getAll()).map((worker) => worker.id)).toEqual(
       expect.arrayContaining(['worker-other', 'worker-prefix-collision']),
     );
-    expect((await db.results.toArray()).map((result) => result.id)).toEqual([3, 4]);
+    const remainingResults = (await db.results.toArray()).map((result) => result.id);
+    expect(remainingResults).toHaveLength(2);
+    expect(remainingResults).toEqual(expect.arrayContaining([3, 4]));
   });
 
   it('deletes only workers with an exact non-collection scope key', async () => {
