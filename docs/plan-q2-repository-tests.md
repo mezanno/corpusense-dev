@@ -58,7 +58,7 @@ Les onze modules `liveQuery/` : annotations, annotations temporaires, collection
 | 4 — sources                         | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 5 |
 | 5 — collections                     | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 6 |
 | 6 — export/import/effacement        | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 7 |
-| 7 — `liveQuery`                     | À faire              | Clôture finale à documenter               |
+| 7 — `liveQuery`                     | Terminé (2026-11-05) | Plan Q2 repository-tests clôturé          |
 
 ### Relais — lot 0 terminé (2026-11-05)
 
@@ -122,6 +122,15 @@ Les onze modules `liveQuery/` : annotations, annotations temporaires, collection
 - **Fichiers** : `src/data/repositories/indexeddb/__tests__/database.test.ts`, ce plan et `docs/roadmap.md`.
 - **Vérifications** : test Database (2 réussis) ; `npx vitest run src/data/repositories/indexeddb` (13 fichiers, 70 tests réussis) ; `npx vitest run` (37 fichiers réussis, 1 ignoré ; 163 tests réussis, 1 todo) ; `npx tsc -b` ; Prettier ciblé sur le test et ce plan ; `git diff --check` — tout passe. Prettier sur `docs/roadmap.md` signale le même écart de formatage préexistant, confirmé sur la version `HEAD` ; le tableau Q1–Q9 n'est pas reformaté pour ce lot.
 - **Restant / relais précis** : la couverture comparative bornée reste à recalculer au bilan final. Après le commit, ouvrir une nouvelle session, relire ce plan, `docs/roadmap.md` et l'état Git, constater les lots 0 à 6 clôturés, puis réaliser uniquement le lot 7 : tester les onze modules `liveQuery` directement sur `fake-indexeddb`, en commençant par workers, collections, annotations et sources, avec émissions initiales/après mutations, isolation de scope et désabonnement. Ne pas monter de composants React ; ne pas démarrer les sujets Q2 distincts (saga, hooks realtime, plugins, Excel, client OpenAI).
+
+### Relais — lot 7 terminé (2026-11-05)
+
+- **Comportements couverts** : les onze modules `liveQuery` sont observés via `Dexie.liveQuery()` et un abonnement réel sur `fake-indexeddb`. Les tests couvrent les valeurs initiales et les émissions après ajout, mise à jour et suppression ; les requêtes filtrées vérifient la séparation des collections, canvases, types, sources et annotations. Les cas incluent `hasResult`, les deux formes de présence OCR, les lectures de collection avec contenu/canvases et les trois formes de scope des annotations permanentes et temporaires.
+- **Désabonnement** : chaque test libère ses abonnements dans `finally`. Des scénarios vérifient en plus qu’aucune émission ultérieure n’est reçue après désabonnement ; les mutations hors scope et hors store ne contaminent pas la dernière valeur observée.
+- **Fichiers** : onze nouveaux tests sous `src/data/repositories/indexeddb/liveQuery/__tests__/` et le petit helper `liveQueryTestUtils.ts`. Aucun changement de production n’a été nécessaire.
+- **Couverture comparative bornée** : même commande et périmètre `src/data/repositories/indexeddb/**/*.ts` (hors tests), sur le commit de départ `001e2c5` puis sur l’état final : **8,67 % → 92,89 % lignes** (634 lignes instrumentées au départ, 633 à la fin ; soit +84,22 points). Au final : 93,13 % statements, 85,71 % branches, 87,98 % fonctions. Ce chiffre est exploratoire, n’est pas un seuil CI et ne se compare pas directement aux 10,76 % historiques (repositories + saga + plugins).
+- **Vérifications finales** : `npx vitest run src/data/repositories/indexeddb/liveQuery/__tests__` (11 tests) ; `npx vitest run src/data/repositories/indexeddb` (24 fichiers, 81 tests) ; `npx vitest run` (48 fichiers réussis, 1 ignoré ; 174 tests réussis, 1 todo) ; `npx tsc -b` ; Prettier ciblé sur les tests et ce plan ; `git diff --check` ; couverture ciblée — tout passe. Prettier sur `docs/roadmap.md` conserve son écart préexistant sur le tableau Q1–Q9, également présent dans `HEAD` ; aucun reformatage sans rapport n’est effectué.
+- **Restant / bilan** : le périmètre de ce plan est terminé. La saga worker, `useJobRealtime`, les plugins, Excel et le client OpenAI restent les sujets Q2 distincts déjà recensés dans la roadmap ; ils ne sont pas inclus dans ce lot.
 
 ## Lots d’exécution
 
