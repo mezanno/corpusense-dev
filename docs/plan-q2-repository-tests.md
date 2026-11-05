@@ -57,7 +57,7 @@ Les onze modules `liveQuery/` : annotations, annotations temporaires, collection
 | 3 — annotations                     | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 4 |
 | 4 — sources                         | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 5 |
 | 5 — collections                     | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 6 |
-| 6 — export/import/effacement        | À faire              | À documenter à la clôture du lot          |
+| 6 — export/import/effacement        | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 7 |
 | 7 — `liveQuery`                     | À faire              | Clôture finale à documenter               |
 
 ### Relais — lot 0 terminé (2026-11-05)
@@ -113,7 +113,15 @@ Les onze modules `liveQuery/` : annotations, annotations temporaires, collection
 - **Fichiers** : `src/data/repositories/indexeddb/__tests__/collections.test.ts`, `src/data/repositories/indexeddb/collections.ts`.
 - **Vérifications** : test ciblé Collections (10 réussis) ; `npx vitest run src/data/repositories/indexeddb` (12 fichiers, 68 tests réussis) ; `npx vitest run` (36 fichiers réussis, 1 ignoré ; 161 tests réussis, 1 todo) ; `npx tsc -b` ; Prettier ciblé ; `git diff --check` — tout passe. Le contrôle Prettier de `docs/roadmap.md` signale un écart de formatage préexistant sur l’ensemble du tableau Q1–Q9 ; il est laissé intact pour éviter un reformatage sans rapport avec ce lot.
 - **Couverture / limites** : pas de mesure de couverture recalculée à ce lot ; la mesure correctement bornée reste à faire au bilan final. Le test d’atomicité injecte un conflit de clé reproductible dans `collectionContents` et vérifie l’absence d’écriture partielle dans `collections`.
-- **Restant / relais précis** : après le commit de ce lot, ouvrir une nouvelle session, relire ce plan, `docs/roadmap.md` et l’état Git, constater les lots 0 à 5 clôturés, puis réaliser uniquement le lot 6 : créer `database.test.ts` et couvrir export d’une base représentative, import et remplacement demandé par `clearTablesBeforeImport`, callback de progression selon le contrat `dexie-export-import`, puis `clear()` avec réouverture propre de Dexie. Ne pas démarrer le lot 7.
+- **Restant / relais précis** : après le commit de ce lot, ouvrir une nouvelle session, relire ce plan, `docs/roadmap.md` et l'état Git, constater les lots 0 à 5 clôturés, puis réaliser uniquement le lot 6 : créer `database.test.ts` et couvrir export d’une base représentative, import et remplacement demandé par `clearTablesBeforeImport`, callback de progression selon le contrat `dexie-export-import`, puis `clear()` avec réouverture propre de Dexie. Ne pas démarrer le lot 7.
+
+### Relais — lot 6 terminé (2026-11-05)
+
+- **Comportements couverts** : export de tags et projet persistés ; import du blob exporté et vérification des valeurs ; remplacement des valeurs existantes et suppression des lignes absentes du backup (contrat `clearTablesBeforeImport`) ; callbacks export/import recevant les champs de progression `dexie-export-import` et une progression finale `done: true` ; `clear()` suivi d'une réouverture propre de la base vide.
+- **Correctifs / décisions** : aucun défaut de production révélé ; le repository respecte les contrats testés, aucun changement de production n'a été nécessaire. Les deux opérations retournent des promesses qui propagent le callback à la bibliothèque sans adapter son format.
+- **Fichiers** : `src/data/repositories/indexeddb/__tests__/database.test.ts`, ce plan et `docs/roadmap.md`.
+- **Vérifications** : test Database (2 réussis) ; `npx vitest run src/data/repositories/indexeddb` (13 fichiers, 70 tests réussis) ; `npx vitest run` (37 fichiers réussis, 1 ignoré ; 163 tests réussis, 1 todo) ; `npx tsc -b` ; Prettier ciblé sur le test et ce plan ; `git diff --check` — tout passe. Prettier sur `docs/roadmap.md` signale le même écart de formatage préexistant, confirmé sur la version `HEAD` ; le tableau Q1–Q9 n'est pas reformaté pour ce lot.
+- **Restant / relais précis** : la couverture comparative bornée reste à recalculer au bilan final. Après le commit, ouvrir une nouvelle session, relire ce plan, `docs/roadmap.md` et l'état Git, constater les lots 0 à 6 clôturés, puis réaliser uniquement le lot 7 : tester les onze modules `liveQuery` directement sur `fake-indexeddb`, en commençant par workers, collections, annotations et sources, avec émissions initiales/après mutations, isolation de scope et désabonnement. Ne pas monter de composants React ; ne pas démarrer les sujets Q2 distincts (saga, hooks realtime, plugins, Excel, client OpenAI).
 
 ## Lots d’exécution
 
@@ -193,9 +201,11 @@ Créer `collections.test.ts` après les lots Worker, Annotation et Source. Utili
 
 Ne tester les chemins de panne transactionnelle que de manière stable et reproductible sur `fake-indexeddb` ; ne pas dépendre de détails internes de Dexie.
 
-### Lot 6 — Export, import et effacement de la base
+### Lot 6 — Export, import et effacement de la base ✅
 
-Créer `database.test.ts` pour `IndexedDBDatabaseRepository` : export d’une base avec données représentatives, import dans la base de test, vérification des valeurs persistées et du remplacement demandé par `clearTablesBeforeImport`. Vérifier le callback de progression selon le contrat de `dexie-export-import`. Tester `clear()` avec une réouverture propre de la base afin d’éviter que le test ne laisse la connexion Dexie fermée pour les suivants.
+✅ Terminé (2026-11-05) ; détails et relais vers le lot 7 ci-dessus.
+
+`database.test.ts` couvre l'export de tags et projet, l'import du blob avec remplacement des tables, le contrat de progression `dexie-export-import` pour les deux opérations et `clear()` avec réouverture propre de Dexie.
 
 ### Lot 7 — Repositories `liveQuery`
 
