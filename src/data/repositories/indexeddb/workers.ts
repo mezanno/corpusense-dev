@@ -17,6 +17,15 @@ import { db } from './db';
 import { WorkerRepository } from './types';
 import { computeScopeKey } from './utils';
 
+function isScopeKeyOrDescendant(scopeKey: string, candidateScopeKey: string): boolean {
+  const normalizedScopeKey = scopeKey.toLowerCase();
+  const normalizedCandidateScopeKey = candidateScopeKey.toLowerCase();
+  return (
+    normalizedCandidateScopeKey === normalizedScopeKey ||
+    normalizedCandidateScopeKey.startsWith(`${normalizedScopeKey}-`)
+  );
+}
+
 export class IndexedDBWorkerRepository implements WorkerRepository {
   async getAll(): Promise<Worker[]> {
     return await db.workers.toArray();
@@ -32,10 +41,12 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
 
   async getByScope(scope: Scope, subScope: boolean): Promise<Worker[]> {
     if (subScope) {
-      return await db.workers
+      const workers = await db.workers
         .where('scopeKey')
         .startsWithIgnoreCase(computeScopeKey(scope))
         .toArray();
+      const scopeKey = computeScopeKey(scope);
+      return workers.filter((worker) => isScopeKeyOrDescendant(scopeKey, worker.scopeKey));
     }
     return await db.workers.where('scopeKey').equals(computeScopeKey(scope)).toArray();
   }
@@ -141,7 +152,13 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
     const scopeKey = computeScopeKey(scope);
     let workersToDelete = [];
     if (isCollectionScope(scope)) {
-      workersToDelete = await db.workers.where('scopeKey').startsWithIgnoreCase(scopeKey).toArray();
+      const scopeWorkers = await db.workers
+        .where('scopeKey')
+        .startsWithIgnoreCase(scopeKey)
+        .toArray();
+      workersToDelete = scopeWorkers.filter((worker) =>
+        isScopeKeyOrDescendant(scopeKey, worker.scopeKey),
+      );
     } else {
       workersToDelete = await db.workers.where('scopeKey').equals(scopeKey).toArray();
     }

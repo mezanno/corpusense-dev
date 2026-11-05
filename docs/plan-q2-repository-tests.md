@@ -53,7 +53,7 @@ Les onze modules `liveQuery/` : annotations, annotations temporaires, collection
 | ----------------------------------- | ------- | -------------------------------- |
 | 0 — contrats ambigus et régressions | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 1 |
 | 1 — repositories simples            | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 2 |
-| 2 — Worker                          | À faire | À documenter à la clôture du lot |
+| 2 — Worker                          | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 3 |
 | 3 — annotations                     | À faire | À documenter à la clôture du lot |
 | 4 — sources                         | À faire | À documenter à la clôture du lot |
 | 5 — collections                     | À faire | À documenter à la clôture du lot |
@@ -76,7 +76,15 @@ Les onze modules `liveQuery/` : annotations, annotations temporaires, collection
 - **Fichiers** : sept nouveaux tests sous `src/data/repositories/indexeddb/__tests__/` et `namedEntities.ts`.
 - **Vérifications** : tests ciblés du lot (7 fichiers, 20 tests réussis) ; `npx vitest run src/data/repositories/indexeddb` (8 fichiers, 28 tests réussis) ; `npx vitest run` (32 fichiers réussis, 1 ignoré ; 121 tests réussis, 1 todo) ; `npx tsc -b` ; Prettier ciblé ; couverture exploratoire (23,62 % lignes sur le périmètre que le rapport a inclus) — tout passe.
 - **Couverture / limites** : le relevé ne se compare pas directement au 10,76 % de départ, qui instrumentait repositories, saga et plugins ; le filtre de la commande actuelle inclut également `liveQuery`, et le rapport ne liste pas les sept fichiers mono-store malgré leur exécution. Aucun seuil n’est déduit ; refaire une mesure correctement bornée au bilan final.
-- **Restant / relais précis** : aucun défaut découvert dans les six autres modules. La prochaine session doit relire ce plan, `docs/roadmap.md` et l’état Git, constater les lots 0 et 1 clôturés, puis réaliser uniquement le lot 2 : compléter `workers.test.ts` sur les méthodes non encore couvertes (lecture, add/addAll/patch, statuts worker/tâche manquants, suppressions et résultats liés), sans redoubler les tests de la loi pure. Ne pas démarrer le lot 3 dans cette session.
+- **Restant / relais précis** : aucun défaut découvert dans les six autres modules. La prochaine session doit relire ce plan, `docs/roadmap.md` et l'état Git, constater les lots 0 et 1 clôturés, puis réaliser uniquement le lot 2 : compléter `workers.test.ts` sur les méthodes non encore couvertes (lecture, add/addAll/patch, statuts worker/tâche manquants, suppressions et résultats liés), sans redoubler les tests de la loi pure. Ne pas démarrer le lot 3 dans cette session.
+
+### Relais — lot 2 terminé (2026-11-05)
+
+- **Comportements couverts** : lectures `getAll`/`getById` avec absence typée ; recherches de scope exact et descendant ; recherche par noms et scope avec tri décroissant de `createdAt` ; `add`, `addAll`, valeurs par défaut et persistance de `patch` ; transition worker acceptée/refusée et worker absent ; tâche absente ; suppressions de worker/résultats liés et suppression ciblée par couple worker/tâche. L'assertion de type existante confirme que `patch` exclut `status` et `queue`.
+- **Correctif révélé par TDD** : le préfixe `startsWithIgnoreCase('collection-1')` capturait aussi `collection-10`. Le filtrage exige désormais une égalité ou une frontière `-` pour les scopes descendants, dans `getByScope` et `deleteByScope` ; les tests vérifient que le worker et le résultat de `collection-10` restent hors du scope `collection-1`. Le test de recherche a échoué avant le correctif, puis les tests Worker sont passés.
+- **Fichiers** : `workers.test.ts`, `workers.ts`.
+- **Vérifications** : test Worker (16 réussis) ; `npx vitest run src/data/repositories/indexeddb` (8 fichiers, 36 tests réussis) ; `npx vitest run` (32 fichiers réussis, 1 ignoré ; 129 tests réussis, 1 todo) ; `npx tsc -b` ; Prettier ciblé ; `git diff --check` — tout passe.
+- **Décisions / restant** : aucun doublon de la loi pure de statut ; la couverture exploratoire sera recalculée au bilan final. Après le commit de ce lot, ouvrir une nouvelle session, relire ce plan, `docs/roadmap.md` et l'état Git, puis réaliser uniquement le lot 3 : créer `annotations.test.ts` et `annotationsTemp.test.ts` et couvrir les contrats listés ci-dessous, en TDD, en commençant par les recherches, ordres et isolement des scopes/types. Ne pas démarrer le lot 4.
 
 ## Lots d’exécution
 
@@ -100,9 +108,11 @@ Pour chaque repository, choisir les comportements applicables parmi : ajout et l
 - **Models / Modifier chains** : recherche par nom et id, mise à jour/remplacement et suppression.
 - **Tags / FS handles** : lecture de tous les éléments et insertion simple/multiple selon le contrat.
 
-### Lot 2 — Repository Worker sur le vrai stack
+### Lot 2 — Repository Worker sur le vrai stack ✅
 
-Compléter `workers.test.ts` au-delà de la loi de statut déjà couverte :
+✅ Terminé (2026-11-05) ; détails et relais vers le lot 3 ci-dessus.
+
+`workers.test.ts` complète désormais la couverture au-delà de la loi de statut déjà couverte :
 
 - `getAll`, `getById` (présent/absent), `getByScope` exact et sous-scope, `getByNamesAndScope` avec l’ordre par `createdAt` ;
 - `add`, `addAll` et `patch`, en vérifiant que le patch ne contourne pas l’exclusion de `status` et `queue` au niveau de type ;
