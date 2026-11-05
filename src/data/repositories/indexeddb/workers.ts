@@ -149,9 +149,8 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
     await db.transaction('rw', db.workers, db.results, async () => {
       await db.workers.bulkDelete(workerIds);
       await db.results.where('workerId').anyOf(workerIds).delete();
-      return workerIds;
     });
-    return [];
+    return workerIds;
   }
 
   async deleteResultById(workerId: string, taskId: number): Promise<void> {

@@ -46,7 +46,7 @@ export interface AnnotationRepository {
   deleteById(id: string): Promise<void>;
   deleteByIds(ids: string[]): Promise<string[]>;
   deleteByScope(scope: Scope): Promise<string[]>;
-  deleteByScopeAndType(scope: Scope, types: ElementType[], isTemp: boolean): Promise<string[]>;
+  deleteByScopeAndType(scope: Scope, types?: ElementType[]): Promise<string[]>;
 
   update(annotation: Annotation): Promise<Annotation[]>;
   updateOrder(annotationId: string, order: number): Promise<Annotation[]>;

@@ -40,16 +40,18 @@ Les onze modules `liveQuery/` : annotations, annotations temporaires, collection
 ## Exécution en sessions séparées et relais
 
 - **Chaque lot, y compris le lot 0, doit être réalisé dans une nouvelle session OpenCode.** Ne pas enchaîner deux lots dans la même session, même si le premier semble terminé rapidement. Toutes les sessions continuent sur la branche `plan/q2-repository-tests`.
+- **À la clôture de chaque lot, créer un commit dédié** contenant les changements du lot, les tests et le relais documentaire. Ne pas inclure de changements étrangers au lot ; s'il y en a dans l'arbre de travail, les préserver et isoler le commit.
+- **Après le commit d'un lot, passer automatiquement au lot suivant dans une nouvelle session OpenCode**, sans attendre une nouvelle demande de l'utilisateur. La nouvelle session doit repartir du relais documenté et du commit du lot précédent. Répéter ce cycle jusqu'à la clôture du lot 7 ; ne pas faire deux lots dans une session.
 - À l’ouverture d’une session, relire ce plan, `docs/roadmap.md` et l’état Git. Ne commencer que le lot indiqué comme prochain dans la section de suivi ci-dessous ; vérifier que son lot précédent est clôturé et documenté.
-- **La clôture d’un lot comprend obligatoirement une mise à jour documentaire avant l’ouverture de la session suivante.** Mettre à jour ce plan : statut du lot, fichiers/comportements couverts, décisions prises, commandes et résultats de vérification, problèmes restants et instructions précises pour le lot suivant.
+- **La clôture d’un lot comprend obligatoirement une mise à jour documentaire avant son commit et l’ouverture de la session suivante.** Mettre à jour ce plan : statut du lot, fichiers/comportements couverts, décisions prises, commandes et résultats de vérification, problèmes restants et instructions précises pour le lot suivant.
 - Mettre aussi à jour `docs/roadmap.md` lorsque les preuves changent l’état ou le bilan de Q2. Si un lot tranche une décision architecturale qui dépasse le plan, consigner la décision dans `docs/DECISIONS.md` et la référencer ici.
-- Ne pas marquer un lot terminé ni démarrer le suivant tant que ses tests et vérifications ne sont pas exécutés et que le relais documentaire n’est pas à jour. La session suivante doit pouvoir reprendre à partir des documents et de l’état du dépôt, sans dépendre de l’historique de conversation.
+- Ne pas marquer un lot terminé, le commiter ni démarrer le suivant tant que ses tests et vérifications ne sont pas exécutés et que le relais documentaire n’est pas à jour. Une fois le commit confirmé, ouvrir automatiquement une nouvelle session pour le prochain lot. Cette session doit pouvoir reprendre à partir des documents, du commit et de l’état du dépôt, sans dépendre de l’historique de conversation.
 
 ### Suivi des lots et prochain relais
 
 | Lot                                 | État    | Relais vers la session suivante  |
 | ----------------------------------- | ------- | -------------------------------- |
-| 0 — contrats ambigus et régressions | À faire | À documenter à la clôture du lot |
+| 0 — contrats ambigus et régressions | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 1 |
 | 1 — repositories simples            | À faire | À documenter à la clôture du lot |
 | 2 — Worker                          | À faire | À documenter à la clôture du lot |
 | 3 — annotations                     | À faire | À documenter à la clôture du lot |
@@ -58,13 +60,22 @@ Les onze modules `liveQuery/` : annotations, annotations temporaires, collection
 | 6 — export/import/effacement        | À faire | À documenter à la clôture du lot |
 | 7 — `liveQuery`                     | À faire | Clôture finale à documenter      |
 
+### Relais — lot 0 terminé (2026-11-05)
+
+- **Comportements couverts** : `WorkerRepository.deleteByScope` supprime les workers à scope collection exact et descendant (y compris une clé descendante en casse différente), supprime leurs résultats liés, conserve les données d'un autre scope et retourne les ids supprimés. Le cas de scope canvas vérifie la correspondance exacte et la conservation d'un autre canvas.
+- **Décisions** : `AnnotationRepository.deleteByScopeAndType` garde les deux paramètres effectivement utilisés (`scope`, `types?`) ; le paramètre fantôme `isTemp` est supprimé de l'interface. Le grep des appels dans `src/` ne trouve qu'un seul appelant, à deux arguments ; les annotations temporaires restent de la responsabilité du repository dédié. `WorkerRepository.add` est déjà aligné entre interface et implémentation (`WorkerCreateDTO → Promise<Worker>`), sans test de signature redondant.
+- **TDD** : les deux scénarios Worker ont échoué avant correctif parce que `deleteByScope` retournait `[]` ; après correction, ils passent. L'ordre des ids n'étant pas un contrat documenté, le test vérifie les ids sans imposer leur ordre.
+- **Fichiers** : `workers.test.ts`, `workers.ts`, `types.ts`.
+- **Vérifications** : `npx vitest run src/data/repositories/indexeddb/__tests__/workers.test.ts` (8 tests réussis) ; `npx vitest run` (25 fichiers réussis, 1 ignoré ; 101 tests réussis, 1 todo) ; `npx tsc -b` ; `git diff --check` — tout passe.
+- **Restant / relais précis** : la mesure de couverture comparative est à refaire au bilan du chantier, elle n'a pas été recalculée par ce lot. La prochaine session doit relire ce plan, `docs/roadmap.md` et l'état Git, constater le lot 0 clôturé, puis réaliser uniquement le lot 1 (tests directs mono-store : tags, fsHandle, models, modifierChain, namedEntities, projects et results), en TDD. Ne pas démarrer le lot 2 dans cette session.
+
 ## Lots d’exécution
 
 ### Lot 0 — Fixer les contrats ambigus et les régressions déjà connues
 
-- **`WorkerRepository.deleteByScope`** : tester les ids réellement supprimés pour un scope collection (y compris les descendants reconnus par `startsWithIgnoreCase`) et un scope exact ; vérifier aussi la suppression des résultats liés. Le code actuel renvoie `[]` après la suppression : le test doit échouer avant le correctif, puis le retour doit correspondre aux ids calculés, conformément à R3.2.
-- **`AnnotationRepository.deleteByScopeAndType`** : avant d’écrire le test, résoudre le décalage entre l’interface (paramètre `isTemp` obligatoire) et l’implémentation/appelant (deux paramètres). Le grep actuel n’a trouvé qu’un appelant, avec deux arguments, et les annotations temporaires ont leur propre repository. Recommandation : supprimer le paramètre fantôme de l’interface s’il n’existe pas de sémantique métier à préserver ; tester ensuite les annotations temporaires via leur repository dédié.
-- Confirmer que `WorkerRepository.add` reste aligné entre interface et implémentation (`WorkerCreateDTO → Promise<Worker>`), sans créer un test redondant de signature.
+- ✅ **`WorkerRepository.deleteByScope`** : tests Dexie du scope collection (scope exact et descendant reconnu par `startsWithIgnoreCase`), du scope exact non-collection et de la suppression des résultats liés. Le retour correspond désormais aux ids supprimés (R3.2) ; les tests rouges puis verts sont détaillés dans le relais ci-dessus.
+- ✅ **`AnnotationRepository.deleteByScopeAndType`** : le grep des appels confirme un seul appelant à deux paramètres ; `isTemp` est supprimé de l’interface. Les annotations temporaires restent testées via leur repository dédié au lot 3.
+- ✅ `WorkerRepository.add` est aligné entre interface et implémentation (`WorkerCreateDTO → Promise<Worker>`), sans test redondant de signature.
 
 ### Lot 1 — Repositories simples, mono-store
 

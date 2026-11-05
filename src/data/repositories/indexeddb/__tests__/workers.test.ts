@@ -128,6 +128,89 @@ describe('IndexedDBWorkerRepository status characterization', () => {
     expect(result.ok === false && result.error).toBeInstanceOf(StatusChangeError);
   });
 
+  it('returns and deletes workers and results in a collection scope, including descendants', async () => {
+    await repository.add({
+      id: 'worker-collection',
+      name: 'collection-worker',
+      scope: { collectionId: 'collection-1' },
+      params: {},
+    });
+    await repository.add({
+      id: 'worker-canvas',
+      name: 'canvas-worker',
+      scope: { collectionId: 'COLLECTION-1', canvasId: 'canvas-1' },
+      params: {},
+    });
+    await repository.add({
+      id: 'worker-other',
+      name: 'other-worker',
+      scope: { collectionId: 'collection-2' },
+      params: {},
+    });
+    await db.results.bulkAdd([
+      {
+        id: 1,
+        scope: { collectionId: 'collection-1' },
+        scopeKey: 'collection-1',
+        workerName: 'collection-worker',
+        workerId: 'worker-collection',
+        taskId: 0,
+        value: 'collection result',
+        params: {},
+      },
+      {
+        id: 2,
+        scope: { collectionId: 'COLLECTION-1', canvasId: 'canvas-1' },
+        scopeKey: 'COLLECTION-1-canvas-1',
+        workerName: 'canvas-worker',
+        workerId: 'worker-canvas',
+        taskId: 0,
+        value: 'canvas result',
+        params: {},
+      },
+      {
+        id: 3,
+        scope: { collectionId: 'collection-2' },
+        scopeKey: 'collection-2',
+        workerName: 'other-worker',
+        workerId: 'worker-other',
+        taskId: 0,
+        value: 'other result',
+        params: {},
+      },
+    ]);
+
+    const deletedIds = await repository.deleteByScope({ collectionId: 'collection-1' });
+
+    expect(deletedIds).toHaveLength(2);
+    expect(deletedIds).toEqual(expect.arrayContaining(['worker-collection', 'worker-canvas']));
+    expect((await repository.getAll()).map((worker) => worker.id)).toEqual(['worker-other']);
+    expect((await db.results.toArray()).map((result) => result.id)).toEqual([3]);
+  });
+
+  it('deletes only workers with an exact non-collection scope key', async () => {
+    await repository.add({
+      id: 'worker-target',
+      name: 'target-worker',
+      scope: { collectionId: 'collection-1', canvasId: 'canvas-1' },
+      params: {},
+    });
+    await repository.add({
+      id: 'worker-other-canvas',
+      name: 'other-canvas-worker',
+      scope: { collectionId: 'collection-1', canvasId: 'canvas-2' },
+      params: {},
+    });
+
+    const deletedIds = await repository.deleteByScope({
+      collectionId: 'collection-1',
+      canvasId: 'canvas-1',
+    });
+
+    expect(deletedIds).toEqual(['worker-target']);
+    expect((await repository.getAll()).map((worker) => worker.id)).toEqual(['worker-other-canvas']);
+  });
+
   it('migrates v31 task and worker alphabets into v32', async () => {
     await createVersion31Database([
       legacyWorker('failed-worker', 'posted', [
