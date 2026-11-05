@@ -7,7 +7,6 @@ import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionConten
 import { FunctionResult } from '@/utils/functionResult';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
-import { groupBy, mapValues } from 'lodash';
 import { v4 as uuid } from 'uuid';
 import { Collection, CollectionDetails } from '../../models/collection/collection';
 import { EntityNotFoundError } from '../EntityNotFoundError';
@@ -66,42 +65,10 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
 
     const sourceRepository = getSourceRepository();
 
-    //get the list of canvases in the collection (with their manifestId), in their collection order
-    const canvaseIdsWithSourceIds = (
-      await Promise.all(
-        content.map(async (elt) => {
-          return FunctionResult.match(await sourceRepository.getContentById(elt.sourceId), {
-            ok: (source) => ({
-              canvasId: elt.canvasId,
-              sourceId: source.id,
-            }),
-            err: () => null,
-          });
-        }),
-      )
-    ).filter((c): c is { canvasId: string; sourceId: string } => c !== null);
-
-    const canvasesBySourceId = groupBy(canvaseIdsWithSourceIds, 'sourceId');
-
-    //group the canvases by manifestId
-    const groupedCanvasesIds = mapValues(canvasesBySourceId, (value) =>
-      value.map((elt) => elt.canvasId),
+    const canvasResults = await Promise.all(
+      content.map((element) => sourceRepository.getCanvasById(element.sourceId, element.canvasId)),
     );
-
-    const canvases: Canvas[] = [];
-    for (const sourceId in groupedCanvasesIds) {
-      const canvasIds = groupedCanvasesIds[sourceId];
-      if (canvasIds.length > 0) {
-        const results = await Promise.all(
-          canvasIds.map((id) => sourceRepository.getCanvasById(sourceId, id)),
-        );
-        for (const res of results) {
-          if (res.ok) {
-            canvases.push(res.value);
-          }
-        }
-      }
-    }
+    const canvases: Canvas[] = canvasResults.flatMap((result) => (result.ok ? [result.value] : []));
 
     return FunctionResult.ok(canvases);
   }

@@ -56,7 +56,7 @@ Les onze modules `liveQuery/` : annotations, annotations temporaires, collection
 | 2 — Worker                          | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 3 |
 | 3 — annotations                     | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 4 |
 | 4 — sources                         | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 5 |
-| 5 — collections                     | À faire              | À documenter à la clôture du lot          |
+| 5 — collections                     | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 6 |
 | 6 — export/import/effacement        | À faire              | À documenter à la clôture du lot          |
 | 7 — `liveQuery`                     | À faire              | Clôture finale à documenter               |
 
@@ -105,6 +105,15 @@ Les onze modules `liveQuery/` : annotations, annotations temporaires, collection
 - **Vérifications** : test Sources (11 réussis) ; `npx vitest run src/data/repositories/indexeddb` (11 fichiers, 58 tests réussis) ; `npx vitest run` (35 fichiers réussis, 1 ignoré ; 151 tests réussis, 1 todo) ; `npx tsc -b` ; Prettier ciblé ; `git diff --check` — tout passe.
 - **Couverture / limites** : pas de mesure de couverture recalculée à ce lot ; la mesure correctement bornée reste à faire au bilan final.
 - **Restant / relais précis** : après le commit de ce lot, ouvrir une nouvelle session, relire ce plan, `docs/roadmap.md` et l'état Git, constater les lots 0 à 4 clôturés, puis réaliser uniquement le lot 5 : créer `collections.test.ts` avec les repositories réels et couvrir créations/lectures, tags/sources/canvases/scopes, déplacements, duplication, suppression d'élément et de collections avec nettoyage des dépendances, ainsi que l'atomicité des écritures multi-tables. Ne pas démarrer le lot 6.
+
+### Relais — lot 5 terminé (2026-11-05)
+
+- **Comportements couverts** : création, ajout, lecture (détails/contenu et absence typée), mise à jour des détails/tags ; tags et ids de sources avec références absentes ; résolution de canvases et lookup par scope ; déplacement avec ordre, indices invalides, positions égales et collection absente ; duplication avec nouvel id, contenu copié et annotations distinctes ; suppression d’un élément avec mise à jour de `contentSize` et nettoyage ciblé des annotations ; suppression simple et multiple avec nettoyage des annotations, workers et résultats dépendants et conservation des autres collections ; rollback d’un ajout multi-table en cas de clé de contenu déjà prise.
+- **Correctif révélé par TDD** : `getCanvasesByCollectionId` regroupait les canvases par source, ce qui changeait l’ordre de la collection lorsque ses sources étaient entremêlées. Le test rouge reproduisait `A1, B1, A2` → `A1, A2, B1` ; le repository interroge désormais les sources en parallèle tout en conservant l’ordre d’entrée et en ignorant les références/canvases absents.
+- **Fichiers** : `src/data/repositories/indexeddb/__tests__/collections.test.ts`, `src/data/repositories/indexeddb/collections.ts`.
+- **Vérifications** : test ciblé Collections (10 réussis) ; `npx vitest run src/data/repositories/indexeddb` (12 fichiers, 68 tests réussis) ; `npx vitest run` (36 fichiers réussis, 1 ignoré ; 161 tests réussis, 1 todo) ; `npx tsc -b` ; Prettier ciblé ; `git diff --check` — tout passe. Le contrôle Prettier de `docs/roadmap.md` signale un écart de formatage préexistant sur l’ensemble du tableau Q1–Q9 ; il est laissé intact pour éviter un reformatage sans rapport avec ce lot.
+- **Couverture / limites** : pas de mesure de couverture recalculée à ce lot ; la mesure correctement bornée reste à faire au bilan final. Le test d’atomicité injecte un conflit de clé reproductible dans `collectionContents` et vérifie l’absence d’écriture partielle dans `collections`.
+- **Restant / relais précis** : après le commit de ce lot, ouvrir une nouvelle session, relire ce plan, `docs/roadmap.md` et l’état Git, constater les lots 0 à 5 clôturés, puis réaliser uniquement le lot 6 : créer `database.test.ts` et couvrir export d’une base représentative, import et remplacement demandé par `clearTablesBeforeImport`, callback de progression selon le contrat `dexie-export-import`, puis `clear()` avec réouverture propre de Dexie. Ne pas démarrer le lot 7.
 
 ## Lots d’exécution
 
@@ -168,7 +177,9 @@ Créer `annotations.test.ts` et `annotationsTemp.test.ts` :
 
 Les accès externes à un fichier ou à la miniature doivent être déterministes : si nécessaire, stubber uniquement le helper à cette frontière IO, jamais Dexie. Ne pas ajouter de seam d’injection en production sans besoin démontré. Vérifier les cas d’échec qui peuvent laisser des tables incohérentes.
 
-### Lot 5 — Collections et transactions multi-repositories
+### Lot 5 — Collections et transactions multi-repositories ✅
+
+✅ Terminé (2026-11-05) ; détails et relais vers le lot 6 ci-dessus.
 
 Créer `collections.test.ts` après les lots Worker, Annotation et Source. Utiliser les repositories réels appelés par `IndexedDBCollectionRepository` :
 
