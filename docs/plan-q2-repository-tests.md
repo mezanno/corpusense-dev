@@ -52,7 +52,7 @@ Les onze modules `liveQuery/` : annotations, annotations temporaires, collection
 | Lot                                 | État    | Relais vers la session suivante  |
 | ----------------------------------- | ------- | -------------------------------- |
 | 0 — contrats ambigus et régressions | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 1 |
-| 1 — repositories simples            | À faire | À documenter à la clôture du lot |
+| 1 — repositories simples            | Terminé (2026-11-05) | Ouvrir une nouvelle session pour le lot 2 |
 | 2 — Worker                          | À faire | À documenter à la clôture du lot |
 | 3 — annotations                     | À faire | À documenter à la clôture du lot |
 | 4 — sources                         | À faire | À documenter à la clôture du lot |
@@ -69,6 +69,15 @@ Les onze modules `liveQuery/` : annotations, annotations temporaires, collection
 - **Vérifications** : `npx vitest run src/data/repositories/indexeddb/__tests__/workers.test.ts` (8 tests réussis) ; `npx vitest run` (25 fichiers réussis, 1 ignoré ; 101 tests réussis, 1 todo) ; `npx tsc -b` ; `git diff --check` — tout passe.
 - **Restant / relais précis** : la mesure de couverture comparative est à refaire au bilan du chantier, elle n'a pas été recalculée par ce lot. La prochaine session doit relire ce plan, `docs/roadmap.md` et l'état Git, constater le lot 0 clôturé, puis réaliser uniquement le lot 1 (tests directs mono-store : tags, fsHandle, models, modifierChain, namedEntities, projects et results), en TDD. Ne pas démarrer le lot 2 dans cette session.
 
+### Relais — lot 1 terminé (2026-11-05)
+
+- **Comportements couverts** : tags (ajout simple/multiple, lectures par ids et lecture complète), handles filesystem (insertion, remplacement par id et lecture complète), modèles (recherche par id/nom, tri alphabétique, mise à jour, suppression et absence typée), chaînes de modificateurs (recherche par id/nom, remplacement, suppression et absence typée), entités nommées (recherche par un ou plusieurs ids d’annotation et suppression ciblée), projets (lecture, ajout de source, doublon et projet absent), résultats (calcul de `scopeKey`, recherches worker/tâche et scope/nom, tri des tâches et absence typée).
+- **Correctif révélé par TDD** : `getByAnnotationIds` renvoyait deux fois une entité liée à plusieurs ids recherchés, car l’index multi-entry produit une entrée par correspondance. L’ajout de `distinct()` conserve une seule entité ; le test échouait avant le correctif et passe après.
+- **Fichiers** : sept nouveaux tests sous `src/data/repositories/indexeddb/__tests__/` et `namedEntities.ts`.
+- **Vérifications** : tests ciblés du lot (7 fichiers, 20 tests réussis) ; `npx vitest run src/data/repositories/indexeddb` (8 fichiers, 28 tests réussis) ; `npx vitest run` (32 fichiers réussis, 1 ignoré ; 121 tests réussis, 1 todo) ; `npx tsc -b` ; Prettier ciblé ; couverture exploratoire (23,62 % lignes sur le périmètre que le rapport a inclus) — tout passe.
+- **Couverture / limites** : le relevé ne se compare pas directement au 10,76 % de départ, qui instrumentait repositories, saga et plugins ; le filtre de la commande actuelle inclut également `liveQuery`, et le rapport ne liste pas les sept fichiers mono-store malgré leur exécution. Aucun seuil n’est déduit ; refaire une mesure correctement bornée au bilan final.
+- **Restant / relais précis** : aucun défaut découvert dans les six autres modules. La prochaine session doit relire ce plan, `docs/roadmap.md` et l’état Git, constater les lots 0 et 1 clôturés, puis réaliser uniquement le lot 2 : compléter `workers.test.ts` sur les méthodes non encore couvertes (lecture, add/addAll/patch, statuts worker/tâche manquants, suppressions et résultats liés), sans redoubler les tests de la loi pure. Ne pas démarrer le lot 3 dans cette session.
+
 ## Lots d’exécution
 
 ### Lot 0 — Fixer les contrats ambigus et les régressions déjà connues
@@ -78,6 +87,8 @@ Les onze modules `liveQuery/` : annotations, annotations temporaires, collection
 - ✅ `WorkerRepository.add` est aligné entre interface et implémentation (`WorkerCreateDTO → Promise<Worker>`), sans test redondant de signature.
 
 ### Lot 1 — Repositories simples, mono-store
+
+✅ Terminé (2026-11-05) ; détails et relais vers le lot 2 ci-dessus.
 
 Fichiers : `tags.test.ts`, `fsHandle.test.ts`, `models.test.ts`, `modifierChain.test.ts`, `namedEntities.test.ts`, `projects.test.ts` et `results.test.ts`.
 

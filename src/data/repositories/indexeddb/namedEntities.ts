@@ -7,7 +7,7 @@ export class IndexedDBNamedEntityRepository implements NamedEntityRepository {
     return await db.namedEntities.where('annotationIds').equals(annotationId).toArray();
   }
   async getByAnnotationIds(annotationIds: string[]): Promise<NamedEntity[]> {
-    return await db.namedEntities.where('annotationIds').anyOf(annotationIds).toArray();
+    return await db.namedEntities.where('annotationIds').anyOf(annotationIds).distinct().toArray();
   }
   async add(entity: NamedEntity): Promise<void> {
     //TODO! vérifier si un mot de l'entité existe déjà dans une autre entité
