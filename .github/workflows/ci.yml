@@ -54,6 +54,9 @@ jobs:
       - name: Lint ratchet (eslint . vs .eslint-ratchet.json)
         run: npm run lint:ratchet
 
+      - name: Markdown lint (markdownlint-cli2)
+        run: npm run lint:markdown
+
       # Dette de vulnérabilités préexistante dans l'arbre prod (3 high, 3 critical au
       # 2026-10-12, cf. docs/securite.md) : non bloquant jusqu'à résorption.
       - name: Audit (npm audit, prod scope)

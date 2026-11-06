@@ -143,6 +143,7 @@ Après configuration, l'application est disponible sur l'URL HTTPS locale affich
 - Tests E2E : `npm run test:e2e` (installation de Chromium et détails dans le [guide développeur](./docs/developpement.md#tests-e2e-playwright-q9))
 - Lint : `npm run lint`
 - Lint utilisé en CI : `npm run lint:ratchet`
+- Lint Markdown : `npm run lint:markdown`
 - Lint auto-fix : `npm run lint-fix`
 - Format check : `npm run format`
 - Format fix : `npm run format-fix`
@@ -153,6 +154,7 @@ Après configuration, l'application est disponible sur l'URL HTTPS locale affich
 - Ajouter des captures d'écran pour les changements UI
 - Garder des commits lisibles
 - Vérifier que tests et lint passent avant PR
+- Le hook `pre-push` vérifie automatiquement le lint du code et des fichiers Markdown
 
 ## Télécharger et déployer simplement
 
