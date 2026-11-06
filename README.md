@@ -4,10 +4,10 @@ Application web pour explorer des manifests IIIF, constituer des collections, an
 
 ## Liens utiles
 
-- Dépôt principal : https://github.com/mezanno/corpusense
-- Fork de développement : https://github.com/mezanno/corpusense-dev
-- Version stable : https://mezanno.xyz/corpusense/
-- Version de test : https://mezanno.xyz/corpusense-dev/
+- Dépôt principal : [corpusense](https://github.com/mezanno/corpusense)
+- Fork de développement : [corpusense-dev](https://github.com/mezanno/corpusense-dev)
+- Version stable : [corpusense](https://mezanno.xyz/corpusense/)
+- Version de test : [corpusense-dev](https://mezanno.xyz/corpusense-dev/)
 
 ## Dépôts et branches
 

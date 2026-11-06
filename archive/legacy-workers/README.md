@@ -6,15 +6,15 @@ Ils ne sont **ni compilés, ni lintés, ni testés, ni bundlés** : le dossier e
 
 ## Contenu
 
-| Fichier               | Rôle                                                                        |
-| --------------------- | --------------------------------------------------------------------------- |
-| `tesseract.ts`        | Worker OCR local via `tesseract.js`                                          |
-| `suryaCommon.ts`      | Base commune des workers SuryA (OCR, layout, tables)                         |
-| `suryaOcr.ts`         | Worker SuryA OCR                                                             |
-| `suryaLayout.ts`      | Worker SuryA extraction de mise en page                                      |
-| `suryaTable.ts`       | Worker SuryA extraction de tableaux                                          |
-| `edwin.ts`            | Worker Edwin (magique)                                                       |
-| `suryaConverter.ts`   | Convertisseur de résultats SuryA (dépendance de `suryaCommon.ts` uniquement) |
+| Fichier             | Rôle                                                                         |
+| ------------------- | ---------------------------------------------------------------------------- |
+| `tesseract.ts`      | Worker OCR local via `tesseract.js`                                          |
+| `suryaCommon.ts`    | Base commune des workers SuryA (OCR, layout, tables)                         |
+| `suryaOcr.ts`       | Worker SuryA OCR                                                             |
+| `suryaLayout.ts`    | Worker SuryA extraction de mise en page                                      |
+| `suryaTable.ts`     | Worker SuryA extraction de tableaux                                          |
+| `edwin.ts`          | Worker Edwin (magique)                                                       |
+| `suryaConverter.ts` | Convertisseur de résultats SuryA (dépendance de `suryaCommon.ts` uniquement) |
 
 ## Pourquoi cet archive
 

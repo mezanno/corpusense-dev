@@ -6,7 +6,7 @@ Journal des décisions techniques structurantes de CorpuSense, consolidé à par
 
 ## D-001 — Architecture Local-First, IndexedDB comme source de vérité
 
-_Statut : active · Décidée fin 2025, confirmée en janvier 2026_
+Statut : active · Décidée fin 2025, confirmée en janvier 2026
 
 **Contexte.** Application d'ingénierie documentaire utilisée dans un navigateur, sans backend applicatif propre. Les données de travail (collections, annotations, résultats) doivent survivre au offline et rester la propriété du chercheur.
 
@@ -27,7 +27,7 @@ _Statut : active · Décidée fin 2025, confirmée en janvier 2026_
 
 ## D-002 — Result Pattern typé (`FunctionResult<T, E>`)
 
-_Statut : active · Adoptée début 2026, amendée et clôturée par règles le 2026-10-08_
+Statut : active · Adoptée début 2026, amendée et clôturée par règles le 2026-10-08
 
 **Contexte.** Les erreurs du domaine (entité absente, erreur DB, refus de transition de statut) doivent être traitables à l'appel sans `try/catch` dispersés ni perte de typage.
 
@@ -49,7 +49,7 @@ Discipline complète (issue de l'audit des ~60 sites de `throw`, appliquée par 
 
 ## D-003 — Pas de conteneur IoC (Awilix refusé)
 
-_Statut : active · Décidée en 2026 (audit doc 12)_
+Statut : active · Décidée en 2026 (audit doc 12)
 
 **Contexte.** Difficulté réelle identifiée : pas de point d'injection stable pour les repositories (testabilité, contournement de `dbFactory` par deux plugins). Candidats : conteneur Awilix vs solutions natives.
 
@@ -61,7 +61,7 @@ _Statut : active · Décidée en 2026 (audit doc 12)_
 
 ## D-004 — Correctif direct proportionné (fake-indexeddb)
 
-_Statut : active · Décidée le 2026-10-01_
+Statut : active · Décidée le 2026-10-01
 
 **Contexte.** L'audit d'architecture du 2026-09-29 diagnostique : `dbFactory` pass-through contournable, ~25 factories superficielles, contrats non tenus par l'interface (`deleteByScope` retourne `[]` alors que le contrat promet des ids), dette de duplication par repository.
 
@@ -78,7 +78,7 @@ _Statut : active · Décidée le 2026-10-01_
 
 ## D-005 — Interface de découplage Table/Provider/Descriptor : abandonnée
 
-_Statut : abandonnée · Étudiée le 2026-10-01, abandonnée le 2026-10-09_
+Statut : abandonnée · Étudiée le 2026-10-01, abandonnée le 2026-10-09
 
 **Contexte.** Conséquence de D-004 : un design complet de l'interface de découplage (Table/Provider/Descriptor, design-it-twice, trois options A/B/C, hybride retenu) avait été étudié et consigné.
 
@@ -90,7 +90,7 @@ _Statut : abandonnée · Étudiée le 2026-10-01, abandonnée le 2026-10-09_
 
 ## D-006 — Redux-Saga conservé jusqu'à l'extraction du moteur de file
 
-_Statut : active · Confirmée fin 2026 (docs 04/10, revue d'architecture)_
+Statut : active · Confirmée fin 2026 (docs 04/10, revue d'architecture)
 
 **Contexte.** Le départ de Redux-Saga est un objectif documenté de longue date, mais la saga `workers.ts` (~420 lignes) contient à la fois la loi de statut, la boucle de file, la reprise après arrêt inopiné et le mapping Realtime : la retirer maintenant serait une réécriture non testable.
 
@@ -102,7 +102,7 @@ _Statut : active · Confirmée fin 2026 (docs 04/10, revue d'architecture)_
 
 ## D-007 — Plugin registry par découverte dynamique (`import.meta.glob`)
 
-_Statut : active_
+Statut : active
 
 **Décision.** Workers et importers sont des modules autonomes de `src/state/sagas/plugins/{workers,importers}/`, découverts au build par `import.meta.glob` (eager), filtrés au runtime par le drapeau `experimental` (les plugins marqués expérimentaux ne se chargent que si l'utilisateur active les fonctionnalités expérimentales).
 
@@ -112,7 +112,7 @@ _Statut : active_
 
 ## D-008 — Loi de statut du worker : un seul foyer (module pur)
 
-_Statut : active — loi implémentée (R1) · Proposition du 2026-09-29, reprise le 2026-10-08, loi consolidée le 2026-10-09 dans [statuts.md](./statuts.md), décisions D3 et D5 closes le 2026-10-12_
+Statut : active — loi implémentée (R1) · Proposition du 2026-09-29, reprise le 2026-10-08, loi consolidée le 2026-10-09 dans [statuts.md](./statuts.md), décisions D3 et D5 closes le 2026-10-12
 
 **Contexte.** La loi de transition des statuts (tâches et workers) est implémentée **quatre fois** (repo `updateTaskStatus`, saga, `useJobRealtime`, UI — avec deux mappings d'icônes divergents) et dérive déjà : sweeper qui force `COMPLETED` sur des tâches jamais démarrées, plugins qui écrivent `POSTING`/`POSTED` directement dans le code.
 
@@ -128,7 +128,7 @@ _Statut : active — loi implémentée (R1) · Proposition du 2026-09-29, repris
 
 ## D-009 — Restructuration « feature-first » des composants : adoptée et appliquée
 
-_Statut : active · Cible adoptée en 2026, migration R7 terminée le 2026-10-12_
+Statut : active · Cible adoptée en 2026, migration R7 terminée le 2026-10-12
 
 **Décision.** La cible `src/components/{ui,common,layout,features/<domaine>}` est appliquée progressivement, par tranches cohérentes et sans migration globale : `ui/` conserve les primitives génériques sans logique métier ; `common/` accueille les composants applicatifs transversaux ; `layout/` contient le shell et la navigation ; `features/<domaine>/` regroupe l'UI métier avec ses styles et tests lorsque possible. Les pages, hooks, services, modèles et contextes restent dans leurs couches respectives. Les nouveaux composants métier rejoignent directement leur feature ; les primitives génériques vont dans `ui/`.
 
@@ -138,7 +138,7 @@ _Statut : active · Cible adoptée en 2026, migration R7 terminée le 2026-10-12
 
 ## D-010 — Politique de tests (pyramide) et harnais
 
-_Statut : active · Formalisée en 2026, harnais réparé le 2026-09-30, E2E déployés le 2026-10-13 (Q9)_
+Statut : active · Formalisée en 2026, harnais réparé le 2026-09-30, E2E déployés le 2026-10-13 (Q9)
 
 **Décision.** Pyramide à trois niveaux : majoritairement des tests unitaires de fonctions pures ; tests de composants/hooks via React Testing Library (rôles accessibles, `user-event`, jamais les détails d'implémentation) ; E2E Playwright en nombre limité sur les parcours critiques (déployés le 2026-10-13 : 14 tests dans `e2e/`, chromium seul, job sur les PR — voir [roadmap Q9](./roadmap.md#qualité--outillage)). Standards :
 
@@ -154,7 +154,7 @@ _Statut : active · Formalisée en 2026, harnais réparé le 2026-09-30, E2E dé
 
 ## D-011 — Mono-utilisateur local assumé (pas de guards de routes)
 
-_Statut : active · Décision de design, actée lors de la consolidation de l'audit de sécurité_
+Statut : active · Décision de design, actée lors de la consolidation de l'audit de sécurité
 
 **Contexte.** L'audit VULN-01 pointait l'absence de garde de routes. L'authentification Supabase existe (`ConnectedUserContext`) mais protège une feature (jobs distants), pas l'accès à l'app.
 

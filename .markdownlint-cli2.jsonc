@@ -1,0 +1,10 @@
+{
+  "globs": ["**/*.md", ".opencode/**/*.md", "!node_modules/**"],
+  "config": {
+    "default": true,
+    // Long paragraphs and Markdown table rows stay on one source line in this repo.
+    "MD013": false,
+    // The foundation debt list intentionally keeps numbering across headings.
+    "MD029": false,
+  },
+}
