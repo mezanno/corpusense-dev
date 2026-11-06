@@ -81,6 +81,10 @@ Donner un foyer au concept « blob + sa forme base64 » (~40 lignes dupliquées 
 | Q8  | Divers                     | Manifeste factice `https://1.rp.mezanno.xyz/toto.json` dans `data/utils/export.ts` ; erreurs de démarrage de worker non remontées à l'IHM ; commentaires FR/EN à homogénéiser au fil de l'eau. `stats.html` est désormais ignoré et non suivi : aucune suppression des copies locales n'est nécessaire.                                                                                                                                                                                                                                                                                                                                                 |
 | Q9  | E2E                        | **Livré** (2026-10-13) : Playwright Chromium ; 14 tests — fumée, import manifest → collection, annotation persistée après reload, export ZIP lu en mémoire ; fixtures IIIF locales et requêtes HTTP externes interceptées ; 14/14 verts sur 10 runs consécutifs lors de la livraison. Le job PR est sauté lors du déploiement ; sa réussite n'est imposée à la fusion que si la protection de branche l'exige. Le [guide développeur](./developpement.md#tests-e2e-playwright-q9) décrit l'exécution, les limites et les pièges. Corrections associées : `loadPath` i18n avec `VITE_BASE_PATH=/` et association label↔case dans `ExportCollectionForm`. |
 
+### Plan d’exécution Q2 — saga workers
+
+Le plan par lots, l’estimation, les critères de sortie et les règles de session/commit sont détaillés dans [plan-tests-workers-saga.md](./plan-tests-workers-saga.md). Chaque lot doit être réalisé dans une nouvelle session et commité avant de commencer le suivant.
+
 ## Sécurité
 
 Voir le registre [securite.md](./securite.md) (S-02 clos ; S-03 CSP et en-têtes reste ouvert).
