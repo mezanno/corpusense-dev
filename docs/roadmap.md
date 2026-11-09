@@ -85,6 +85,8 @@ Donner un foyer au concept « blob + sa forme base64 » (~40 lignes dupliquées 
 
 Le plan par lots, l’estimation, les critères de sortie et les règles de session/commit sont détaillés dans [plan-tests-workers-saga.md](./plan-tests-workers-saga.md). Chaque lot doit être réalisé dans une nouvelle session et commité avant de commencer le suivant.
 
+Le chantier complémentaire [interruption et reprise des workers](./plan-interruption-reprise-workers.md) est ouvert. Son lot 0 a identifié les accès client et les risques : les extraits serveur fournis montrent qu'un worker Python écrit le résultat par `id` sans condition, permettant une double exécution après pause et reprise. Le chantier reste bloqué sur la coordination serveur, les index séparés et les droits RLS. Les garanties de pause, d'exclusivité pendant le calcul et d'absence de doublons ne sont pas établies ; le harnais de saga Q2 reste à créer.
+
 ## Sécurité
 
 Voir le registre [securite.md](./securite.md) (S-02 clos ; S-03 CSP et en-têtes reste ouvert).

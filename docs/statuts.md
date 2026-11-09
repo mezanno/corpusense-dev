@@ -2,6 +2,8 @@
 
 _Spécification de référence des statuts et de leurs transitions, consolidée le 2026-10-09 après une session d'interrogation exhaustive des règles métier. Ce document est la loi, implémentée dans `src/data/models/worker/workerStatusLaw.ts` au titre de R1. Les décisions structurelles associées vivent dans [DECISIONS.md](./DECISIONS.md) (D-006, D-008) ; le vocabulaire dans [CONTEXT.md](../CONTEXT.md)._
 
+> Les flows ci-dessous décrivent le comportement cible, pas une garantie de l'implémentation actuelle. L'interruption, la reprise et la récupération des jobs présentent des écarts et des dépendances serveur non vérifiées : voir [le plan et les constats](./plan-interruption-reprise-workers.md#constats-recueillis-avant-adaptation).
+
 ## Périmètre
 
 - **Un worker = une stratégie.** La stratégie d'exécution (1 ou 2, définies plus bas) est une propriété du worker, héritée de son plugin ; elle ne change pas en cours de vie et ne se mixe pas dans une file.
@@ -33,7 +35,7 @@ Hors loi : `ALL` reste un filtre d'interface, jamais un statut persisté. Les st
 3. **Le statut d'une tâche reflète la dernière vérité connue**, jamais un pic mémorisé. Les transitions directes entre statuts non-terminaux sont légales chaque fois qu'elles sont justifiées par la vérité serveur — y compris en arrière (`INPROGRESS` → `POSTED` après reprise d'un job `paused`).
 4. Un composé `_WITH_ERRORS` n'est jamais « effacé » en cours de route ; en revanche **chaque relaunch repart propre** : le worker repart en `INPROGRESS` simple, les erreurs sont re-comptées pendant la nouvelle exécution, sans héritage.
 5. **Supabase est la source de vérité des jobs.** Aucun timeout client sur un job `processing` : si un job y reste, c'est un problème serveur. Le seul timeout client est celui de l'état `POSTING` (stratégie 2), fixé à **60 secondes** d'absence de réponse du post.
-6. Chaque tâche est identifiable dans `cs_jobs` par le couple `worker_id` + `task_id`. C'est ce qui rend le lookup de relaunch possible et sans doublons.
+6. Chaque tâche est recherchée dans `cs_jobs` par le couple `worker_id` + `task_id`. L'absence de doublons nécessite une garantie atomique serveur : le lookup seul ne suffit pas et la contrainte effective reste à vérifier.
 7. **Aucun historique** : seuls les statuts courants sont persistés (IndexedDB, cf. D-001). Pas de journal de tentatives.
 8. Le retry est **au niveau worker uniquement** (relaunch). Il n'existe pas de retry d'une tâche individuelle.
 
@@ -118,7 +120,7 @@ Un worker `UNFINISHED` est **gelé** : plus aucun suivi de ses jobs non terminau
 4. Tâches `WAITING` : exécution normale. Tâches interrompues en `INPROGRESS` (stratégie 1) : → `WAITING` → rejeu.
 5. Si après le lookup tout est terminal : le worker passe directement en `COMPLETED` / `COMPLETED_WITH_ERRORS`, sans transiter par `INPROGRESS`.
 
-Le flow est **idempotent** (tout passe par lookup) : un relaunch interrompu se reprend sans état spécial.
+Le flow cible doit être **idempotent** et reprendre un relaunch interrompu sans état spécial. Le lookup seul ne garantit pas cette propriété, notamment en cas de post tardif ou de réponse perdue.
 
 ## Cycle de vie d'une ligne `cs_jobs`
 
@@ -139,8 +141,8 @@ Le flow est **idempotent** (tout passe par lookup) : un relaunch interrompu se r
 
 - `WorkerStatus` et `TaskStatus` sont deux enums clos ; `ALL` reste un filtre UI. La migration IndexedDB v31 → v32 convertit les anciennes valeurs et échoue explicitement sur un statut persistant inconnu.
 - La loi pure et son tableau exhaustif sont dans `workerStatusLaw.ts`. Repository et saga changent les statuts par événements ; `patch()` ne permet pas de modifier le statut ou la file.
-- Le worker est dérivé atomiquement avec sa file lors d'une transition de tâche. Boot et interruption rendent le statut `UNFINISHED*` collant ; relaunch reprend les jobs non terminaux, réexécute les tâches en erreur sans hériter du drapeau, et clôt directement un worker dont toutes les tâches sont déjà réussies.
-- Le bridge Supabase mappe les statuts de jobs de façon exhaustive, isole les erreurs par job et ne supprime une ligne terminale qu'après persistance locale. Les jobs terminaux de toutes les catégories de worker sont balayés au démarrage et à la reprise.
+- Le worker est dérivé atomiquement avec sa file lors d'une transition de tâche. Le repository conserve le statut `UNFINISHED*` lors des mises à jour de tâches ; les flows complets d'interruption et de relaunch restent à fiabiliser.
+- Le bridge Supabase mappe les statuts de jobs et isole les erreurs par job. Il tente de persister un statut terminal avant suppression, mais ne garantit pas encore la livraison rejouable des effets de plugin, ni le balayage exhaustif au démarrage et à la reprise.
 - Le timeout de 60 secondes ne concerne que l'attente d'acceptation d'un post en stratégie 2 ; aucun timeout client ne s'applique à `processing`.
 - Les plugins émettent des événements plutôt que d'écrire des statuts. L'interface a une table `Record` exhaustive par enum, sans `default`. Le verrou de galerie reste au scope collection (D-008/D3) et la présentation unique respecte D-008/D5.
 - Tests dédiés : table de transitions autorisées/refusées, dérivation et récupération, migration réelle v31 → v32, refus d'un `patch()` de statut/file.
