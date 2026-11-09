@@ -40,7 +40,7 @@ describe('worker interruption: current behaviour with the local server model', (
     state.fake = null;
   });
 
-  it('can take a pending job, then the current stop overwrites its concurrent completion even when no row is returned', async () => {
+  it('does not overwrite a job taken and completed concurrently with the pause', async () => {
     const enteredPlugin = deferred<void>();
     const keepPosting = deferred<never>();
     const pauseReached = deferred<void>();
@@ -71,21 +71,130 @@ describe('worker interruption: current behaviour with the local server model', (
     try {
       channel.put(startWorkerProcessRequest({ workerName: 'test-job', scope, params: {} }));
       await enteredPlugin.promise;
-      expect(fake.take('test-job')?.status).toBe('pending');
-      expect(fake.rows[0].status).toBe('processing');
       const current = await getWorkerRepository().getById(workerId);
       if (!current.ok) throw current.error;
       channel.put(stopWorkerProcessRequest(current.value));
       await pauseReached.promise;
+      expect(fake.take('test-job')?.status).toBe('pending');
+      expect(fake.rows[0].status).toBe('processing');
       fake.finish(1, { status: 'completed', result: 'done', error: null });
       allowPause.resolve();
       await pauseFinished.promise;
-      expect(fake.rows[0]).toMatchObject({ status: 'paused', result: 'done' });
+      expect(fake.rows[0]).toMatchObject({ status: 'completed', result: 'done' });
       expect(fake.requests.find((r) => r.operation === 'update')?.filters).toEqual([
         { field: 'id', values: [1] },
+        { field: 'worker_id', values: [workerId] },
+        { field: 'status', values: ['pending'] },
       ]);
     } finally {
       allowPause.resolve();
+      saga.cancel();
+      await saga.toPromise();
+    }
+  });
+
+  it('does not request a pause for a job already processing', async () => {
+    const enteredPlugin = deferred<void>();
+    const swept = deferred<void>();
+    let workerId = '';
+    workerPlugins['test-job'] = plugin('job', async (_task, worker) => {
+      workerId = worker.id;
+      fake.rows.push(makeJob({ worker_id: worker.id, status: 'processing' }));
+      enteredPlugin.resolve();
+      return deferred<never>().promise;
+    });
+    fake.after = (request) => {
+      if (request.operation === 'select') swept.resolve();
+      return Promise.resolve();
+    };
+    const channel = stdChannel();
+    const saga = runSaga({ channel, dispatch: () => {} }, workerSaga);
+    try {
+      channel.put(startWorkerProcessRequest({ workerName: 'test-job', scope, params: {} }));
+      await enteredPlugin.promise;
+      const current = await getWorkerRepository().getById(workerId);
+      if (!current.ok) throw current.error;
+      channel.put(stopWorkerProcessRequest(current.value));
+      await swept.promise;
+      expect(fake.rows[0].status).toBe('processing');
+      expect(fake.requests.some((request) => request.operation === 'update')).toBe(false);
+      expect(fake.requests[0].filters).toEqual([
+        { field: 'worker_id', values: [workerId] },
+        { field: 'status', values: ['pending'] },
+      ]);
+    } finally {
+      saga.cancel();
+      await saga.toPromise();
+    }
+  });
+
+  it('does not pause a pending job taken while the pause request is in flight', async () => {
+    const enteredPlugin = deferred<void>();
+    const pauseReached = deferred<void>();
+    const allowPause = deferred<void>();
+    const pauseFinished = deferred<void>();
+    let workerId = '';
+    workerPlugins['test-job'] = plugin('job', async (_task, worker) => {
+      workerId = worker.id;
+      fake.rows.push(makeJob({ worker_id: worker.id }));
+      enteredPlugin.resolve();
+      return deferred<never>().promise;
+    });
+    fake.before = async (request) => {
+      if (request.operation === 'update') {
+        pauseReached.resolve();
+        await allowPause.promise;
+      }
+    };
+    fake.after = (request) => {
+      if (request.operation === 'update') pauseFinished.resolve();
+      return Promise.resolve();
+    };
+    const channel = stdChannel();
+    const saga = runSaga({ channel, dispatch: () => {} }, workerSaga);
+    try {
+      channel.put(startWorkerProcessRequest({ workerName: 'test-job', scope, params: {} }));
+      await enteredPlugin.promise;
+      const current = await getWorkerRepository().getById(workerId);
+      if (!current.ok) throw current.error;
+      channel.put(stopWorkerProcessRequest(current.value));
+      await pauseReached.promise;
+      expect(fake.take('test-job')?.status).toBe('pending');
+      allowPause.resolve();
+      await pauseFinished.promise;
+      expect(fake.rows[0].status).toBe('processing');
+    } finally {
+      allowPause.resolve();
+      saga.cancel();
+      await saga.toPromise();
+    }
+  });
+
+  it('still pauses a job that remains pending', async () => {
+    const enteredPlugin = deferred<void>();
+    const pauseFinished = deferred<void>();
+    let workerId = '';
+    workerPlugins['test-job'] = plugin('job', async (_task, worker) => {
+      workerId = worker.id;
+      fake.rows.push(makeJob({ worker_id: worker.id }));
+      enteredPlugin.resolve();
+      return deferred<never>().promise;
+    });
+    fake.after = (request) => {
+      if (request.operation === 'update') pauseFinished.resolve();
+      return Promise.resolve();
+    };
+    const channel = stdChannel();
+    const saga = runSaga({ channel, dispatch: () => {} }, workerSaga);
+    try {
+      channel.put(startWorkerProcessRequest({ workerName: 'test-job', scope, params: {} }));
+      await enteredPlugin.promise;
+      const current = await getWorkerRepository().getById(workerId);
+      if (!current.ok) throw current.error;
+      channel.put(stopWorkerProcessRequest(current.value));
+      await pauseFinished.promise;
+      expect(fake.rows[0].status).toBe('paused');
+    } finally {
       saga.cancel();
       await saga.toPromise();
     }

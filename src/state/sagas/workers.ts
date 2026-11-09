@@ -94,7 +94,7 @@ async function pauseWorkerJobs(workerId: string): Promise<JobRow[]> {
     .from('cs_jobs')
     .select('*')
     .eq('worker_id', workerId)
-    .in('status', ['pending', 'processing']);
+    .eq('status', 'pending');
   if (error) throw error;
 
   const pausedJobs: JobRow[] = [];
@@ -103,6 +103,8 @@ async function pauseWorkerJobs(workerId: string): Promise<JobRow[]> {
       .from('cs_jobs')
       .update({ status: 'paused' })
       .eq('id', job.id)
+      .eq('worker_id', workerId)
+      .eq('status', 'pending')
       .select('*')
       .maybeSingle();
     if (pauseError) throw pauseError;
