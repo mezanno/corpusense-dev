@@ -108,6 +108,6 @@ Les tests couvrent notamment la protection contre l'écrasement d'une prise ou d
 
 ## Périmètre et dépendances
 
-- Ce chantier complète le lot 3 du plan Q2 et ajoute la couverture du bridge Realtime et du démarrage. Réutiliser son harnais plutôt que créer deux suites concurrentes.
+- Ce chantier complète le lot 3 du plan Q2 et ajoute la couverture du bridge Realtime et du démarrage. Deux harnais existent actuellement : `workerHarness.ts` pour la caractérisation des courses et du bridge, et `workers.harness.ts` avec `fakeJobs.ts` pour les flows de saga Q2. Pour les prochains tests, réutiliser leurs contrôles adaptés et éviter de dupliquer les scénarios ; envisager leur rapprochement sans supposer qu'ils modélisent le serveur réel.
 - Hors périmètre immédiat : annulation garantie d'un calcul déjà lancé, pause dédiée dans l'interface, retry individuel, historique de tentatives, support multi-onglets, extraction complète de `queueEngine` R2 et mise en place d'un environnement Supabase de test.
 - Aucun changement serveur n'est requis pour **commencer** les lots client. Les garanties d'unicité, de prise exclusive et de coordination réelle restent une suite distincte ; sans elles, les cas ambigus restent bloqués.

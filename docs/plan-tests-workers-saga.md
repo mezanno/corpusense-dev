@@ -21,6 +21,17 @@ Le chantier s’appuie sur la loi de statut déjà testée dans `workerStatusLaw
 
 ## Lots
 
+**État au 2026-11-09 :** les lots 0 à 2 sont livrés sur `test/workers-saga`
+(`08a03fb`, `a61c7d4`, `bb9e71d`). Le lot 3 est partiel : son état de
+sauvegarde est commité en `19c094f`, sans clôture du lot. Les lots 4 et 5
+restent à réaliser. Le chantier complémentaire d'[interruption et reprise](./plan-interruption-reprise-workers.md)
+contient ses propres tests de caractérisation et un correctif partiel de pause.
+
+Les suites `workers.test.ts` et `workers.recovery.test.ts` utilisent
+`workers.harness.ts` et `fakeJobs.ts`. Les tests de caractérisation utilisent
+un autre faux, `workerHarness.ts`, pour contrôler les courses avec le bridge
+Realtime. Les deux modèles locaux ne prouvent pas les garanties serveur.
+
 ### Lot 0 — Harnais d’exécution et frontières de test
 
 **Estimation : 0,5 à 1 jour.**
@@ -70,14 +81,90 @@ Le chantier s’appuie sur la loi de statut déjà testée dans `workerStatusLaw
 
 - Vérifier le relaunch d’un worker récupérable et le refus d’un worker absent ou non récupérable.
 - Couvrir le lookup d’un job par `(worker_id, task_id)`, notamment les statuts `paused`, `pending`, `processing`, `completed` et `failed` ; s’assurer qu’un job déjà suivi n’est pas republié.
-- Vérifier qu’une tâche sans job est re-queue/rejouée conformément à la loi de statut, et qu’une tâche déjà réussie n’est pas retentée.
-- Simuler l’arrêt pendant un worker synchrone et pendant un worker job : interruption locale, pause des jobs non terminaux et mise à jour des tâches concernées.
+- Vérifier le traitement prudent d’une tâche sans job selon les preuves disponibles, et qu’une tâche déjà réussie n’est pas retentée.
+- Simuler l’arrêt pendant un worker synchrone et pendant un worker job : interruption locale, pause des jobs `pending` et mise à jour des tâches concernées.
 - Tester les erreurs Supabase de lookup/pause et les erreurs pendant la récupération sans perdre l’état local persisté.
 - Ajouter un test de non-régression pour l’attente du stop-listener. Si le test confirme la fuite connue de R2, traiter le correctif minimal dans ce lot ou isoler explicitement le point bloquant avant de le clôturer.
+
+Les scénarios de reprise et d'interruption doivent être réévalués selon le
+[plan complémentaire](./plan-interruption-reprise-workers.md) : la reprise d'un
+`paused` de provenance inconnue et le repost après un lookup vide sont des
+comportements actuels dangereux, pas des garanties à conserver. De même, seule
+la pause des jobs `pending` est visée ; les jobs `processing` continuent côté serveur.
 
 **Critère de sortie :** reprise et interruption suivent les scénarios documentés dans `docs/statuts.md`, sans double post ni attente orpheline.
 
 **Commit :** `test(workers): cover recovery and interruption`
+
+#### Suspension du lot 3 — relais vers le chantier de correctif
+
+**État du chantier :** le commit de sauvegarde `19c094f` ne constitue pas le
+commit de clôture du lot 3 et contient deux tests en échec. Il comprend :
+
+- `src/state/sagas/__tests__/workers.recovery.test.ts` : tests de reprise ;
+- `src/data/repositories/indexeddb/__tests__/testDb.ts` : observation des changements
+  de worker pour les tests, sans attente temporelle ;
+- `docs/plan-tests-workers-saga.md` : ce suivi.
+
+Le chantier complémentaire, intégré depuis `develop`, caractérise les courses et
+conditionne la pause aux jobs encore `pending`. Il ne corrige pas la livraison des
+terminaux et ne clôt pas le lot 3 : la récupération et la reprise prudentes restent
+à implémenter dans ce chantier distinct.
+
+**Point à résoudre :** dans `src/state/sagas/workers.ts`, le lookup de relaunch
+reconnaît les jobs `completed` et `failed` sans les republier, mais ne livre pas
+leur état terminal. Dans la saga isolée, une tâche auparavant `POSTED` reste
+`POSTED` et le worker reste `INPROGRESS`. Les deux cas « reconciles an undelivered
+… job on recovery without reposting it » de `workers.recovery.test.ts` échouent sur
+ces statuts.
+
+La frontière est à clarifier avant de corriger : `src/hooks/useJobRealtime.tsx`
+effectue également le rattrapage, traite les résultats via le plugin et acquitte les
+jobs après persistance. Le test isolé ne démontre donc pas à lui seul le comportement
+de bout en bout avec le hook actif. Comparer ce partage des responsabilités au flow
+de relaunch et au cycle de vie des jobs dans `docs/statuts.md`. Un simple mapping
+terminal dans la saga peut court-circuiter le traitement du résultat ou son
+acquittement. Le correctif séparé doit établir et tester la frontière retenue, sans
+double post ni perte de résultat, et documenter la décision permettant de réévaluer
+les deux tests de saga.
+
+**Couverture déjà amorcée dans le lot 3 :** suivi des jobs `pending` et `processing`
+sans repost, reprise actuelle des `paused`, rejeu actuel des tâches sans job et
+d'une tâche synchrone interrompue, non-rejeu des tâches réussies, refus d'un worker
+absent ou non récupérable et erreur de lookup. Les assertions sur `paused` et sur
+le lookup vide caractérisent l'existant ; elles devront évoluer avec le protocole
+prudent, sans légitimer une reprise ou un repost incertains.
+
+Les tests de `interruption.characterization.test.tsx` couvrent aussi la pause
+conditionnelle, les courses avec prise ou fin d'un job, le post tardif, le timeout,
+l'absence de traitement de l'arrêt après les posts et la livraison terminale à un
+worker interrompu. Ils caractérisent des comportements et limites, pas la clôture
+du lot 3. Les erreurs de pause et de récupération restantes et la non-régression
+du stop-listener restent notamment à couvrir.
+
+**Vérification du 2026-11-09 :** la commande ci-dessous donne 40 tests réussis et
+2 échecs sur 42, dans 3 fichiers. Les deux échecs sont les cas terminaux décrits
+ci-dessus ; aucune exclusion ne satisfait le critère de clôture.
+
+```bash
+npx vitest run src/state/sagas/__tests__/workers.test.ts src/state/sagas/__tests__/workers.recovery.test.ts src/state/sagas/__tests__/interruption.characterization.test.tsx
+```
+
+**Reprise après le correctif :**
+
+1. Dans une nouvelle session, relire les deux plans, vérifier la branche, le commit de
+   sauvegarde et `git status`. Préserver les modifications locales et intégrer les
+   éventuels correctifs sans les écraser.
+2. Implémenter et tester la frontière de livraison retenue par le plan complémentaire,
+   y compris les effets de plugin et l'acquittement ; réévaluer les deux tests
+   terminaux à cette frontière. Ne pas les supprimer ou les désactiver simplement
+   pour obtenir une suite verte ; toute modification doit conserver la vérification
+   du contrat et rester justifiée par la décision.
+3. Terminer les scénarios manquants du lot 3, notamment interruption, pause et
+   stop-listener. Documenter séparément tout nouveau blocage préexistant.
+4. Relancer les suites ciblées **sans exclusion**, `npx tsc -b`,
+   `npm run lint:ratchet` et `git diff --check`. Ne commiter le lot 3 qu'une fois ses critères
+   satisfaits, puis reprendre les lots suivants dans de nouvelles sessions.
 
 ### Lot 4 — Démarrage application, erreurs globales et plugins exposés
 
