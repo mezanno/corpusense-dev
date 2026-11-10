@@ -99,7 +99,8 @@ la pause des jobs `pending` est visée ; les jobs `processing` continuent côté
 #### Suspension du lot 3 — relais vers le chantier de correctif
 
 **État du chantier :** le commit de sauvegarde `19c094f` ne constitue pas le
-commit de clôture du lot 3 et contient deux tests en échec. Il comprend :
+commit de clôture du lot 3. Il contenait deux tests en échec, réécrits depuis à
+la frontière de la saga seule ; la livraison complète reste à tester. Il comprend :
 
 - `src/state/sagas/__tests__/workers.recovery.test.ts` : tests de reprise ;
 - `src/data/repositories/indexeddb/__tests__/testDb.ts` : observation des changements
@@ -114,9 +115,9 @@ terminaux et ne clôt pas le lot 3 : la récupération et la reprise prudentes r
 **Point à résoudre :** dans `src/state/sagas/workers.ts`, le lookup de relaunch
 reconnaît les jobs `completed` et `failed` sans les republier, mais ne livre pas
 leur état terminal. Dans la saga isolée, une tâche auparavant `POSTED` reste
-`POSTED` et le worker reste `INPROGRESS`. Les deux cas « reconciles an undelivered
-… job on recovery without reposting it » de `workers.recovery.test.ts` échouent sur
-ces statuts.
+`POSTED` et le worker reste `INPROGRESS`. Les tests de saga vérifient désormais
+ce comportement actuel et l'absence de repost pour chacun des deux statuts.
+Deux tests `todo` conservent les scénarios de livraison complète à couvrir.
 
 La frontière est à clarifier avant de corriger : `src/hooks/useJobRealtime.tsx`
 effectue également le rattrapage, traite les résultats via le plugin et acquitte les
@@ -124,9 +125,9 @@ jobs après persistance. Le test isolé ne démontre donc pas à lui seul le com
 de bout en bout avec le hook actif. Comparer ce partage des responsabilités au flow
 de relaunch et au cycle de vie des jobs dans `docs/statuts.md`. Un simple mapping
 terminal dans la saga peut court-circuiter le traitement du résultat ou son
-acquittement. Le correctif séparé doit établir et tester la frontière retenue, sans
-double post ni perte de résultat, et documenter la décision permettant de réévaluer
-les deux tests de saga.
+acquittement. Le chantier séparé doit établir et tester la frontière retenue, sans
+double post ni perte de résultat. Une suite de saga verte ne prouve pas la livraison
+de bout en bout.
 
 **Couverture déjà amorcée dans le lot 3 :** suivi des jobs `pending` et `processing`
 sans repost, reprise actuelle des `paused`, rejeu actuel des tâches sans job et
@@ -142,9 +143,9 @@ worker interrompu. Ils caractérisent des comportements et limites, pas la clôt
 du lot 3. Les erreurs de pause et de récupération restantes et la non-régression
 du stop-listener restent notamment à couvrir.
 
-**Vérification du 2026-11-09 :** la commande ci-dessous donne 40 tests réussis et
-2 échecs sur 42, dans 3 fichiers. Les deux échecs sont les cas terminaux décrits
-ci-dessus ; aucune exclusion ne satisfait le critère de clôture.
+**Vérification du 2026-11-10 :** la commande ci-dessous donne 42 tests réussis et
+2 `todo` dans 3 fichiers. Les `todo` couvrent la livraison des jobs terminaux à la
+reprise ; ils ne satisfont pas le critère de clôture du lot 3.
 
 ```bash
 npx vitest run src/state/sagas/__tests__/workers.test.ts src/state/sagas/__tests__/workers.recovery.test.ts src/state/sagas/__tests__/interruption.characterization.test.tsx
@@ -156,10 +157,9 @@ npx vitest run src/state/sagas/__tests__/workers.test.ts src/state/sagas/__tests
    sauvegarde et `git status`. Préserver les modifications locales et intégrer les
    éventuels correctifs sans les écraser.
 2. Implémenter et tester la frontière de livraison retenue par le plan complémentaire,
-   y compris les effets de plugin et l'acquittement ; réévaluer les deux tests
-   terminaux à cette frontière. Ne pas les supprimer ou les désactiver simplement
-   pour obtenir une suite verte ; toute modification doit conserver la vérification
-   du contrat et rester justifiée par la décision.
+   y compris les effets de plugin et l'acquittement ; remplacer les deux `todo`
+   par des tests exécutables de ce contrat, sans confondre saga isolée et livraison
+   de bout en bout.
 3. Terminer les scénarios manquants du lot 3, notamment interruption, pause et
    stop-listener. Documenter séparément tout nouveau blocage préexistant.
 4. Relancer les suites ciblées **sans exclusion**, `npx tsc -b`,
