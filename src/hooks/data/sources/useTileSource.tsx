@@ -8,6 +8,32 @@ import { TileSource } from 'openseadragon';
 import { useEffect, useState } from 'react';
 import useSources from './useSources';
 
+const normalizeIiifIds = (value: unknown): unknown => {
+  if (Array.isArray(value)) {
+    return value.map(normalizeIiifIds);
+  }
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]: [string, unknown]) => [
+        key,
+        (key === '@id' || key === 'id') && typeof entry === 'string'
+          ? entry.replace(/^http:\/\//i, 'https://')
+          : normalizeIiifIds(entry),
+      ]),
+    );
+  }
+  return value;
+};
+
+const fetchIiifInfoJson = async (url: string): Promise<unknown> => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw Error(`Failed to load IIIF info.json (${response.status}): ${url}`);
+  }
+  const info: unknown = await response.json();
+  return normalizeIiifIds(info);
+};
+
 const useTileSource = ({ canvas, sourceId }: { canvas: Canvas; sourceId: string }) => {
   const [error, setError] = useState<string | null>(null);
   // null = pas encore résolu. OpenSeadragon.open([]) est un no-op silencieux :
@@ -46,7 +72,11 @@ const useTileSource = ({ canvas, sourceId }: { canvas: Canvas; sourceId: string 
           const service = image?.service?.[0] as ImageService | undefined;
           const serviceId = service?.['@id'] ?? service?.id;
           if (serviceId !== undefined) {
-            setSource([`${serviceId}/info.json`] as unknown as TileSource[]);
+            const infoUrl = `${serviceId.replace(/\/+$/, '')}/info.json`;
+            const info = await fetchIiifInfoJson(infoUrl);
+            console.log('info: ', info);
+
+            setSource([info] as unknown as TileSource[]);
           } else if (image?.id !== undefined) {
             // Pas de service IIIF : ouvrir l'image directement (comportement d'avant e09ffca)
             if (image.id.startsWith('http')) {
