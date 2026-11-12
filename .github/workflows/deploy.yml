@@ -73,7 +73,8 @@ jobs:
           exit $missing
 
       - name: Build Project
-        run: npm run build
+        # Le typecheck est déjà effectué par le job validate.
+        run: npm run build:deploy
 
       - name: Upload GitHub Pages Artifact
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
