@@ -74,8 +74,6 @@ const useTileSource = ({ canvas, sourceId }: { canvas: Canvas; sourceId: string 
           if (serviceId !== undefined) {
             const infoUrl = `${serviceId.replace(/\/+$/, '')}/info.json`;
             const info = await fetchIiifInfoJson(infoUrl);
-            console.log('info: ', info);
-
             setSource([info] as unknown as TileSource[]);
           } else if (image?.id !== undefined) {
             // Pas de service IIIF : ouvrir l'image directement (comportement d'avant e09ffca)
