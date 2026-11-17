@@ -36,7 +36,7 @@ const CollectionInspectorGalleryItem = ({
 
   const [element, setElement] = useState<HTMLSpanElement | null>(null);
   // element must be the ContextMenuTrigger span, since it's the actual grid child dnd-kit reorders, not the nested item div
-  const { isDragging } = useSortable({
+  const { isDragging, handleRef } = useSortable({
     id: canvasWithSourceId.canvas.id,
     index: collectionContentIndex,
     element,
@@ -62,6 +62,7 @@ const CollectionInspectorGalleryItem = ({
             setCanvasToDisplay={setCanvasToDisplay}
             canvasToDisplay={canvasToDisplay}
             isDragging={isDragging}
+            dragHandleRef={handleRef}
           />
         </ContextMenuTrigger>
         <ContextMenuContent>

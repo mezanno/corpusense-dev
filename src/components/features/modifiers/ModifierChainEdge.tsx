@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import {
   BaseEdge,
   Edge,
@@ -7,6 +8,7 @@ import {
   Position,
 } from '@xyflow/react';
 import { PlusCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 type ModifierChainEdgeProps = {
   modifierSourceId: string;
@@ -24,6 +26,7 @@ const ModifierChainEdge = ({
   targetY,
   markerEnd,
 }: EdgeProps<ModifierChainEdgeType>) => {
+  const { t } = useTranslation();
   if (!data) return null; // sécurité TS
   const { modifierSourceId, onInsertAfter } = data;
 
@@ -44,17 +47,20 @@ const ModifierChainEdge = ({
     <>
       <BaseEdge id={id} path={edgePath} markerEnd={markerEnd} />
       <EdgeLabelRenderer>
-        <button
+        <Button
+          variant='ghost'
+          size='icon'
+          aria-label={t('btn_insert_modifier')}
           style={{
             position: 'absolute',
             transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
             pointerEvents: 'all',
           }}
-          className='nodrag nopan cursor-pointer rounded-2xl bg-white'
+          className='nodrag nopan h-auto w-auto cursor-pointer rounded-xl bg-primary p-0 [&_svg]:size-5'
           onClick={handleAddNode}
         >
           <PlusCircle size={20} />
-        </button>
+        </Button>
       </EdgeLabelRenderer>
     </>
   );

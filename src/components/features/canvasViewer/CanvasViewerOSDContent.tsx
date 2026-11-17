@@ -30,6 +30,7 @@ import { Component, ErrorInfo, ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CanvasViewerMode } from './CanvasViewer';
 
+// Annotation visualization colors are domain data, not UI theme colors.
 const colors = {
   [ElementType.TEXT_LINE.toString()]: '#2a9d8f',
   [ElementType.TEXT_REGION.toString()]: '#e76f51',
@@ -137,6 +138,7 @@ const CanvasViewerOSDContent = ({
   const style = (annotation: Annotation, state?: AnnotationState) => {
     const value = annotation.bodies[0]?.value ?? ElementType.UNKNOWN;
     return {
+      // Fallback annotation color for unknown domain values.
       stroke: colors[value] || '#000000',
       strokeWidth: 2,
       fill: colors[value] || '#000000',
@@ -159,7 +161,7 @@ const CanvasViewerOSDContent = ({
   if (error != null) {
     return (
       <div className='flex h-full w-full items-center justify-center'>
-        <p className='text-red-500'>{t('error_loading_canvas', { error: error })}</p>
+        <p className='text-destructive'>{t('error_loading_canvas', { error: error })}</p>
       </div>
     );
   }
@@ -188,7 +190,7 @@ const CanvasViewerOSDContent = ({
       >
         {viewerError?.key === viewerKey ? (
           <div className='flex h-full w-full items-center justify-center' role='alert'>
-            <p className='text-red-500'>
+            <p className='text-destructive'>
               {t('error_loading_canvas', { error: viewerError.message })}
             </p>
           </div>
@@ -198,7 +200,7 @@ const CanvasViewerOSDContent = ({
               key={viewerKey}
               fallback={(boundaryError) => (
                 <div className='flex h-full w-full items-center justify-center' role='alert'>
-                  <p className='text-red-500'>
+                  <p className='text-destructive'>
                     {t('error_loading_canvas', { error: boundaryError.message })}
                   </p>
                 </div>
@@ -216,7 +218,7 @@ const CanvasViewerOSDContent = ({
       {distanceBetweenSelectedAnnotations && distanceBetweenSelectedAnnotationCenters && (
         <OpenSeadragonAnnotationPopup
           popup={(_props: PopupProps) => (
-            <div className='flex items-center space-x-1 rounded bg-white p-2 text-sm shadow'>
+            <div className='flex items-center space-x-1 rounded-md bg-primary p-2 text-sm shadow'>
               <MoveHorizontal size={16} />
               {distanceBetweenSelectedAnnotations.horizontal.toFixed()}
               <MoveVertical className='ml-3' size={16} />

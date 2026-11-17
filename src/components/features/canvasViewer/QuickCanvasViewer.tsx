@@ -23,7 +23,7 @@ const CanvasSelector = ({ collectionId }: { collectionId: string }) => {
   return (
     <>
       <Select value={selectedElement} onValueChange={(value) => setSelectedElement(value)}>
-        <SelectTrigger className='w-[200px]'>
+        <SelectTrigger className='w-50'>
           <SelectValue placeholder={t('form_placeholder_select_canvas')} />
         </SelectTrigger>
         <SelectContent>
@@ -64,7 +64,7 @@ const QuickCanvasViewer = () => {
         value={selectedCollectionId}
         onValueChange={(value) => setSelectedCollectionId(value)}
       >
-        <SelectTrigger className='w-[200px]'>
+        <SelectTrigger className='w-50'>
           <SelectValue placeholder={t('form_placeholder_select_collection')} />
         </SelectTrigger>
         <SelectContent>

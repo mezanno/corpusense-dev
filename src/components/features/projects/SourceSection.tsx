@@ -1,8 +1,7 @@
-import { Card, CardContent } from '@/components/ui/card';
+import AddCardButton from '@/components/common/AddCardButton';
 import { Project } from '@/data/models/project';
 import useProjectsIO from '@/hooks/data/projects/useProjectsIO';
 import useDialog from '@/hooks/ui/useDialog';
-import { Plus } from 'lucide-react';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -46,7 +45,7 @@ const SourceSection = ({ selectedProjectId }: SourceSectionProps) => {
 
   return (
     <div
-      className={`flex h-full w-full rounded-lg ${currentProject === undefined ? 'bg-white/50' : 'bg-white'} shadow`}
+      className={`flex h-full w-full rounded-xl border shadow-sm ${currentProject === undefined ? 'bg-primary/50' : 'bg-primary'}`}
     >
       <span className='flex h-full items-center pl-5 text-9xl font-black'>2</span>
 
@@ -58,34 +57,22 @@ const SourceSection = ({ selectedProjectId }: SourceSectionProps) => {
           ) : (
             <>
               <div className='flex flex-col gap-2'>
-                <Card
-                  className='card-model h-28 w-24 border-dashed'
+                <AddCardButton
+                  className='h-28 w-24'
+                  label={t('btn_add_online_source')}
                   onClick={() => void handleOnAddRemoteSource()}
-                >
-                  <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
-                    <Plus size={24} />
-                    <span className='text-center'>{t('btn_add_online_source')}</span>
-                  </CardContent>
-                </Card>
-                <Card
-                  className='card-model h-28 w-24 border-dashed'
-                  //   onClick={() => openCreateProjectDialog(onProjectCreated)}
-                >
-                  <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
-                    <Plus size={24} />
-                    <span className='text-center'>{t('btn_add_local_source')}</span>
-                  </CardContent>
-                </Card>
+                />
+                <AddCardButton className='h-28 w-24' label={t('btn_add_local_source')} disabled />
               </div>
               {currentProject?.sources.length !== 0 ? (
-                <div className='grid w-full grid-cols-4 grid-rows-2 gap-4 rounded-2xl border-2 border-dashed p-2'>
+                <div className='grid w-full grid-cols-4 grid-rows-2 gap-4 rounded-xl border-2 border-dashed p-2'>
                   {currentProject?.sources.map((sourceId) => (
                     <div key={sourceId}>Source {sourceId}</div>
                   ))}
                 </div>
               ) : (
-                <div className='flex flex-1 items-center justify-center rounded-2xl border-2 border-dashed'>
-                  <span className='text-xl text-secondary italic'>
+                <div className='flex flex-1 items-center justify-center rounded-xl border-2 border-dashed'>
+                  <span className='text-xl text-foreground-secondary italic'>
                     {t('no_sources_in_project')}
                   </span>
                 </div>

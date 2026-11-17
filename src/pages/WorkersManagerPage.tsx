@@ -1,8 +1,11 @@
 import WorkerDetails from '@/components/features/workers/WorkerDetails';
 import WorkerTable from '@/components/features/workers/WorkerTable';
+import PageHeader from '@/components/layout/PageHeader';
 import { useWorkerContext } from '@/components/reducers/WorkerContext';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { WorkerStatus } from '@/data/models/worker/worker';
+import { PocketKnife } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
@@ -41,21 +44,20 @@ const WorkersManagerPage = () => {
   };
 
   return (
-    <div className='panel h-full w-full'>
-      <ResizablePanelGroup direction='horizontal'>
+    <div className='panel flex h-full min-h-0 flex-col gap-2'>
+      <PageHeader title={t('page_title_workers_manager')} icon={PocketKnife} />
+      <ResizablePanelGroup direction='horizontal' className='min-h-0 flex-1'>
         <ResizablePanel minSize={50} defaultSize={70}>
           <div className='flex h-full flex-col overflow-y-auto'>
             <div className='m-2 flex flex-wrap space-y-2 space-x-2'>
               {filters.map((filter) => (
-                <div key={filter.status} onClick={() => updateFilter(filter.status)}>
-                  <input
-                    type='checkbox'
+                <label key={filter.status} className='flex cursor-pointer items-center gap-2'>
+                  <Checkbox
                     checked={filter.selected}
-                    readOnly
-                    className='mr-2 h-4 w-4 cursor-pointer'
+                    onCheckedChange={() => updateFilter(filter.status)}
                   />
                   {t(`worker_status_${filter.status}`)}
-                </div>
+                </label>
               ))}
             </div>
             <WorkerTable

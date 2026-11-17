@@ -1,4 +1,4 @@
-import { Card, CardContent } from '@/components/ui/card';
+import AddCardButton from '@/components/common/AddCardButton';
 import {
   Select,
   SelectContent,
@@ -9,7 +9,6 @@ import {
 import { Separator } from '@/components/ui/separator';
 import useProjects from '@/hooks/data/projects/useProjects';
 import useDialog from '@/hooks/ui/useDialog';
-import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 type ProjectSectionProps = {
@@ -28,7 +27,7 @@ const ProjectSection = ({ selectedProjectId, setSelectedProjectId }: ProjectSect
   };
 
   return (
-    <div className='flex h-full w-full rounded-lg bg-white shadow'>
+    <div className='flex h-full w-full rounded-xl border bg-primary shadow-sm'>
       <span className='flex h-full items-center pl-5 text-9xl font-black'>1</span>
       <div className='flex flex-1 flex-col pt-2'>
         <div className='flex h-full flex-col items-center justify-evenly gap-2'>
@@ -36,15 +35,12 @@ const ProjectSection = ({ selectedProjectId, setSelectedProjectId }: ProjectSect
             {t('title_create_or_select_project_to_start')}
           </h2>
           <div className='flex w-1/2 flex-col items-center justify-center gap-4'>
-            <Card
-              className='card-model h-20 w-[180px] border-dashed'
+            <AddCardButton
+              className='h-20 w-[180px]'
+              iconSize={36}
+              label={t('btn_create_project')}
               onClick={() => void onCreateProject()}
-            >
-              <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
-                <Plus size={36} />
-                <span className='text-center'>{t('btn_create_project')}</span>
-              </CardContent>
-            </Card>
+            />
             <Separator />
             {projects.length > 0 && (
               <Select

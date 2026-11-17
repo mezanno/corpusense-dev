@@ -1,3 +1,4 @@
+import { Button, ButtonProps } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ReactNode } from 'react';
 
@@ -7,6 +8,7 @@ type IconButtonWithTooltipProps = {
   onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   className?: string;
   disabled?: boolean;
+  variant?: ButtonProps['variant'];
 };
 
 export function IconButtonWithTooltip({
@@ -15,12 +17,16 @@ export function IconButtonWithTooltip({
   onClick,
   className = '',
   disabled = false,
+  variant = 'soft',
 }: IconButtonWithTooltipProps) {
   return (
     <Tooltip delayDuration={200}>
       <TooltipTrigger asChild>
-        <button
-          className={`soft-button ${className}`}
+        <Button
+          className={className}
+          variant={variant}
+          size='icon'
+          type='button'
           onClick={(event) => {
             event.stopPropagation();
             onClick?.(event);
@@ -29,7 +35,7 @@ export function IconButtonWithTooltip({
           disabled={disabled}
         >
           {children}
-        </button>
+        </Button>
       </TooltipTrigger>
       <TooltipContent key='top' align='center'>
         <p>{tooltip}</p>

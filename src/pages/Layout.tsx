@@ -1,16 +1,19 @@
 import LanguageFlag from '@/components/common/LanguageFlag';
 import LayoutSideBar from '@/components/layout/LayoutSidebar';
+import { Button } from '@/components/ui/button';
 import { Toaster } from '@/components/ui/sonner';
 import usePendingMigration from '@/hooks/data/sources/usePendingMigration';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
+import useDocumentTitle from '@/hooks/ui/useDocumentTitle';
+import { CorpusenseRoutes } from '@/hooks/useAppNavigation';
 import useJobRealtime from '@/hooks/useJobRealtime';
 import { resetLastEvent } from '@/state/reducers/events';
 import { selectLastErrorEvent, selectLastInfoEvent } from '@/state/selectors/events';
 import { Mail, RefreshCw } from 'lucide-react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '../components/ui/sidebar';
 
@@ -22,6 +25,12 @@ const Layout = () => {
   const lastError = useAppSelector(selectLastErrorEvent);
   const { pendingCount, isMigrating, migrateAll } = usePendingMigration();
   useJobRealtime();
+  const titleKey = useDocumentTitle();
+  const { pathname } = useLocation();
+  const segments = pathname.split('/').filter(Boolean);
+  const needsHeading =
+    [CorpusenseRoutes.MANIFEST, CorpusenseRoutes.EXPERT].includes(segments[0]) ||
+    (segments[0] === CorpusenseRoutes.DOCUMENTATION && segments.length === 1);
 
   useEffect(() => {
     if (lastInfo !== undefined) {
@@ -48,8 +57,9 @@ const Layout = () => {
               <div className='flex gap-2'>
                 <LanguageFlag />
                 {pendingCount > 0 && (
-                  <button
-                    className='soft-button border-amber-400 text-amber-700 hover:bg-amber-50'
+                  <Button
+                    variant='warning'
+                    size='soft'
                     aria-label={t('btn_pending_migration', { count: pendingCount })}
                     onClick={() => void migrateAll()}
                     disabled={isMigrating}
@@ -59,20 +69,22 @@ const Layout = () => {
                     {isMigrating
                       ? t('migration_in_progress')
                       : t('btn_pending_migration', { count: pendingCount })}
-                  </button>
+                  </Button>
                 )}
-                <button
-                  className='soft-button'
+                <Button
+                  variant='soft'
+                  size='soft'
                   aria-label={t('btn_open_contact')}
                   onClick={() => void openForm('contactUs', {})}
                 >
                   <Mail size={16} />
                   {t('btn_open_contact')}
-                </button>
+                </Button>
               </div>
             </div>
           </header>
           <main className='min-h-0 flex-1 pt-2'>
+            {needsHeading && <h1 className='sr-only'>{t(titleKey)}</h1>}
             <Outlet />
           </main>
         </div>

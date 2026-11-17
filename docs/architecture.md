@@ -8,6 +8,8 @@ _Spécification technique de référence. Dernière vérification contre le code
 
 Cas d'usage détaillés : [public/doc/usecase.md](../public/doc/usecase.md). Manuel utilisateur : [public/doc/howto.md](../public/doc/howto.md).
 
+Le produit reste **desktop-first** : les écrans visent des fenêtres d'environ 800 px de large ou plus. À ce point de rupture, les barres d'outils doivent rester utilisables (retour à la ligne) et les tables devoir défiler horizontalement ; aucune adaptation mobile n'est planifiée (conventions UI : [developpement.md §4](./developpement.md), décision D-012).
+
 ## 2. Stack technique
 
 | Domaine         | Choix                                                                                                   |

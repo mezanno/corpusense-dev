@@ -44,6 +44,21 @@ describe('CollectionsManagerPage', () => {
     expect(screen.getByRole('button', { name: 'btn_import_collection' })).toBeInTheDocument();
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
     expect(screen.getByText('info_no_collection')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('distingue le chargement initial de la liste vide', () => {
+    (useCollections as Mock).mockReturnValue({ collections: [], isLoading: true });
+    const { rerender } = renderWithProviders(<CollectionsManagerPage />);
+
+    expect(screen.getByRole('status')).toHaveTextContent('info_loading');
+    expect(screen.queryByText('info_no_collection')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'btn_create_collection' })).toBeEnabled();
+
+    (useCollections as Mock).mockReturnValue({ collections: [], isLoading: false });
+    rerender(<CollectionsManagerPage />);
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.getByText('info_no_collection')).toBeInTheDocument();
   });
 
   it('la page affiche un tableau de 2 collections', () => {

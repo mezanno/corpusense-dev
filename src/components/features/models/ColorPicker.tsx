@@ -23,6 +23,7 @@ const ColorPicker = forwardRef<
   const [open, setOpen] = useState(false);
 
   const parsedValue = useMemo(() => {
+    // Fallback for user-editable annotation color data, independent of the UI theme.
     return value || '#FFFFFF';
   }, [value]);
 

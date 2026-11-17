@@ -1,3 +1,4 @@
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { ElementType } from '@/data/models/annotations/annotation';
@@ -64,22 +65,24 @@ export default function ScopedModifierChainToolbar({
 
   return (
     <>
-      <button
+      <Button
+        variant='soft'
+        size='soft'
         onClick={() => void applyChain()}
-        className='soft-button'
         title={t('btn_apply_modifiers')}
       >
         <Play size={16} />
-      </button>
+      </Button>
 
       <Field
         orientation='horizontal'
-        className='soft-button w-auto'
+        className={buttonVariants({ variant: 'soft', size: 'soft', className: 'w-auto' })}
         title={t('btn_modifierchain_preview')}
       >
         <Checkbox id='toggle-preview' checked={showPreview} onCheckedChange={handleChange} />
         <FieldLabel htmlFor='toggle-preview'>
-          <Eye />
+          <Eye aria-hidden='true' />
+          <span className='sr-only'>{t('btn_modifierchain_preview')}</span>
         </FieldLabel>
       </Field>
     </>

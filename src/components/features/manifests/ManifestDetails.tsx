@@ -34,7 +34,7 @@ const ManifestDetails = ({
 
   return (
     <section
-      className='flex h-full w-full flex-col items-center justify-center space-y-2 rounded-md bg-white/50 p-2'
+      className='flex h-full w-full flex-col items-center justify-center space-y-2 rounded-md bg-primary/50 p-2'
       aria-label={t('aria_label_manifest_details')}
     >
       <div className='flex h-full w-full flex-col items-center space-y-2'>

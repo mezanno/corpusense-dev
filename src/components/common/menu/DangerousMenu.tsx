@@ -42,7 +42,7 @@ const DangerousMenu: FC<DangerousMenuProps> = ({
     ],
   };
 
-  return <MultiOptionsMenu params={params} scope={scope} color='text-red-500' />;
+  return <MultiOptionsMenu params={params} scope={scope} color='text-destructive' />;
 };
 
 export default DangerousMenu;

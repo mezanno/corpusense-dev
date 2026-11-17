@@ -1,5 +1,6 @@
 import ModifierChainDashboard from '@/components/features/modifiers/ModifierChainDashboard';
 import ModifierChainFlow from '@/components/features/modifiers/ModifierChainFlow';
+import PageHeader from '@/components/layout/PageHeader';
 import { ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { Container } from 'lucide-react';
 import { useState } from 'react';
@@ -10,15 +11,13 @@ const ModifierChainManagerPage = () => {
   const [selectedChainId, setSelectedChainId] = useState<string | null>(null);
 
   return (
-    <div className='flex h-full w-full flex-col space-y-2 p-4'>
-      <h1 className='flex items-center text-2xl font-bold'>
-        <Container className='mr-2' /> {t('page_title_modifierchain_manager')}
-      </h1>
+    <div className='panel flex h-full min-h-0 flex-col gap-2'>
+      <PageHeader title={t('page_title_modifierchain_manager')} icon={Container} />
       <ModifierChainDashboard
         setSelectedChainId={setSelectedChainId}
         selectedChainId={selectedChainId}
       />
-      <ResizablePanelGroup direction='horizontal' className='flex-1 space-x-2'>
+      <ResizablePanelGroup direction='horizontal' className='min-h-0 flex-1'>
         <ResizablePanel order={1} id='metadata-panel' className='flex flex-col' minSize={50}>
           {selectedChainId !== null && (
             <div className='flex h-full w-full flex-col'>

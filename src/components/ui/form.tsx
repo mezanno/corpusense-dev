@@ -21,6 +21,7 @@ type FormFieldContextValue<
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > = {
   name: TName;
+  required: boolean;
 };
 
 const FormFieldContext = React.createContext<FormFieldContextValue>({} as FormFieldContextValue);
@@ -29,10 +30,16 @@ const FormField = <
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({
+  required,
   ...props
-}: ControllerProps<TFieldValues, TName>) => {
+}: ControllerProps<TFieldValues, TName> & { required?: boolean }) => {
+  const rule = props.rules?.required;
+  const requiredByRule =
+    typeof rule === 'object'
+      ? rule.value
+      : rule === true || (typeof rule === 'string' && rule.length > 0);
   return (
-    <FormFieldContext.Provider value={{ name: props.name }}>
+    <FormFieldContext.Provider value={{ name: props.name, required: required ?? requiredByRule }}>
       <Controller {...props} />
     </FormFieldContext.Provider>
   );
@@ -54,6 +61,7 @@ const useFormField = () => {
   return {
     id,
     name: fieldContext.name,
+    required: fieldContext.required,
     formItemId: `${id}-form-item`,
     formDescriptionId: `${id}-form-item-description`,
     formMessageId: `${id}-form-item-message`,
@@ -78,7 +86,7 @@ function FormItem({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 function FormLabel({ className, ...props }: React.ComponentProps<typeof LabelPrimitive.Root>) {
-  const { error, formItemId } = useFormField();
+  const { error, formItemId, required } = useFormField();
 
   return (
     <Label
@@ -87,12 +95,15 @@ function FormLabel({ className, ...props }: React.ComponentProps<typeof LabelPri
       className={cn('data-[error=true]:text-destructive', className)}
       htmlFor={formItemId}
       {...props}
-    />
+    >
+      {props.children}
+      {required && <span aria-hidden='true'> *</span>}
+    </Label>
   );
 }
 
 function FormControl({ ...props }: React.ComponentProps<typeof Slot>) {
-  const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
+  const { error, formItemId, formDescriptionId, formMessageId, required } = useFormField();
 
   return (
     <Slot
@@ -100,6 +111,7 @@ function FormControl({ ...props }: React.ComponentProps<typeof Slot>) {
       id={formItemId}
       aria-describedby={!error ? `${formDescriptionId}` : `${formDescriptionId} ${formMessageId}`}
       aria-invalid={!!error}
+      aria-required={required || undefined}
       {...props}
     />
   );
@@ -129,6 +141,7 @@ function FormMessage({ className, ...props }: React.ComponentProps<'p'>) {
   return (
     <p
       data-slot='form-message'
+      role='alert'
       id={formMessageId}
       className={cn('text-sm font-medium text-destructive', className)}
       {...props}

@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Worker } from '@/data/models/worker/worker';
@@ -101,11 +102,27 @@ const WorkerDataTable = ({
               <TableRow
                 key={row.id}
                 onClick={() => setSelectedWorkerId(row.getValue('id'))}
-                className={`${row.getValue('id') === selectedWorkerId ? 'bg-amber-100 hover:bg-amber-100' : ''} ${workerStatusPresentation[row.original.status].color} `}
+                className={`${row.getValue('id') === selectedWorkerId ? 'bg-accent hover:bg-accent' : ''} ${workerStatusPresentation[row.original.status].color} `}
               >
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className='px-2 py-1'>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    {cell.column.id === 'name' ? (
+                      <Button
+                        type='button'
+                        variant='ghost'
+                        size='soft'
+                        className='h-auto text-left whitespace-normal'
+                        aria-pressed={row.original.id === selectedWorkerId}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setSelectedWorkerId(row.original.id);
+                        }}
+                      >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </Button>
+                    ) : (
+                      flexRender(cell.column.columnDef.cell, cell.getContext())
+                    )}
                   </td>
                 ))}
               </TableRow>

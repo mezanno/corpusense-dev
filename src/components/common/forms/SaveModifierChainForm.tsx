@@ -79,11 +79,12 @@ const SaveModifierChainForm = ({
         <FormField
           control={form.control}
           name='name'
+          required
           render={({ field }) => (
             <FormItem>
               <FormLabel id='form-label'>{t('form_label_modifierchain_name')}</FormLabel>
               <FormControl>
-                <Input {...field} aria-describedby='form-label' />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -283,14 +284,15 @@ const ModifierChainFlow = ({
       <div className='mt-4 flex justify-center space-x-2'>
         {scope && (
           <>
-            <button
+            <Button
+              variant='soft'
+              size='soft'
               onClick={() => void handleLoadChain()}
-              className='soft-button'
               title={t('btn_load_modifiers')}
             >
               <FolderOpen size={16} />
-            </button>
-            <div className='h-fit w-fit rounded-xl bg-white'>
+            </Button>
+            <div className='h-fit w-fit rounded-xl bg-primary'>
               <Select
                 value={applyModifierChainTo}
                 onValueChange={(value) => setApplyModifierChainTo(value as ElementType)}
@@ -307,13 +309,14 @@ const ModifierChainFlow = ({
           </>
         )}
         {modifiers.length > 0 && (
-          <button
+          <Button
+            variant='soft'
+            size='soft'
             onClick={() => void saveChain()}
-            className='soft-button'
             title={t('btn_save_modifierchain')}
           >
             <Save size={16} />
-          </button>
+          </Button>
         )}
         {scope && modifiers.length > 0 && (
           <ScopedModifierChainToolbar
@@ -335,6 +338,7 @@ const ModifierChainFlow = ({
           edgeTypes={edgeTypes}
           nodesDraggable={false}
           nodesConnectable={false}
+          nodesFocusable={false}
           elementsSelectable={false}
           panOnDrag={true}
           selectionOnDrag={false}

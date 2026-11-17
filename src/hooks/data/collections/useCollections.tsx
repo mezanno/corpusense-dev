@@ -16,16 +16,15 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useMemo } from 'react';
 import { useAppDispatch } from '../../hooks';
 
+const EMPTY_COLLECTIONS: CollectionDetails[] = [];
+
 export const useCollections = () => {
   const appDispatch = useAppDispatch();
   const collectionLiveRepository = useMemo(() => getCollectionLiveRepository(), []);
   const collectionRepository = useMemo(() => getCollectionRepository(), []);
 
-  const collections = useLiveQuery(
-    collectionLiveRepository.getAllDetails(),
-    [],
-    [] as CollectionDetails[],
-  );
+  const collectionsQuery = useLiveQuery(collectionLiveRepository.getAllDetails(), []);
+  const collections: CollectionDetails[] = collectionsQuery ?? EMPTY_COLLECTIONS;
 
   const collectionCount = useMemo(() => {
     return collections.length;
@@ -210,6 +209,7 @@ export const useCollections = () => {
 
   return {
     collections,
+    isLoading: collectionsQuery === undefined,
     collectionCount,
     getCollectionById,
     nameAlreadyExists,

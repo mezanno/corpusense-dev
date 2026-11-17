@@ -3,7 +3,7 @@
 @plugin 'tailwindcss-animate';
 @plugin '@tailwindcss/typography';
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
 @theme {
   /* Couleurs neutres / de base */
@@ -69,8 +69,212 @@
   --color-saffron-700: #fadd92;
   --color-saffron-800: #fce8b7;
   --color-saffron-900: #fdf4db;
+
+  /* Échelles brutes des thèmes hors-marque du lot 11 (une dominante et un
+     neutre par thème) ; les échelles de marque ci-dessus ne les alimentent pas. */
+  /* Forêt — dominante (verts profonds) */
+  --color-forest-100: #081009;
+  --color-forest-200: #101d12;
+  --color-forest-300: #1a2e1e;
+  --color-forest-400: #27452e;
+  --color-forest-500: #375e40;
+  --color-forest-600: #548660;
+  --color-forest-700: #82ad8b;
+  --color-forest-800: #b7d6bf;
+  --color-forest-900: #e3f0e4;
+
+  /* Forêt — neutre (beiges chauds) */
+  --color-sand-100: #1a1509;
+  --color-sand-200: #282011;
+  --color-sand-300: #3a3019;
+  --color-sand-400: #574a2b;
+  --color-sand-500: #82724a;
+  --color-sand-600: #a89773;
+  --color-sand-700: #c6ba9d;
+  --color-sand-800: #dfd8c4;
+  --color-sand-900: #f2eee2;
+
+  /* Prune — dominante (violets) */
+  --color-plum-100: #0b0510;
+  --color-plum-200: #160c22;
+  --color-plum-300: #251440;
+  --color-plum-400: #3a2060;
+  --color-plum-500: #503080;
+  --color-plum-600: #6d4d99;
+  --color-plum-700: #9a7fc0;
+  --color-plum-800: #bfaedb;
+  --color-plum-900: #e2d9f0;
+
+  /* Prune — neutre (crèmes) */
+  --color-cream-100: #17120a;
+  --color-cream-200: #251d10;
+  --color-cream-300: #372c19;
+  --color-cream-400: #52422a;
+  --color-cream-500: #7d6a45;
+  --color-cream-600: #a3906a;
+  --color-cream-700: #c2b189;
+  --color-cream-800: #e0d6bb;
+  --color-cream-900: #f5f0e3;
+
+  /* Cuivre — dominante (terracotta) */
+  --color-copper-100: #120806;
+  --color-copper-200: #1f0f0a;
+  --color-copper-300: #331a11;
+  --color-copper-400: #4a2718;
+  --color-copper-500: #653722;
+  --color-copper-600: #8a5a3c;
+  --color-copper-700: #b98c6b;
+  --color-copper-800: #dcc0a6;
+  --color-copper-900: #f0e4d6;
+
+  /* Cuivre — neutre (gris bleutés) */
+  --color-steel-100: #0f151c;
+  --color-steel-200: #1a242e;
+  --color-steel-300: #2a3947;
+  --color-steel-400: #445668;
+  --color-steel-500: #607488;
+  --color-steel-600: #8296a9;
+  --color-steel-700: #aec0cf;
+  --color-steel-800: #d3dce4;
+  --color-steel-900: #eef2f5;
+
+  /* Encre — dominante (bleu nuit) */
+  --color-ink-100: #05070c;
+  --color-ink-200: #0b101b;
+  --color-ink-300: #141c2e;
+  --color-ink-400: #1f2a44;
+  --color-ink-500: #2e3d5e;
+  --color-ink-600: #4d6284;
+  --color-ink-700: #748aab;
+  --color-ink-800: #a8b8d0;
+  --color-ink-900: #d6dee9;
+
+  /* Encre — neutre (gris froids) */
+  --color-iron-100: #101113;
+  --color-iron-200: #1a1d20;
+  --color-iron-300: #282c31;
+  --color-iron-400: #3f454c;
+  --color-iron-500: #5b646e;
+  --color-iron-600: #828992;
+  --color-iron-700: #a9afb7;
+  --color-iron-800: #ced3d9;
+  --color-iron-900: #ebeef1;
+
+  /* Brume — dominante (neutres purs) */
+  --color-mist-100: #101010;
+  --color-mist-200: #1c1c1d;
+  --color-mist-300: #303133;
+  --color-mist-400: #47494b;
+  --color-mist-500: #626567;
+  --color-mist-600: #808386;
+  --color-mist-700: #a3a6a8;
+  --color-mist-800: #dcdedf;
+  --color-mist-900: #f0f1f2;
+
+  /* Brume — accent (bleu désaturé) */
+  --color-haze-100: #0e1216;
+  --color-haze-200: #1a2530;
+  --color-haze-300: #2d3d4e;
+  --color-haze-400: #4d637a;
+  --color-haze-500: #67809a;
+  --color-haze-600: #8ba0b3;
+  --color-haze-700: #a8bacb;
+  --color-haze-800: #ccd6e0;
+  --color-haze-900: #e9eef3;
+
+  /* Thèmes hors-marque ajoutés le 2026-11-17 (mêmes règles que le lot 11) ;
+     les noms d'échelles évitent ceux des palettes par défaut de Tailwind. */
+  /* Océan — dominante (turquoise/cyan) */
+  --color-ocean-100: #04141a;
+  --color-ocean-200: #0a242c;
+  --color-ocean-300: #103a45;
+  --color-ocean-400: #175360;
+  --color-ocean-500: #1f6d7d;
+  --color-ocean-600: #3790a3;
+  --color-ocean-700: #66b2c1;
+  --color-ocean-800: #a6d2dc;
+  --color-ocean-900: #daedf1;
+
+  /* Océan — neutre (nacres) */
+  --color-nacre-100: #0c1516;
+  --color-nacre-200: #172425;
+  --color-nacre-300: #243637;
+  --color-nacre-400: #3a5253;
+  --color-nacre-500: #556f70;
+  --color-nacre-600: #7b9698;
+  --color-nacre-700: #a3bcbe;
+  --color-nacre-800: #cfe0e1;
+  --color-nacre-900: #edf5f5;
+
+  /* Rose — dominante (roses poudrés) */
+  --color-blush-100: #180a0e;
+  --color-blush-200: #2a1219;
+  --color-blush-300: #401e2b;
+  --color-blush-400: #5c3144;
+  --color-blush-500: #7d4a60;
+  --color-blush-600: #a0708a;
+  --color-blush-700: #c6a4b4;
+  --color-blush-800: #dfc9d4;
+  --color-blush-900: #f2e8ec;
+
+  /* Rose — neutre (ivoires) */
+  --color-ivory-100: #17130c;
+  --color-ivory-200: #252014;
+  --color-ivory-300: #37301f;
+  --color-ivory-400: #574a36;
+  --color-ivory-500: #7c6d55;
+  --color-ivory-600: #a3947c;
+  --color-ivory-700: #c3b7a2;
+  --color-ivory-800: #e0d9cb;
+  --color-ivory-900: #f6f1e7;
+
+  /* Olive — dominante (verts jauneux) */
+  --color-olive-100: #12130a;
+  --color-olive-200: #1f210f;
+  --color-olive-300: #303318;
+  --color-olive-400: #4a4f24;
+  --color-olive-500: #666d33;
+  --color-olive-600: #878e4c;
+  --color-olive-700: #a8ae77;
+  --color-olive-800: #cbcea5;
+  --color-olive-900: #e9ead7;
+
+  /* Olive — neutre (craies) */
+  --color-chalk-100: #10120d;
+  --color-chalk-200: #1b1e17;
+  --color-chalk-300: #292d24;
+  --color-chalk-400: #40463a;
+  --color-chalk-500: #5c6355;
+  --color-chalk-600: #81887a;
+  --color-chalk-700: #a8aea2;
+  --color-chalk-800: #ced3c9;
+  --color-chalk-900: #eaeee8;
+
+  /* Charbon — dominante (noirs chauds, contraste élevé) */
+  --color-charcoal-100: #0d0b09;
+  --color-charcoal-200: #1a1713;
+  --color-charcoal-300: #2a2620;
+  --color-charcoal-400: #423c34;
+  --color-charcoal-500: #5e564c;
+  --color-charcoal-600: #7d7468;
+  --color-charcoal-700: #a89e93;
+  --color-charcoal-800: #cec7bd;
+  --color-charcoal-900: #eae5dd;
+
+  /* Charbon — neutre (gris cendre chauds) */
+  --color-ash-100: #12100b;
+  --color-ash-200: #201d15;
+  --color-ash-300: #2f2b21;
+  --color-ash-400: #474136;
+  --color-ash-500: #635c4f;
+  --color-ash-600: #857d6f;
+  --color-ash-700: #a9a294;
+  --color-ash-800: #d2ccbf;
+  --color-ash-900: #f1eee6;
 }
 
+/* Héritage — palette de marque, mode clair (jeu par défaut, source de la préférence :
+   `data-palette='heritage'` est toujours posé sur `<html>` par le moteur de thème). */
 :root {
   /* Couleurs principales */
   /* --background: var(--color-saffron-600); ok */
@@ -95,8 +299,16 @@
   --muted-foreground: var(--color-dark-slate-gray);
   --accent: var(--color-dark-goldenrod-800); /* ok */
   --accent-foreground: var(--color-dark-slate-gray-500);
-  --destructive: var(--color-red-400); /* ok */
+  --destructive: #991b1b;
   --destructive-foreground: var(--color-white); /* ok */
+  --success: var(--color-dark-slate-gray-300);
+  --warning: var(--color-dark-goldenrod-300);
+  --info: var(--color-cerulean-300);
+  /* Log messages are shown on the darker sidebar surface. */
+  --log-info: var(--color-eggshell-900);
+  --log-error: #ffe4e6;
+  --log-warning: var(--color-saffron-900);
+  --log-success: var(--color-dark-slate-gray-900);
 
   --border: var(--color-dark-slate-gray-500);
   --input: var(--color-dark-slate-gray-500);
@@ -123,43 +335,1072 @@
   --cursor-highlighter: url('/cursors/highlighter.svg') 2 21, auto;
 }
 
-.dark {
-  --background: var(--color-dark-slate-gray-500);
-  --foreground: var(--color-dark-goldenrod-500);
-  --foreground-secondary: var(--color-dark-goldenrod-400);
-  --foreground-panel: var(--color-dark-goldenrod-500);
-  --foreground-button: var(--color-dark-goldenrod-500);
+/* Ordre de cascade des jeux de tokens (lot 10, gabarit appliqué par le lot 11) :
+   1. `:root` — palette héritage, mode clair (valeurs par défaut) ;
+   2. `[data-palette='…']` — inséré après `:root`, overrides clair d'une palette hors héritage ;
+   3. `[data-theme='dark']` — palette héritage, mode sombre (bloc ci-dessous) ;
+   4. `[data-palette='…'][data-theme='dark']` — inséré après `[data-theme='dark']`,
+      overrides sombres d'une palette hors héritage (plus spécifique que 2 et 3).
+   Chaque bloc doit être complet et explicite : tous les tokens sémantiques y sont
+   redéfinis, pour un ordre de cascade déterministe. Les curseurs, le rayon et les
+   bindings `@theme inline` restent dans `:root` / `@theme`. */
 
-  --card: var(--color-saffron-500);
-  --card-foreground: var(--color-dark-slate-gray-500);
+/* Forêt (`foret`) — thème hors-marque, mode clair : verts profonds (forest) et beiges chauds (sand), ambiance organique */
+[data-palette='foret'] {
+  --background: var(--color-forest-900);
+  --foreground: var(--color-sand-100);
+  --foreground-secondary: var(--color-sand-100);
+  --foreground-button: var(--color-sand-900);
+  --foreground-panel: var(--color-forest-400);
 
-  --popover: var(--color-saffron-500);
-  --popover-foreground: var(--color-dark-slate-gray-500);
+  --card: var(--color-sand-600);
+  --card-hover: var(--color-sand-700);
+  --card-foreground: var(--color-sand-400);
 
-  --primary: var(--color-dark-goldenrod-400);
-  --primary-foreground: var(--color-dark-slate-gray-500);
+  --popover: var(--color-sand-800);
+  --popover-foreground: var(--color-sand-200);
 
-  --secondary: var(--color-saffron-500);
-  --secondary-foreground: var(--color-dark-slate-gray-500);
+  --primary: var(--color-sand-800);
+  --primary-foreground: var(--color-forest-300);
+  --secondary: var(--color-forest-700);
+  --secondary-foreground: var(--color-sand-200);
+  --muted: var(--color-forest-700);
+  --muted-foreground: var(--color-sand-200);
+  --accent: var(--color-sand-700);
+  --accent-foreground: var(--color-sand-200);
+  --destructive: #a01c1c;
+  --destructive-foreground: var(--color-white);
+  --success: #46610c;
+  --warning: #7a5400;
+  --info: #1d5a74;
 
-  --muted: var(--color-dark-slate-gray-500);
-  --muted-foreground: var(--color-dark-goldenrod-500);
+  --log-info: #f4f1e8;
+  --log-error: #ffe4e6;
+  --log-warning: #fbecc8;
+  --log-success: #d8efe0;
 
-  --accent: var(--color-dark-goldenrod-400);
-  --accent-foreground: var(--color-dark-slate-gray-500);
+  --border: var(--color-forest-300);
+  --input: var(--color-forest-300);
+  --ring: var(--color-sand-400);
 
-  --destructive: var(--color-saffron-500);
-  --destructive-foreground: var(--color-dark-slate-gray-500);
+  --chart-1: var(--color-forest-400);
+  --chart-2: var(--color-forest-600);
+  --chart-3: var(--color-sand-300);
+  --chart-4: var(--color-sand-500);
+  --chart-5: var(--color-forest-500);
 
-  --border: var(--color-dark-slate-gray-500);
-  --input: var(--color-dark-slate-gray-500);
-  --ring: var(--color-dark-goldenrod-400);
+  --sidebar: var(--color-forest-100);
+  --sidebar-foreground: var(--color-sand-900);
+  --sidebar-primary: var(--color-sand-400);
+  --sidebar-primary-foreground: var(--color-sand-100);
+  --sidebar-accent: var(--color-forest-700);
+  --sidebar-accent-foreground: var(--color-sand-100);
+  --sidebar-border: var(--color-forest-200);
+  --sidebar-ring: var(--color-sand-500);
+}
+
+/* Prune (`prune`) — thème hors-marque, mode clair : violets (plum) et crèmes (cream), ambiance feutrée */
+[data-palette='prune'] {
+  --background: var(--color-plum-900);
+  --foreground: var(--color-cream-100);
+  --foreground-secondary: var(--color-cream-100);
+  --foreground-button: var(--color-cream-900);
+  --foreground-panel: var(--color-plum-400);
+
+  --card: var(--color-cream-600);
+  --card-hover: var(--color-cream-700);
+  --card-foreground: var(--color-cream-400);
+
+  --popover: var(--color-cream-800);
+  --popover-foreground: var(--color-cream-200);
+
+  --primary: var(--color-cream-800);
+  --primary-foreground: var(--color-plum-300);
+  --secondary: var(--color-plum-700);
+  --secondary-foreground: var(--color-cream-200);
+  --muted: var(--color-plum-700);
+  --muted-foreground: var(--color-cream-200);
+  --accent: var(--color-cream-700);
+  --accent-foreground: var(--color-cream-200);
+  --destructive: #9a3412;
+  --destructive-foreground: var(--color-white);
+  --success: #14653a;
+  --warning: #7a5400;
+  --info: #0c5f86;
+
+  --log-info: #f4f1e8;
+  --log-error: #ffe4e6;
+  --log-warning: #fbecc8;
+  --log-success: #d8efe0;
+
+  --border: var(--color-plum-300);
+  --input: var(--color-plum-300);
+  --ring: var(--color-cream-400);
+
+  --chart-1: var(--color-plum-400);
+  --chart-2: var(--color-plum-600);
+  --chart-3: var(--color-cream-300);
+  --chart-4: var(--color-cream-500);
+  --chart-5: var(--color-plum-500);
+
+  --sidebar: var(--color-plum-200);
+  --sidebar-foreground: var(--color-cream-900);
+  --sidebar-primary: var(--color-cream-400);
+  --sidebar-primary-foreground: var(--color-cream-100);
+  --sidebar-accent: var(--color-plum-700);
+  --sidebar-accent-foreground: var(--color-cream-100);
+  --sidebar-border: var(--color-plum-300);
+  --sidebar-ring: var(--color-cream-500);
+}
+
+/* Cuivre (`cuivre`) — thème hors-marque, mode clair : terracotta (copper) posé sur gris bleutés (steel), ambiance chaleureuse */
+[data-palette='cuivre'] {
+  --background: var(--color-copper-900);
+  --foreground: var(--color-steel-100);
+  --foreground-secondary: var(--color-steel-100);
+  --foreground-button: var(--color-steel-900);
+  --foreground-panel: var(--color-copper-400);
+
+  --card: var(--color-steel-600);
+  --card-hover: var(--color-steel-700);
+  --card-foreground: var(--color-steel-400);
+
+  --popover: var(--color-steel-800);
+  --popover-foreground: var(--color-steel-200);
+
+  --primary: var(--color-steel-800);
+  --primary-foreground: var(--color-copper-300);
+  --secondary: var(--color-copper-700);
+  --secondary-foreground: var(--color-steel-200);
+  --muted: var(--color-copper-700);
+  --muted-foreground: var(--color-steel-200);
+  --accent: var(--color-steel-700);
+  --accent-foreground: var(--color-steel-200);
+  --destructive: #b3261e;
+  --destructive-foreground: var(--color-white);
+  --success: #14653a;
+  --warning: #6b5b00;
+  --info: #1d4ed8;
+
+  --log-info: #f4f1e8;
+  --log-error: #ffe4e6;
+  --log-warning: #fbecc8;
+  --log-success: #d8efe0;
+
+  --border: var(--color-copper-300);
+  --input: var(--color-copper-300);
+  --ring: var(--color-steel-400);
+
+  --chart-1: var(--color-copper-400);
+  --chart-2: var(--color-copper-600);
+  --chart-3: var(--color-steel-300);
+  --chart-4: var(--color-steel-500);
+  --chart-5: var(--color-copper-500);
+
+  --sidebar: var(--color-steel-200);
+  --sidebar-foreground: var(--color-steel-900);
+  --sidebar-primary: var(--color-steel-400);
+  --sidebar-primary-foreground: var(--color-steel-100);
+  --sidebar-accent: var(--color-copper-700);
+  --sidebar-accent-foreground: var(--color-steel-100);
+  --sidebar-border: var(--color-steel-300);
+  --sidebar-ring: var(--color-steel-500);
+}
+
+/* Encre (`encre`) — thème hors-marque, mode clair : bleu nuit (ink) et gris froids (iron), ambiance sobre éditoriale */
+[data-palette='encre'] {
+  --background: var(--color-ink-900);
+  --foreground: var(--color-iron-100);
+  --foreground-secondary: var(--color-iron-100);
+  --foreground-button: var(--color-iron-900);
+  --foreground-panel: var(--color-ink-400);
+
+  --card: var(--color-iron-600);
+  --card-hover: var(--color-iron-700);
+  --card-foreground: var(--color-iron-400);
+
+  --popover: var(--color-iron-800);
+  --popover-foreground: var(--color-iron-200);
+
+  --primary: var(--color-iron-800);
+  --primary-foreground: var(--color-ink-300);
+  --secondary: var(--color-ink-700);
+  --secondary-foreground: var(--color-iron-200);
+  --muted: var(--color-ink-700);
+  --muted-foreground: var(--color-iron-200);
+  --accent: var(--color-iron-700);
+  --accent-foreground: var(--color-iron-200);
+  --destructive: #991b1b;
+  --destructive-foreground: var(--color-white);
+  --success: #0e6440;
+  --warning: #7a5400;
+  --info: #0c5a76;
+
+  --log-info: #f4f1e8;
+  --log-error: #ffe4e6;
+  --log-warning: #fbecc8;
+  --log-success: #d8efe0;
+
+  --border: var(--color-ink-300);
+  --input: var(--color-ink-300);
+  --ring: var(--color-iron-400);
+
+  --chart-1: var(--color-ink-400);
+  --chart-2: var(--color-ink-600);
+  --chart-3: var(--color-iron-300);
+  --chart-4: var(--color-iron-500);
+  --chart-5: var(--color-ink-500);
+
+  --sidebar: var(--color-ink-200);
+  --sidebar-foreground: var(--color-iron-900);
+  --sidebar-primary: var(--color-iron-400);
+  --sidebar-primary-foreground: var(--color-iron-100);
+  --sidebar-accent: var(--color-ink-700);
+  --sidebar-accent-foreground: var(--color-iron-100);
+  --sidebar-border: var(--color-ink-300);
+  --sidebar-ring: var(--color-iron-500);
+}
+
+/* Brume (`brume`) — thème hors-marque, mode clair : neutres purs (mist), accent bleu désaturé (haze), ambiance institutionnelle */
+[data-palette='brume'] {
+  --background: var(--color-mist-900);
+  --foreground: var(--color-mist-100);
+  --foreground-secondary: var(--color-mist-100);
+  --foreground-button: var(--color-mist-900);
+  --foreground-panel: var(--color-haze-300);
+
+  --card: var(--color-mist-600);
+  --card-hover: var(--color-mist-700);
+  --card-foreground: var(--color-mist-400);
+
+  --popover: var(--color-mist-800);
+  --popover-foreground: var(--color-haze-300);
+
+  --primary: var(--color-mist-800);
+  --primary-foreground: var(--color-haze-300);
+  --secondary: var(--color-haze-600);
+  --secondary-foreground: var(--color-mist-200);
+  --muted: var(--color-haze-600);
+  --muted-foreground: var(--color-mist-200);
+  --accent: var(--color-mist-700);
+  --accent-foreground: var(--color-mist-200);
+  --destructive: #991b1b;
+  --destructive-foreground: var(--color-white);
+  --success: #14653a;
+  --warning: #7a5400;
+  --info: #2a5679;
+
+  --log-info: #f4f1e8;
+  --log-error: #ffe4e6;
+  --log-warning: #fbecc8;
+  --log-success: #d8efe0;
+
+  --border: var(--color-haze-300);
+  --input: var(--color-haze-300);
+  --ring: var(--color-haze-400);
+
+  --chart-1: var(--color-mist-400);
+  --chart-2: var(--color-haze-500);
+  --chart-3: var(--color-mist-300);
+  --chart-4: var(--color-mist-500);
+  --chart-5: var(--color-haze-400);
+
+  --sidebar: var(--color-haze-200);
+  --sidebar-foreground: var(--color-mist-900);
+  --sidebar-primary: var(--color-mist-400);
+  --sidebar-primary-foreground: var(--color-mist-100);
+  --sidebar-accent: var(--color-haze-600);
+  --sidebar-accent-foreground: var(--color-mist-100);
+  --sidebar-border: var(--color-haze-300);
+  --sidebar-ring: var(--color-mist-500);
+}
+
+/* Océan (`ocean`) — thème hors-marque, mode clair : turquoise (ocean) posé sur nacres,
+   ambiance marine ; `info` file vers le bleu profond (collision avec la dominante cyan). */
+[data-palette='ocean'] {
+  --background: var(--color-ocean-900);
+  --foreground: var(--color-nacre-100);
+  --foreground-secondary: var(--color-nacre-100);
+  --foreground-button: var(--color-nacre-900);
+  --foreground-panel: var(--color-ocean-400);
+
+  --card: var(--color-nacre-600);
+  --card-hover: var(--color-nacre-700);
+  --card-foreground: var(--color-nacre-400);
+
+  --popover: var(--color-nacre-800);
+  --popover-foreground: var(--color-nacre-200);
+
+  --primary: var(--color-nacre-800);
+  --primary-foreground: var(--color-ocean-300);
+  --secondary: var(--color-ocean-700);
+  --secondary-foreground: var(--color-nacre-200);
+  --muted: var(--color-ocean-700);
+  --muted-foreground: var(--color-nacre-200);
+  --accent: var(--color-nacre-700);
+  --accent-foreground: var(--color-nacre-200);
+  --destructive: #b3261e;
+  --destructive-foreground: var(--color-white);
+  --success: #14653a;
+  --warning: #7a5400;
+  --info: #1d4ed8;
+
+  --log-info: #f4f1e8;
+  --log-error: #ffe4e6;
+  --log-warning: #fbecc8;
+  --log-success: #d8efe0;
+
+  --border: var(--color-ocean-300);
+  --input: var(--color-ocean-300);
+  --ring: var(--color-nacre-400);
+
+  --chart-1: var(--color-ocean-400);
+  --chart-2: var(--color-ocean-600);
+  --chart-3: var(--color-nacre-300);
+  --chart-4: var(--color-nacre-500);
+  --chart-5: var(--color-ocean-500);
+
+  --sidebar: var(--color-nacre-200);
+  --sidebar-foreground: var(--color-nacre-900);
+  --sidebar-primary: var(--color-nacre-400);
+  --sidebar-primary-foreground: var(--color-nacre-100);
+  --sidebar-accent: var(--color-ocean-700);
+  --sidebar-accent-foreground: var(--color-nacre-100);
+  --sidebar-border: var(--color-nacre-300);
+  --sidebar-ring: var(--color-nacre-500);
+}
+
+/* Rose (`rose`) — thème hors-marque, mode clair : roses poudrés (blush) posés sur
+   ivoires, ambiance douce ; `destructive` file vers un rouge franc saturé (la dominante
+   rose pâle absorberait un rouge discret). */
+[data-palette='rose'] {
+  --background: var(--color-blush-900);
+  --foreground: var(--color-ivory-100);
+  --foreground-secondary: var(--color-ivory-100);
+  --foreground-button: var(--color-ivory-900);
+  --foreground-panel: var(--color-blush-400);
+
+  --card: var(--color-ivory-600);
+  --card-hover: var(--color-ivory-700);
+  --card-foreground: var(--color-ivory-400);
+
+  --popover: var(--color-ivory-800);
+  --popover-foreground: var(--color-ivory-200);
+
+  --primary: var(--color-ivory-800);
+  --primary-foreground: var(--color-blush-300);
+  --secondary: var(--color-blush-700);
+  --secondary-foreground: var(--color-ivory-200);
+  --muted: var(--color-blush-700);
+  --muted-foreground: var(--color-ivory-200);
+  --accent: var(--color-ivory-700);
+  --accent-foreground: var(--color-ivory-200);
+  --destructive: #b3261e;
+  --destructive-foreground: var(--color-white);
+  --success: #14653a;
+  --warning: #7a5400;
+  --info: #0c5f86;
+
+  --log-info: #f4f1e8;
+  --log-error: #ffe4e6;
+  --log-warning: #fbecc8;
+  --log-success: #d8efe0;
+
+  --border: var(--color-blush-300);
+  --input: var(--color-blush-300);
+  --ring: var(--color-ivory-400);
+
+  --chart-1: var(--color-blush-400);
+  --chart-2: var(--color-blush-600);
+  --chart-3: var(--color-ivory-300);
+  --chart-4: var(--color-ivory-500);
+  --chart-5: var(--color-blush-500);
+
+  --sidebar: var(--color-ivory-200);
+  --sidebar-foreground: var(--color-ivory-900);
+  --sidebar-primary: var(--color-ivory-400);
+  --sidebar-primary-foreground: var(--color-ivory-100);
+  --sidebar-accent: var(--color-blush-700);
+  --sidebar-accent-foreground: var(--color-ivory-100);
+  --sidebar-border: var(--color-ivory-300);
+  --sidebar-ring: var(--color-ivory-500);
+}
+
+/* Olive (`olive`) — thème hors-marque, mode clair : verts jauneux (olive) posés sur
+   craies, ambiance champêtre ; `success` file vers un vert profond vrai et `warning`
+   vers un brun orangé (deux collisions avec la dominante jaune-vert). */
+[data-palette='olive'] {
+  --background: var(--color-olive-900);
+  --foreground: var(--color-chalk-100);
+  --foreground-secondary: var(--color-chalk-100);
+  --foreground-button: var(--color-chalk-900);
+  --foreground-panel: var(--color-olive-400);
+
+  --card: var(--color-chalk-600);
+  --card-hover: var(--color-chalk-700);
+  --card-foreground: var(--color-chalk-400);
+
+  --popover: var(--color-chalk-800);
+  --popover-foreground: var(--color-chalk-200);
+
+  --primary: var(--color-chalk-800);
+  --primary-foreground: var(--color-olive-300);
+  --secondary: var(--color-olive-700);
+  --secondary-foreground: var(--color-chalk-200);
+  --muted: var(--color-olive-700);
+  --muted-foreground: var(--color-chalk-200);
+  --accent: var(--color-chalk-700);
+  --accent-foreground: var(--color-chalk-200);
+  --destructive: #991b1b;
+  --destructive-foreground: var(--color-white);
+  --success: #14532d;
+  --warning: #7c2d12;
+  --info: #0c5f86;
+
+  --log-info: #f4f1e8;
+  --log-error: #ffe4e6;
+  --log-warning: #fbecc8;
+  --log-success: #d8efe0;
+
+  --border: var(--color-olive-300);
+  --input: var(--color-olive-300);
+  --ring: var(--color-chalk-400);
+
+  --chart-1: var(--color-olive-400);
+  --chart-2: var(--color-olive-600);
+  --chart-3: var(--color-chalk-300);
+  --chart-4: var(--color-chalk-500);
+  --chart-5: var(--color-olive-500);
+
+  --sidebar: var(--color-chalk-200);
+  --sidebar-foreground: var(--color-chalk-900);
+  --sidebar-primary: var(--color-chalk-400);
+  --sidebar-primary-foreground: var(--color-chalk-100);
+  --sidebar-accent: var(--color-olive-700);
+  --sidebar-accent-foreground: var(--color-chalk-100);
+  --sidebar-border: var(--color-chalk-300);
+  --sidebar-ring: var(--color-chalk-500);
+}
+
+/* Charbon (`charbon`) — thème hors-marque, mode clair : noirs chauds (charcoal) et gris
+   cendre (ash), ambiance muséale à contraste élevé ; une dominante et un neutre tous deux
+   achromatiques chauds, les rôles colorés restent les seuls porteurs de chroma. */
+[data-palette='charbon'] {
+  --background: var(--color-ash-900);
+  --foreground: var(--color-charcoal-100);
+  --foreground-secondary: var(--color-charcoal-100);
+  --foreground-button: var(--color-ash-900);
+  --foreground-panel: var(--color-charcoal-400);
+
+  --card: var(--color-ash-600);
+  --card-hover: var(--color-ash-700);
+  --card-foreground: var(--color-ash-400);
+
+  --popover: var(--color-ash-800);
+  --popover-foreground: var(--color-charcoal-200);
+
+  --primary: var(--color-ash-800);
+  --primary-foreground: var(--color-charcoal-300);
+  --secondary: var(--color-charcoal-700);
+  --secondary-foreground: var(--color-ash-100);
+  --muted: var(--color-charcoal-700);
+  --muted-foreground: var(--color-ash-100);
+  --accent: var(--color-charcoal-700);
+  --accent-foreground: var(--color-ash-100);
+  --destructive: #7f1d1d;
+  --destructive-foreground: var(--color-white);
+  --success: #14532d;
+  --warning: #713f12;
+  --info: #1e40af;
+
+  --log-info: #f4f1e8;
+  --log-error: #ffe4e6;
+  --log-warning: #fbecc8;
+  --log-success: #d8efe0;
+
+  --border: var(--color-charcoal-300);
+  --input: var(--color-charcoal-300);
+  --ring: var(--color-charcoal-500);
+
+  --chart-1: var(--color-charcoal-400);
+  --chart-2: var(--color-charcoal-600);
+  --chart-3: var(--color-ash-300);
+  --chart-4: var(--color-ash-500);
+  --chart-5: var(--color-charcoal-500);
+
+  --sidebar: var(--color-charcoal-200);
+  --sidebar-foreground: var(--color-ash-900);
+  --sidebar-primary: var(--color-charcoal-400);
+  --sidebar-primary-foreground: var(--color-ash-100);
+  --sidebar-accent: var(--color-charcoal-700);
+  --sidebar-accent-foreground: var(--color-charcoal-100);
+  --sidebar-border: var(--color-charcoal-300);
+  --sidebar-ring: var(--color-charcoal-600);
+}
+
+/* Héritage — mode sombre. Fonds dans les nuances sombres des échelles de marque,
+   textes dans leurs nuances claires, tokens d'état éclaircis ; `destructive-foreground`
+   est une couleur sombre posée sur un rouge clair. Contrastes AA mesurés par
+   `src/components/common/__tests__/themeContrast.test.ts`. */
+[data-theme='dark'] {
+  /* Couleurs principales */
+  --background: var(--color-dark-slate-gray-200);
+  --foreground: var(--color-saffron-600);
+  --foreground-secondary: var(--color-saffron-500);
+  --foreground-button: var(--color-dark-slate-gray-100);
+  --foreground-panel: var(--color-cerulean-700);
+
+  --card: var(--color-dark-goldenrod-200);
+  --card-hover: var(--color-dark-goldenrod-300);
+  --card-foreground: var(--color-dark-goldenrod-600);
+
+  --popover: var(--color-dark-slate-gray-300);
+  --popover-foreground: var(--color-saffron-600);
+
+  --primary: var(--color-dark-slate-gray-300);
+  --primary-foreground: var(--color-saffron-500);
+  --secondary: var(--color-dark-slate-gray-400);
+  --secondary-foreground: var(--color-saffron-500);
+  --muted: var(--color-dark-slate-gray-300);
+  --muted-foreground: var(--color-dark-goldenrod-600);
+  --accent: var(--color-dark-goldenrod-200);
+  --accent-foreground: var(--color-saffron-600);
+  --destructive: #f87171;
+  --destructive-foreground: var(--color-dark-slate-gray-100);
+  --success: var(--color-dark-slate-gray-700);
+  --warning: var(--color-dark-goldenrod-600);
+  --info: var(--color-cerulean-700);
+  /* Log messages are shown on the darker sidebar surface. */
+  --log-info: var(--color-eggshell-900);
+  --log-error: #ffe4e6;
+  --log-warning: var(--color-saffron-900);
+  --log-success: var(--color-dark-slate-gray-900);
+
+  --border: var(--color-cerulean-400);
+  --input: var(--color-cerulean-400);
+  --ring: var(--color-dark-goldenrod-600);
+
+  --chart-1: var(--color-saffron-600);
+  --chart-2: var(--color-cerulean-600);
+  --chart-3: var(--color-dark-slate-gray-700);
+  --chart-4: var(--color-dark-goldenrod-600);
+  --chart-5: var(--color-saffron-400);
+
+  --sidebar: var(--color-cerulean-200);
+  --sidebar-foreground: var(--color-saffron-600);
+  --sidebar-primary: var(--color-saffron-500);
+  --sidebar-primary-foreground: var(--color-dark-slate-gray-100);
+  --sidebar-accent: var(--color-dark-goldenrod-300);
+  --sidebar-accent-foreground: var(--color-saffron-600);
+  --sidebar-border: var(--color-cerulean-400);
+  --sidebar-ring: var(--color-dark-goldenrod-600);
+}
+
+/* Forêt (`foret`) — thème hors-marque, mode sombre : fonds sombres, textes
+   clairs, tokens d'état éclaircis (règles du lot 10). */
+[data-palette='foret'][data-theme='dark'] {
+  --background: var(--color-forest-200);
+  --foreground: var(--color-forest-800);
+  --foreground-secondary: var(--color-forest-700);
+  --foreground-button: var(--color-forest-100);
+  --foreground-panel: var(--color-forest-700);
+
+  --card: var(--color-sand-200);
+  --card-hover: var(--color-sand-300);
+  --card-foreground: var(--color-sand-700);
+
+  --popover: var(--color-forest-300);
+  --popover-foreground: var(--color-forest-800);
+
+  --primary: var(--color-forest-300);
+  --primary-foreground: var(--color-forest-800);
+  --secondary: var(--color-forest-400);
+  --secondary-foreground: var(--color-forest-800);
+  --muted: var(--color-forest-300);
+  --muted-foreground: var(--color-sand-700);
+  --accent: var(--color-sand-200);
+  --accent-foreground: var(--color-forest-800);
+  --destructive: #f87171;
+  --destructive-foreground: var(--color-forest-100);
+  --success: #b6e34d;
+  --warning: #eab308;
+  --info: #7cc4e8;
+
+  --log-info: #f4f1e8;
+  --log-error: #ffe4e6;
+  --log-warning: #fbecc8;
+  --log-success: #d8efe0;
+
+  --border: var(--color-forest-500);
+  --input: var(--color-forest-500);
+  --ring: var(--color-sand-700);
+
+  --chart-1: var(--color-forest-600);
+  --chart-2: var(--color-sand-600);
+  --chart-3: var(--color-forest-400);
+  --chart-4: var(--color-sand-400);
+  --chart-5: var(--color-forest-500);
+
+  --sidebar: var(--color-forest-100);
+  --sidebar-foreground: var(--color-forest-800);
+  --sidebar-primary: var(--color-sand-700);
+  --sidebar-primary-foreground: var(--color-forest-100);
+  --sidebar-accent: var(--color-forest-300);
+  --sidebar-accent-foreground: var(--color-forest-800);
+  --sidebar-border: var(--color-forest-400);
+  --sidebar-ring: var(--color-sand-700);
+}
+
+/* Prune (`prune`) — thème hors-marque, mode sombre : fonds sombres, textes
+   clairs, tokens d'état éclaircis (règles du lot 10). */
+[data-palette='prune'][data-theme='dark'] {
+  --background: var(--color-plum-200);
+  --foreground: var(--color-plum-800);
+  --foreground-secondary: var(--color-plum-700);
+  --foreground-button: var(--color-plum-100);
+  --foreground-panel: var(--color-plum-700);
+
+  --card: var(--color-cream-200);
+  --card-hover: var(--color-cream-300);
+  --card-foreground: var(--color-cream-700);
+
+  --popover: var(--color-plum-300);
+  --popover-foreground: var(--color-plum-800);
+
+  --primary: var(--color-plum-300);
+  --primary-foreground: var(--color-plum-800);
+  --secondary: var(--color-plum-400);
+  --secondary-foreground: var(--color-plum-800);
+  --muted: var(--color-plum-300);
+  --muted-foreground: var(--color-cream-700);
+  --accent: var(--color-cream-200);
+  --accent-foreground: var(--color-plum-800);
+  --destructive: #fb8a5e;
+  --destructive-foreground: var(--color-plum-100);
+  --success: #5fd39a;
+  --warning: #f0c33c;
+  --info: #6fc9ef;
+
+  --log-info: #f4f1e8;
+  --log-error: #ffe4e6;
+  --log-warning: #fbecc8;
+  --log-success: #d8efe0;
+
+  --border: var(--color-plum-500);
+  --input: var(--color-plum-500);
+  --ring: var(--color-cream-700);
+
+  --chart-1: var(--color-plum-600);
+  --chart-2: var(--color-cream-600);
+  --chart-3: var(--color-plum-400);
+  --chart-4: var(--color-cream-400);
+  --chart-5: var(--color-plum-500);
+
+  --sidebar: var(--color-plum-100);
+  --sidebar-foreground: var(--color-plum-800);
+  --sidebar-primary: var(--color-cream-700);
+  --sidebar-primary-foreground: var(--color-plum-100);
+  --sidebar-accent: var(--color-plum-300);
+  --sidebar-accent-foreground: var(--color-plum-800);
+  --sidebar-border: var(--color-plum-400);
+  --sidebar-ring: var(--color-cream-700);
+}
+
+/* Cuivre (`cuivre`) — thème hors-marque, mode sombre : fonds sombres, textes
+   clairs, tokens d'état éclaircis (règles du lot 10). */
+[data-palette='cuivre'][data-theme='dark'] {
+  --background: var(--color-copper-200);
+  --foreground: var(--color-copper-800);
+  --foreground-secondary: var(--color-copper-700);
+  --foreground-button: var(--color-copper-100);
+  --foreground-panel: var(--color-copper-700);
+
+  --card: var(--color-steel-200);
+  --card-hover: var(--color-steel-300);
+  --card-foreground: var(--color-steel-600);
+
+  --popover: var(--color-copper-300);
+  --popover-foreground: var(--color-copper-800);
+
+  --primary: var(--color-copper-300);
+  --primary-foreground: var(--color-copper-800);
+  --secondary: var(--color-copper-400);
+  --secondary-foreground: var(--color-copper-800);
+  --muted: var(--color-copper-300);
+  --muted-foreground: var(--color-steel-600);
+  --accent: var(--color-steel-200);
+  --accent-foreground: var(--color-copper-800);
+  --destructive: #f87171;
+  --destructive-foreground: var(--color-copper-100);
+  --success: #5fd39a;
+  --warning: #facc15;
+  --info: #7cc4e8;
+
+  --log-info: #f4f1e8;
+  --log-error: #ffe4e6;
+  --log-warning: #fbecc8;
+  --log-success: #d8efe0;
+
+  --border: var(--color-copper-500);
+  --input: var(--color-copper-500);
+  --ring: var(--color-steel-700);
+
+  --chart-1: var(--color-copper-600);
+  --chart-2: var(--color-steel-600);
+  --chart-3: var(--color-copper-400);
+  --chart-4: var(--color-steel-400);
+  --chart-5: var(--color-copper-500);
+
+  --sidebar: var(--color-copper-100);
+  --sidebar-foreground: var(--color-copper-800);
+  --sidebar-primary: var(--color-steel-700);
+  --sidebar-primary-foreground: var(--color-copper-100);
+  --sidebar-accent: var(--color-copper-300);
+  --sidebar-accent-foreground: var(--color-copper-800);
+  --sidebar-border: var(--color-copper-400);
+  --sidebar-ring: var(--color-steel-700);
+}
+
+/* Encre (`encre`) — thème hors-marque, mode sombre : fonds sombres, textes
+   clairs, tokens d'état éclaircis (règles du lot 10). */
+[data-palette='encre'][data-theme='dark'] {
+  --background: var(--color-ink-200);
+  --foreground: var(--color-ink-800);
+  --foreground-secondary: var(--color-ink-700);
+  --foreground-button: var(--color-ink-100);
+  --foreground-panel: var(--color-ink-700);
+
+  --card: var(--color-iron-200);
+  --card-hover: var(--color-iron-300);
+  --card-foreground: var(--color-iron-700);
+
+  --popover: var(--color-ink-300);
+  --popover-foreground: var(--color-ink-800);
+
+  --primary: var(--color-ink-300);
+  --primary-foreground: var(--color-ink-800);
+  --secondary: var(--color-ink-400);
+  --secondary-foreground: var(--color-ink-800);
+  --muted: var(--color-ink-300);
+  --muted-foreground: var(--color-iron-700);
+  --accent: var(--color-iron-200);
+  --accent-foreground: var(--color-ink-800);
+  --destructive: #f87171;
+  --destructive-foreground: var(--color-ink-100);
+  --success: #5fd39a;
+  --warning: #eab308;
+  --info: #4fd6e8;
+
+  --log-info: #f4f1e8;
+  --log-error: #ffe4e6;
+  --log-warning: #fbecc8;
+  --log-success: #d8efe0;
+
+  --border: var(--color-ink-500);
+  --input: var(--color-ink-500);
+  --ring: var(--color-iron-700);
+
+  --chart-1: var(--color-ink-600);
+  --chart-2: var(--color-iron-600);
+  --chart-3: var(--color-ink-400);
+  --chart-4: var(--color-iron-400);
+  --chart-5: var(--color-ink-500);
+
+  --sidebar: var(--color-ink-100);
+  --sidebar-foreground: var(--color-ink-800);
+  --sidebar-primary: var(--color-iron-700);
+  --sidebar-primary-foreground: var(--color-ink-100);
+  --sidebar-accent: var(--color-ink-300);
+  --sidebar-accent-foreground: var(--color-ink-800);
+  --sidebar-border: var(--color-ink-400);
+  --sidebar-ring: var(--color-iron-700);
+}
+
+/* Brume (`brume`) — thème hors-marque, mode sombre : fonds sombres, textes
+   clairs, tokens d'état éclaircis (règles du lot 10). */
+[data-palette='brume'][data-theme='dark'] {
+  --background: var(--color-mist-200);
+  --foreground: var(--color-mist-800);
+  --foreground-secondary: var(--color-mist-700);
+  --foreground-button: var(--color-mist-100);
+  --foreground-panel: var(--color-haze-700);
+
+  --card: var(--color-mist-200);
+  --card-hover: var(--color-mist-300);
+  --card-foreground: var(--color-mist-700);
+
+  --popover: var(--color-mist-300);
+  --popover-foreground: var(--color-haze-700);
+
+  --primary: var(--color-mist-300);
+  --primary-foreground: var(--color-haze-700);
+  --secondary: var(--color-haze-300);
+  --secondary-foreground: var(--color-mist-800);
+  --muted: var(--color-mist-300);
+  --muted-foreground: var(--color-mist-700);
+  --accent: var(--color-mist-200);
+  --accent-foreground: var(--color-mist-800);
+  --destructive: #f87171;
+  --destructive-foreground: var(--color-mist-100);
+  --success: #5fd39a;
+  --warning: #eab308;
+  --info: #7fb2e5;
+
+  --log-info: #f4f1e8;
+  --log-error: #ffe4e6;
+  --log-warning: #fbecc8;
+  --log-success: #d8efe0;
+
+  --border: var(--color-haze-500);
+  --input: var(--color-haze-500);
+  --ring: var(--color-haze-600);
+
+  --chart-1: var(--color-mist-600);
+  --chart-2: var(--color-mist-600);
+  --chart-3: var(--color-mist-400);
+  --chart-4: var(--color-mist-400);
+  --chart-5: var(--color-mist-500);
+
+  --sidebar: var(--color-haze-100);
+  --sidebar-foreground: var(--color-mist-800);
+  --sidebar-primary: var(--color-mist-700);
+  --sidebar-primary-foreground: var(--color-mist-100);
+  --sidebar-accent: var(--color-haze-300);
+  --sidebar-accent-foreground: var(--color-haze-800);
+  --sidebar-border: var(--color-haze-400);
+  --sidebar-ring: var(--color-mist-700);
+}
+
+/* Océan (`ocean`) — thème hors-marque, mode sombre : fonds sombres, textes
+   clairs, tokens d'état éclaircis (règles du lot 10) ; `info` file vers le bleu
+   (le cyan sur turquoise n'existerait pas). */
+[data-palette='ocean'][data-theme='dark'] {
+  --background: var(--color-ocean-200);
+  --foreground: var(--color-ocean-800);
+  --foreground-secondary: var(--color-ocean-700);
+  --foreground-button: var(--color-ocean-100);
+  --foreground-panel: var(--color-ocean-700);
+
+  --card: var(--color-nacre-200);
+  --card-hover: var(--color-nacre-300);
+  --card-foreground: var(--color-nacre-700);
+
+  --popover: var(--color-ocean-300);
+  --popover-foreground: var(--color-ocean-800);
+
+  --primary: var(--color-ocean-300);
+  --primary-foreground: var(--color-ocean-800);
+  --secondary: var(--color-ocean-400);
+  --secondary-foreground: var(--color-ocean-800);
+  --muted: var(--color-ocean-300);
+  --muted-foreground: var(--color-nacre-700);
+  --accent: var(--color-nacre-200);
+  --accent-foreground: var(--color-ocean-800);
+  --destructive: #fb8585;
+  --destructive-foreground: var(--color-ocean-100);
+  --success: #5fd39a;
+  --warning: #eab308;
+  --info: #7fb2e5;
+
+  --log-info: #f4f1e8;
+  --log-error: #ffe4e6;
+  --log-warning: #fbecc8;
+  --log-success: #d8efe0;
+
+  --border: var(--color-ocean-500);
+  --input: var(--color-ocean-500);
+  --ring: var(--color-nacre-700);
+
+  --chart-1: var(--color-ocean-600);
+  --chart-2: var(--color-nacre-600);
+  --chart-3: var(--color-ocean-400);
+  --chart-4: var(--color-nacre-400);
+  --chart-5: var(--color-ocean-500);
+
+  --sidebar: var(--color-ocean-100);
+  --sidebar-foreground: var(--color-ocean-800);
+  --sidebar-primary: var(--color-nacre-700);
+  --sidebar-primary-foreground: var(--color-ocean-100);
+  --sidebar-accent: var(--color-ocean-300);
+  --sidebar-accent-foreground: var(--color-ocean-800);
+  --sidebar-border: var(--color-ocean-400);
+  --sidebar-ring: var(--color-nacre-700);
+}
+
+/* Rose (`rose`) — thème hors-marque, mode sombre : fonds sombres, textes
+   clairs, tokens d'état éclaircis (règles du lot 10) ; `destructive` file vers
+   le rouge orangé (comme en Prune, le rose rouge se noierait dans la dominante). */
+[data-palette='rose'][data-theme='dark'] {
+  --background: var(--color-blush-200);
+  --foreground: var(--color-blush-800);
+  --foreground-secondary: var(--color-blush-700);
+  --foreground-button: var(--color-blush-100);
+  --foreground-panel: var(--color-blush-700);
+
+  --card: var(--color-ivory-200);
+  --card-hover: var(--color-ivory-300);
+  --card-foreground: var(--color-ivory-700);
+
+  --popover: var(--color-blush-300);
+  --popover-foreground: var(--color-blush-800);
+
+  --primary: var(--color-blush-300);
+  --primary-foreground: var(--color-blush-800);
+  --secondary: var(--color-blush-400);
+  --secondary-foreground: var(--color-blush-800);
+  --muted: var(--color-blush-300);
+  --muted-foreground: var(--color-ivory-700);
+  --accent: var(--color-ivory-200);
+  --accent-foreground: var(--color-blush-800);
+  --destructive: #fb8a5e;
+  --destructive-foreground: var(--color-blush-100);
+  --success: #5fd39a;
+  --warning: #f0c33c;
+  --info: #6fc9ef;
+
+  --log-info: #f4f1e8;
+  --log-error: #ffe4e6;
+  --log-warning: #fbecc8;
+  --log-success: #d8efe0;
+
+  --border: var(--color-blush-500);
+  --input: var(--color-blush-500);
+  --ring: var(--color-ivory-700);
+
+  --chart-1: var(--color-blush-600);
+  --chart-2: var(--color-ivory-600);
+  --chart-3: var(--color-blush-400);
+  --chart-4: var(--color-ivory-400);
+  --chart-5: var(--color-blush-500);
+
+  --sidebar: var(--color-blush-100);
+  --sidebar-foreground: var(--color-blush-800);
+  --sidebar-primary: var(--color-ivory-700);
+  --sidebar-primary-foreground: var(--color-blush-100);
+  --sidebar-accent: var(--color-blush-300);
+  --sidebar-accent-foreground: var(--color-blush-800);
+  --sidebar-border: var(--color-blush-400);
+  --sidebar-ring: var(--color-ivory-700);
+}
+
+/* Olive (`olive`) — thème hors-marque, mode sombre : fonds sombres, textes
+   clairs, tokens d'état éclaircis (règles du lot 10) ; `success` file vers le
+   vert sarcelle et `warning` vers l'orange (collisions avec la dominante
+   jaune-vert). */
+[data-palette='olive'][data-theme='dark'] {
+  --background: var(--color-olive-200);
+  --foreground: var(--color-olive-800);
+  --foreground-secondary: var(--color-olive-700);
+  --foreground-button: var(--color-olive-100);
+  --foreground-panel: var(--color-olive-700);
+
+  --card: var(--color-chalk-200);
+  --card-hover: var(--color-chalk-300);
+  --card-foreground: var(--color-chalk-700);
+
+  --popover: var(--color-olive-300);
+  --popover-foreground: var(--color-olive-800);
+
+  --primary: var(--color-olive-300);
+  --primary-foreground: var(--color-olive-800);
+  --secondary: var(--color-olive-400);
+  --secondary-foreground: var(--color-olive-800);
+  --muted: var(--color-olive-300);
+  --muted-foreground: var(--color-chalk-700);
+  --accent: var(--color-chalk-200);
+  --accent-foreground: var(--color-olive-800);
+  --destructive: #f87171;
+  --destructive-foreground: var(--color-olive-100);
+  --success: #5fd39a;
+  --warning: #f0932b;
+  --info: #7cc4e8;
+
+  --log-info: #f4f1e8;
+  --log-error: #ffe4e6;
+  --log-warning: #fbecc8;
+  --log-success: #d8efe0;
+
+  --border: var(--color-olive-500);
+  --input: var(--color-olive-500);
+  --ring: var(--color-chalk-700);
+
+  --chart-1: var(--color-olive-600);
+  --chart-2: var(--color-chalk-600);
+  --chart-3: var(--color-olive-400);
+  --chart-4: var(--color-chalk-400);
+  --chart-5: var(--color-olive-500);
+
+  --sidebar: var(--color-olive-100);
+  --sidebar-foreground: var(--color-olive-800);
+  --sidebar-primary: var(--color-chalk-700);
+  --sidebar-primary-foreground: var(--color-olive-100);
+  --sidebar-accent: var(--color-olive-300);
+  --sidebar-accent-foreground: var(--color-olive-800);
+  --sidebar-border: var(--color-olive-400);
+  --sidebar-ring: var(--color-chalk-700);
+}
+
+/* Charbon (`charbon`) — thème hors-marque, mode sombre : noirs totaux et blancs
+   chauds, contraste volontairement élevé (porte d'entrée vers la variante à
+   contraste élevé visée par D-013) ; les statuts sont éclaircis au maximum. */
+[data-palette='charbon'][data-theme='dark'] {
+  --background: var(--color-charcoal-100);
+  --foreground: var(--color-ash-900);
+  --foreground-secondary: var(--color-ash-800);
+  --foreground-button: var(--color-charcoal-100);
+  --foreground-panel: var(--color-ash-700);
+
+  --card: var(--color-charcoal-200);
+  --card-hover: var(--color-charcoal-300);
+  --card-foreground: var(--color-ash-700);
+
+  --popover: var(--color-charcoal-300);
+  --popover-foreground: var(--color-ash-900);
+
+  --primary: var(--color-charcoal-300);
+  --primary-foreground: var(--color-ash-900);
+  --secondary: var(--color-charcoal-400);
+  --secondary-foreground: var(--color-ash-800);
+  --muted: var(--color-charcoal-300);
+  --muted-foreground: var(--color-ash-700);
+  --accent: var(--color-charcoal-200);
+  --accent-foreground: var(--color-ash-900);
+  --destructive: #fca5a5;
+  --destructive-foreground: var(--color-charcoal-100);
+  --success: #6ee7b7;
+  --warning: #fbbf24;
+  --info: #93c5fd;
+
+  --log-info: #f4f1e8;
+  --log-error: #ffe4e6;
+  --log-warning: #fbecc8;
+  --log-success: #d8efe0;
+
+  --border: var(--color-charcoal-500);
+  --input: var(--color-charcoal-500);
+  --ring: var(--color-ash-700);
+
+  --chart-1: var(--color-charcoal-800);
+  --chart-2: var(--color-ash-700);
+  --chart-3: var(--color-charcoal-600);
+  --chart-4: var(--color-ash-500);
+  --chart-5: var(--color-charcoal-700);
+
+  --sidebar: var(--color-charcoal-100);
+  --sidebar-foreground: var(--color-ash-900);
+  --sidebar-primary: var(--color-ash-700);
+  --sidebar-primary-foreground: var(--color-charcoal-100);
+  --sidebar-accent: var(--color-charcoal-300);
+  --sidebar-accent-foreground: var(--color-ash-900);
+  --sidebar-border: var(--color-charcoal-400);
+  --sidebar-ring: var(--color-ash-700);
 }
 
 /* Tailwind theme bindings */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -174,6 +1415,13 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-log-info: var(--log-info);
+  --color-log-error: var(--log-error);
+  --color-log-warning: var(--log-warning);
+  --color-log-success: var(--log-success);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -222,31 +1470,19 @@
   body {
     @apply bg-[var(--background)] text-[var(--foreground)];
   }
-  .text-secondary {
-    @apply text-[var(--foreground-secondary)];
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
 @layer components {
-  .soft-button {
-    @apply flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--primary)] p-2 font-semibold text-[var(--primary-foreground)] shadow-md transition-all duration-100 hover:bg-[var(--card-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 active:translate-y-[3px] active:shadow;
-  }
-  .soft-button-danger {
-    @apply flex cursor-pointer items-center justify-center gap-2 space-x-2 rounded-lg border border-[var(--border)] bg-[var(--primary-foreground)] p-2 font-semibold text-[var(--foreground-button)] transition-colors duration-300 hover:border-[var(--primary)] hover:bg-dark-slate-gray-600 hover:shadow-md focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:outline-none;
-  }
-  .soft-button-disabled {
-    @apply flex items-center justify-center gap-2 rounded-lg border border-[var(--foreground-button)] p-2 text-[var(--primary-foreground)] opacity-70 transition-colors duration-300 focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:outline-none;
-
-    /* Fond à rayures */
-    background-image: repeating-linear-gradient(
-      45deg,
-      var(--primary),
-      var(--primary) 10px,
-      var(--foreground-button) 10px,
-      var(--foreground-button) 20px
-    );
-  }
-
   .card-file {
     @apply h-60 max-w-[180px] cursor-pointer border-2 border-secondary bg-card-foreground transition duration-150 ease-linear hover:-translate-y-0.5 hover:border-primary hover:bg-card;
   }
@@ -280,17 +1516,4 @@ html,
 body,
 #root {
   @apply h-screen w-full overflow-hidden;
-}
-
-input,
-textarea,
-select {
-  background-color: var(--primary);
-  border: 1px solid var(--border);
-  @apply px-3 py-2;
-  border-radius: var(--radius);
-  @apply text-[var(--foreground)] placeholder:text-[var(--muted-foreground)];
-  &:focus {
-    @apply ring-2 ring-[var(--muted)] outline-none;
-  }
 }

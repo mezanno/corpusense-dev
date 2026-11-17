@@ -1,4 +1,5 @@
 import { useConnectedUserContext } from '@/components/reducers/ConnectedUserContext';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -65,9 +66,9 @@ const LoginForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
           <p>{t('description_login')}</p>
           <p className='flex items-center border-t border-b border-border py-2'>
             <span>{t('info_experimental_features_access')}</span>
-            <button onClick={handleContactUs} className='soft-button'>
+            <Button type='button' onClick={handleContactUs} variant='soft' size='soft'>
               {t('btn_open_contact')}
-            </button>
+            </Button>
           </p>
         </FormDescription>
         <FormField
@@ -77,7 +78,12 @@ const LoginForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
             <FormItem>
               <FormLabel>{t('form_label_email')}</FormLabel>
               <FormControl>
-                <Input placeholder={t('form_placeholder_email')} type='email' {...field} />
+                <Input
+                  placeholder={t('form_placeholder_email')}
+                  type='email'
+                  autoComplete='email'
+                  {...field}
+                />
               </FormControl>
               <FormDescription>{t('form_descrition_email')}</FormDescription>
               <FormMessage />
@@ -91,7 +97,12 @@ const LoginForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
             <FormItem>
               <FormLabel>{t('form_label_password')}</FormLabel>
               <FormControl>
-                <Input placeholder={t('form_label_password')} {...field} type='password' />
+                <Input
+                  placeholder={t('form_label_password')}
+                  {...field}
+                  type='password'
+                  autoComplete='current-password'
+                />
               </FormControl>
               <FormDescription>{t('form_description_password')}</FormDescription>
               <FormMessage />

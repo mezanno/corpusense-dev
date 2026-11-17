@@ -6,6 +6,7 @@ import {
   FormDescription,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -95,7 +96,7 @@ const AddManifestCard = ({
   }
 
   return (
-    <Card className='bg-white p-1 text-secondary-foreground'>
+    <Card className='bg-primary p-1 text-secondary-foreground'>
       {!existingSource && (
         <CardHeader className='text-center font-semibold italic'>
           {t('title_load_manifest_step_2')}
@@ -128,8 +129,10 @@ const AddManifestCard = ({
             <FormField
               control={form.control}
               name='manifestName'
+              required={existingSource !== undefined}
               render={({ field }) => (
                 <FormItem className='w-full'>
+                  <FormLabel>{t('form_placeholder_manifest_name')}</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -144,7 +147,13 @@ const AddManifestCard = ({
                 </FormItem>
               )}
             />
-            <Button type='submit' className='soft-button w-full' disabled={!form.formState.isValid}>
+            <Button
+              type='submit'
+              variant='soft'
+              size='soft'
+              className='w-full'
+              disabled={!form.formState.isValid}
+            >
               {existingSource ? t('btn_rename') : t('btn_add_manifest_to_library')}
             </Button>
           </form>

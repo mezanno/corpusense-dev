@@ -1,4 +1,6 @@
+import { cardSelection } from '@/components/common/cardSelection';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Source } from '@/data/models/source/source';
 import useBlob from '@/hooks/data/sources/useBlob';
@@ -26,7 +28,7 @@ export function ManifestCard({ source, isHighlighted }: ManifestCardProps) {
   const { sourceWithContent } = useSource(source.id);
   const isDarkImage = useIsDarkImage(thumbUrl);
 
-  const handleRemoveRemoteSource: React.MouseEventHandler<HTMLDivElement> = (event) => {
+  const handleRemoveRemoteSource: React.MouseEventHandler<HTMLButtonElement> = (event) => {
     event.stopPropagation();
     openDialog({
       title: t('title_are_you_sure'),
@@ -38,19 +40,19 @@ export function ManifestCard({ source, isHighlighted }: ManifestCardProps) {
     });
   };
 
-  const handleUploadToCloud: React.MouseEventHandler<HTMLDivElement> = (event) => {
+  const handleUploadToCloud: React.MouseEventHandler<HTMLButtonElement> = (event) => {
     event.stopPropagation();
     void openForm('uploadSource', { sourceId: source.id });
   };
 
-  const handleEditRemoteSource: React.MouseEventHandler<HTMLDivElement> = (event) => {
+  const handleEditRemoteSource: React.MouseEventHandler<HTMLButtonElement> = (event) => {
     event.stopPropagation();
     if (sourceWithContent !== undefined) {
       void openForm('openManifest', { existingSource: sourceWithContent });
     }
   };
 
-  const handleCopyToClipBoard: React.MouseEventHandler<HTMLDivElement> = (event) => {
+  const handleCopyToClipBoard: React.MouseEventHandler<HTMLButtonElement> = (event) => {
     event.stopPropagation();
     if (
       sourceWithContent?.content.type === 'local' &&
@@ -63,24 +65,30 @@ export function ManifestCard({ source, isHighlighted }: ManifestCardProps) {
   return (
     <Card
       className={cn(
-        'card-file flex min-w-40 flex-col overflow-hidden bg-white',
-        isHighlighted && 'border-4 border-primary-foreground',
+        'card-file relative flex min-w-40 flex-col overflow-hidden bg-primary',
+        cardSelection,
       )}
-      onClick={() => void goToManifestExplorer(source.id)}
+      data-state={isHighlighted ? 'selected' : 'unselected'}
       style={{
         backgroundImage: thumbUrl !== null ? `url(${thumbUrl})` : undefined,
         backgroundSize: 'cover', // couvre tout le card
         backgroundPosition: 'center', // centre l'image
         backgroundRepeat: 'no-repeat', // évite la répétition
-        cursor: 'pointer',
       }}
     >
+      <Button
+        type='button'
+        variant='ghost'
+        className='absolute inset-0 z-10 h-full w-full rounded-xl hover:bg-transparent focus-visible:ring-2 focus-visible:ring-inset'
+        aria-label={source.name}
+        onClick={() => void goToManifestExplorer(source.id)}
+      />
       <CardContent
         className={cn(
-          'flex min-h-0 flex-1 flex-col items-end justify-end rounded-t-xl p-2',
+          'pointer-events-none flex min-h-0 flex-1 flex-col items-end justify-end rounded-t-xl p-2',
           isDarkImage
-            ? 'bg-dark-slate-gray-500/60 text-eggshell-900'
-            : 'bg-eggshell-800/60 text-dark-slate-gray-500',
+            ? 'bg-sidebar/60 text-sidebar-foreground'
+            : 'bg-primary/60 text-secondary-foreground',
         )}
         title={source.name}
       >
@@ -94,41 +102,57 @@ export function ManifestCard({ source, isHighlighted }: ManifestCardProps) {
               <Clock size={14} /> <span>{new Date().toLocaleDateString()}</span>
             </div>
             {sourceWithContent.content.githubManifestUrl !== undefined && (
-              <div
-                className='flex items-center space-x-2 text-sm'
+              <Button
+                type='button'
+                variant='ghost'
+                size='soft'
+                className='pointer-events-auto relative z-20 h-auto gap-2 p-0 text-sm'
                 title={sourceWithContent.content.githubManifestUrl}
+                aria-label={t('menu_copy_clipboard')}
                 onClick={handleCopyToClipBoard}
               >
                 <Cloud size={14} /> <span className='truncate'>{t('info_manifest_online')}</span>
                 <ClipboardCopy size={14} />
-              </div>
+              </Button>
             )}
           </>
         )}
       </CardContent>
-      <CardFooter className='flex shrink-0 justify-between rounded-b-xl bg-white p-2'>
-        <div
+      <CardFooter className='pointer-events-none relative z-20 flex shrink-0 justify-between rounded-b-xl bg-primary p-2'>
+        <Button
+          type='button'
+          variant='ghost'
+          size='icon'
           onClick={handleEditRemoteSource}
-          className='cursor-pointer'
+          className='pointer-events-auto h-7 w-7'
           title={t('btn_edit_source')}
+          aria-label={t('btn_edit_source')}
+          disabled={sourceWithContent === undefined}
         >
-          <Pen size={20} className='text-green-400 hover:text-green-600' />
-        </div>
-        <div
+          <Pen size={20} className='text-success' />
+        </Button>
+        <Button
+          type='button'
+          variant='ghost'
+          size='icon'
           onClick={handleUploadToCloud}
           title={t('btn_upload_to_cloud')}
           aria-label={t('btn_upload_to_cloud')}
-          className='text-blue-400 hover:text-blue-600'
+          className='pointer-events-auto h-7 w-7 text-info'
         >
           <UploadCloud size={16} />
-        </div>
-        <div
+        </Button>
+        <Button
+          type='button'
+          variant='ghost'
+          size='icon'
           onClick={handleRemoveRemoteSource}
-          className='cursor-pointer'
+          className='pointer-events-auto h-7 w-7'
           title={t('btn_delete_source')}
+          aria-label={t('btn_delete_source')}
         >
-          <Trash2 size={20} className='text-red-400 hover:text-red-600' />
-        </div>
+          <Trash2 size={20} className='text-destructive' />
+        </Button>
       </CardFooter>
     </Card>
   );

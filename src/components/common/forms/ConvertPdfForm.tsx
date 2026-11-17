@@ -1,4 +1,6 @@
-import { Progress } from '@/components/ui/progress';
+import LogConsole from '@/components/common/logger/LogConsole';
+import ProgressPanel from '@/components/common/logger/ProgressPanel';
+import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { FormProps } from '@/hooks/ui/useDialog';
 import { ConvertedFileInfo, usePdfConverter } from '@/hooks/usePdfConverter';
@@ -46,51 +48,59 @@ const ConvertPdfForm = ({ closeDialog, onResult }: FormProps<string>) => {
       <p>{t('description_select_pdf')}</p>
       <div className='w-full items-center space-y-5'>
         {!fileHandle ? (
-          <button className='soft-button w-full' onClick={() => void selectFile()}>
+          <Button variant='soft' size='soft' className='w-full' onClick={() => void selectFile()}>
             <FileUp size={20} />
             {t('btn_select_pdf')}
-          </button>
+          </Button>
         ) : (
           <div className='flex w-full items-center justify-evenly space-x-2 border border-dashed bg-primary p-2'>
             <span className='flex'>
               <FileUp size={20} />
               {fileName}
             </span>
-            <button
-              className='soft-button'
+            <Button
+              variant='soft'
+              size='soft'
               onClick={() => void selectFile()}
               disabled={status === 'processing'}
             >
               {t('btn_change')}
-            </button>
+            </Button>
           </div>
         )}
 
         {fileHandle && status !== 'done' ? (
-          <button
-            className='soft-button w-full'
+          <Button
+            variant='soft'
+            size='soft'
+            className='w-full'
             onClick={() => void handleConvert()}
             disabled={status === 'processing'}
           >
-            {status === 'processing' ? <Spinner className='text-cerulean-200' /> : <Download />}
+            {status === 'processing' ? <Spinner className='text-foreground' /> : <Download />}
             {status === 'processing' ? t('info_analysis_running') : t('btn_extract_and_generate')}
-          </button>
+          </Button>
         ) : null}
 
         {status === 'done' && (
-          <div className='flex w-full flex-col items-center justify-center gap-2 text-green-500'>
+          <div className='flex w-full flex-col items-center justify-center gap-2 text-success'>
             <span className='flex gap-2'>
               <CheckCircle />
               {t('info_done')}
             </span>
-            <button className='soft-button w-full' onClick={() => void handleAddToLibrary()}>
+            <Button
+              variant='soft'
+              size='soft'
+              className='w-full'
+              onClick={() => void handleAddToLibrary()}
+            >
               {t('btn_add_manifest_to_library')}
-            </button>
+            </Button>
           </div>
         )}
 
         {status === 'error' && (
-          <div className='flex w-full justify-center gap-2 text-red-500'>
+          <div className='flex w-full justify-center gap-2 text-destructive'>
             <AlertCircle />
             {t('oups')}
           </div>
@@ -98,18 +108,15 @@ const ConvertPdfForm = ({ closeDialog, onResult }: FormProps<string>) => {
       </div>
 
       {(status === 'processing' || (progress > 0 && status !== 'done')) && (
-        <div className='flex items-center space-x-2 border border-dashed bg-[#0c111d] p-2 text-[#94a3b8]'>
-          <p>{t('info_progress', { progress: progress })}</p>
-          <Progress value={progress} className='flex-1' />
-        </div>
+        <ProgressPanel progress={progress} />
       )}
 
       {logs.length > 0 && status !== 'done' && (
-        <div className='h-[150px] overflow-y-auto rounded-md bg-[#0c111d] p-2 font-mono text-sm text-[#94a3b8]'>
+        <LogConsole>
           {logs.map((log, index) => (
             <div key={index}>{log}</div>
           ))}
-        </div>
+        </LogConsole>
       )}
     </div>
   );

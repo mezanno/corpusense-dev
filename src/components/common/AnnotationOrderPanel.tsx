@@ -25,15 +25,15 @@ const AnnotationOrderPanel = ({
   };
 
   return (
-    <div className='flex items-center gap-2 rounded-xl bg-white/75 p-2'>
+    <div className='flex items-center gap-2 rounded-xl bg-primary/75 p-2'>
       {annotation.order > 1 && (
-        <Button className='soft-button' onClick={handleMinus}>
+        <Button variant='soft' size='soft' onClick={handleMinus}>
           -
         </Button>
       )}
       {annotation.order}
       {annotation.order < lastOrder && (
-        <Button className='soft-button' onClick={handlePlus}>
+        <Button variant='soft' size='soft' onClick={handlePlus}>
           +
         </Button>
       )}

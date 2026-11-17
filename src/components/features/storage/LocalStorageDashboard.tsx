@@ -1,7 +1,7 @@
-import { Card, CardContent } from '@/components/ui/card';
+import AddCardButton from '@/components/common/AddCardButton';
+import AsyncState from '@/components/common/AsyncState';
 import useLiveSources from '@/hooks/data/sources/useLiveSources';
 import useDialog from '@/hooks/ui/useDialog';
-import { Archive, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ManifestCard } from './ManifestCard';
@@ -9,7 +9,7 @@ import { ManifestCard } from './ManifestCard';
 const LocalStorageDashboard = () => {
   const { t } = useTranslation();
   const { openForm } = useDialog();
-  const { localSources } = useLiveSources();
+  const { localSources, isLoadingLocalSources } = useLiveSources();
 
   const [lastManifestAddedId, setLastManifestAddedId] = useState<string | null>(null);
 
@@ -18,33 +18,32 @@ const LocalStorageDashboard = () => {
   };
 
   return (
-    <div className='flex h-full flex-col'>
-      <h1 className='flex items-center text-2xl font-bold'>
-        <Archive className='mr-2' /> {t('page_title_local_storage')}
-      </h1>
-
-      <div className='flex h-full flex-wrap gap-2 overflow-y-auto'>
-        <Card
-          className='card-file border-dashed'
+    <div className='flex h-full min-h-0 flex-col'>
+      <div className='flex h-full flex-wrap content-start gap-2 overflow-y-auto'>
+        <AddCardButton
+          className='h-60 w-[180px]'
+          iconSize={48}
+          label={t('btn_add_pdf')}
           onClick={() => {
             void openForm('convertPdf', {}).then((sourceId) => {
               if (sourceId !== undefined) onManifestAdded(sourceId);
             });
           }}
-        >
-          <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
-            <Plus size={48} />
-            <span className='text-center'>{t('btn_add_pdf')}</span>
-          </CardContent>
-        </Card>
+        />
 
-        {localSources.map((source) => (
-          <ManifestCard
-            key={source.id}
-            source={source}
-            isHighlighted={source.id === lastManifestAddedId}
-          />
-        ))}
+        <AsyncState
+          isLoading={isLoadingLocalSources}
+          isEmpty={localSources.length === 0}
+          emptyMessage={t('info_no_local_sources')}
+        >
+          {localSources.map((source) => (
+            <ManifestCard
+              key={source.id}
+              source={source}
+              isHighlighted={source.id === lastManifestAddedId}
+            />
+          ))}
+        </AsyncState>
       </div>
     </div>
   );

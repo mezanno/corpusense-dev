@@ -7,13 +7,14 @@ import { NotFoundError } from '@/utils/NotFoundError';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
 
+const EMPTY_MODIFIER_CHAINS: ModifierChainDTO[] = [];
+
 const useModifierChainLive = () => {
   const modifierChainLiveRepository = useMemo(() => getModifierChainLiveRepository(), []);
-  const modifierChains = useLiveQuery(
-    modifierChainLiveRepository.getAll(),
-    [modifierChainLiveRepository],
-    [] as ModifierChainDTO[],
-  );
+  const modifierChainsQuery = useLiveQuery(modifierChainLiveRepository.getAll(), [
+    modifierChainLiveRepository,
+  ]);
+  const modifierChains: ModifierChainDTO[] = modifierChainsQuery ?? EMPTY_MODIFIER_CHAINS;
 
   const modifierCount = useMemo(() => {
     return modifierChains.length;
@@ -37,7 +38,13 @@ const useModifierChainLive = () => {
     await applyModifiersToScope(modifiers, modifierValues, scope, type);
   };
 
-  return { modifierChains, modifierCount, nameAlreadyExists, applyModifierChainToCollection };
+  return {
+    modifierChains,
+    isLoading: modifierChainsQuery === undefined,
+    modifierCount,
+    nameAlreadyExists,
+    applyModifierChainToCollection,
+  };
 };
 
 export default useModifierChainLive;

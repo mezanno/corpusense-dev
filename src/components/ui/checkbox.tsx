@@ -9,7 +9,7 @@ function Checkbox({ className, ...props }: React.ComponentProps<typeof CheckboxP
     <CheckboxPrimitive.Root
       data-slot='checkbox'
       className={cn(
-        'peer size-4 shrink-0 rounded-[4px] border border-neutral-800 shadow-xs transition-shadow outline-none focus-visible:border-neutral-950 focus-visible:ring-[3px] focus-visible:ring-neutral-950/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-red-500 aria-invalid:ring-red-500/20 data-[state=checked]:border-neutral-900 data-[state=checked]:bg-neutral-900 data-[state=checked]:text-neutral-50 dark:border-neutral-800 dark:bg-neutral-200/30 dark:dark:bg-neutral-800/30 dark:focus-visible:border-neutral-300 dark:focus-visible:ring-neutral-300/50 dark:aria-invalid:border-red-900 dark:aria-invalid:ring-red-500/40 dark:aria-invalid:ring-red-900/20 dark:dark:aria-invalid:ring-red-900/40 dark:data-[state=checked]:border-neutral-50 dark:dark:data-[state=checked]:bg-neutral-50 dark:data-[state=checked]:bg-neutral-50 dark:data-[state=checked]:bg-neutral-900 dark:data-[state=checked]:text-neutral-900',
+        'peer size-4 shrink-0 rounded-[4px] border border-input bg-primary shadow-xs transition-shadow outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-[state=checked]:border-secondary-foreground data-[state=checked]:bg-secondary-foreground data-[state=checked]:text-primary',
         className,
       )}
       {...props}

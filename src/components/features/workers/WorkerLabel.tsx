@@ -8,7 +8,7 @@ const WorkerLabel = ({ worker }: { worker: Worker }) => {
   return (
     <div className={`flex items-center gap-2 p-2 ${workerStatusPresentation[worker.status].color}`}>
       <span
-        className={`rounded px-2 py-1 text-sm ${workerStatusPresentation[worker.status].color} bg-opacity-10`}
+        className={`rounded-md px-2 py-1 text-sm ${workerStatusPresentation[worker.status].color} bg-opacity-10`}
       >
         {workerStatusPresentation[worker.status].icon}
       </span>

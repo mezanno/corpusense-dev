@@ -126,7 +126,7 @@ const CollectionsSideBarGroup = () => {
                           isActive={pathname.includes(col.id)}
                         >
                           <div>
-                            <CornerDownRight color='#fcfbf6' />
+                            <CornerDownRight />
                             <Link
                               to={`/${CorpusenseRoutes.COLLECTIONS}/${col.id}`}
                               className='h-full w-full'
@@ -199,7 +199,7 @@ const SourcesSideBarGroup = () => {
                       isActive={pathname.includes(item.url)}
                     >
                       <Link to={item.url}>
-                        <item.icon color='#fcfbf6' />
+                        <item.icon />
                         <span>{item.title}</span>
                       </Link>
                     </SidebarMenuSubButton>
@@ -230,7 +230,7 @@ const LayoutSideBar = () => {
 
   return (
     <Sidebar>
-      <SidebarHeader className='w-full bg-white'>
+      <SidebarHeader className='w-full bg-primary'>
         <Link className='flex items-center justify-center' to={'/'}>
           <img src={`${import.meta.env.VITE_BASE_PATH}/images/logo.png`} className='w-2/3'></img>
         </Link>

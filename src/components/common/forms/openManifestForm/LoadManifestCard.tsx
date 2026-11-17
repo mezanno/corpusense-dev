@@ -1,6 +1,13 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import useSources from '@/hooks/data/sources/useSources';
 import i18n from '@/i18n';
@@ -64,7 +71,7 @@ const LoadManifestCard = ({
   }
 
   return (
-    <Card className='bg-white p-1 text-secondary-foreground'>
+    <Card className='bg-primary p-1 text-secondary-foreground'>
       <CardHeader className='text-center font-semibold italic'>
         {t('title_load_manifest_step_1')}
       </CardHeader>
@@ -81,8 +88,10 @@ const LoadManifestCard = ({
             <FormField
               control={form.control}
               name='manifestInput'
+              required
               render={({ field }) => (
                 <FormItem className='w-full'>
+                  <FormLabel>{t('form_placeholder_manifest_content')}</FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
@@ -97,7 +106,13 @@ const LoadManifestCard = ({
                 </FormItem>
               )}
             />
-            <Button type='submit' className='soft-button w-full' disabled={!form.formState.isValid}>
+            <Button
+              type='submit'
+              variant='soft'
+              size='soft'
+              className='w-full'
+              disabled={!form.formState.isValid}
+            >
               {t('btn_open_manifest')}
             </Button>
           </form>

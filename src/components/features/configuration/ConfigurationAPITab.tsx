@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { pushInfo } from '@/state/reducers/events';
 import { selectWorkerPluginsInfo } from '@/state/selectors/workers';
@@ -70,17 +72,18 @@ const ConfigurationAPITab = () => {
             <label htmlFor={field.key} className='mb-1 block font-medium'>
               {field.description}
             </label>
-            <input
+            <Input
               type='text'
+              autoComplete='off'
               id={field.key}
               {...register(field.key)}
-              className='w-full rounded border border-gray-300 px-3 py-2'
+              className='w-full'
             />
           </div>
         ))}
-        <button className='soft-button' type='submit' title={t('btn_save')}>
+        <Button variant='soft' size='soft' type='submit' title={t('btn_save')}>
           {t('btn_save')}
-        </button>
+        </Button>
       </form>
     </div>
   );

@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -7,6 +8,13 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { ElementType } from '@/data/models/annotations/annotation';
 import { Collection } from '@/data/models/collection/collection';
@@ -25,6 +33,9 @@ import { Link } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
 import { z } from 'zod';
 import './taginput.css'; //permet d'enlever le background transparent du taginput
+
+// Radix réserve la chaîne vide à l'affichage du placeholder.
+const EMPTY_SELECTION = '__none__';
 
 const formSchema = z.object({
   name: z.string(),
@@ -187,7 +198,7 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
     <Form {...form}>
       <form className='mx-auto flex w-full flex-col gap-2 p-2 md:p-5'>
         <div className='flex gap-2'>
-          <div className='flex w-1/2 flex-col gap-2'>
+          <div className='flex w-1/2 min-w-0 flex-col gap-2'>
             <FormField
               control={form.control}
               name='name'
@@ -234,26 +245,41 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t('form_label_model')}</FormLabel>
-                  <FormControl>
-                    <select
-                      {...field}
-                      className='h-10 w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50'
-                    >
-                      <option value=''>{t('form_placeholder_model')}</option>
+                  <Select
+                    value={
+                      field.value === undefined || field.value === ''
+                        ? EMPTY_SELECTION
+                        : field.value
+                    }
+                    onValueChange={(value) =>
+                      field.onChange(value === EMPTY_SELECTION ? '' : value)
+                    }
+                  >
+                    <FormControl>
+                      <SelectTrigger
+                        ref={field.ref}
+                        onBlur={field.onBlur}
+                        className='w-full min-w-0'
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value={EMPTY_SELECTION}>{t('form_placeholder_model')}</SelectItem>
                       {models.map((model) => (
-                        <option key={model.id} value={model.id}>
+                        <SelectItem key={model.id} value={model.id}>
                           {model.name}
-                        </option>
+                        </SelectItem>
                       ))}
-                    </select>
-                  </FormControl>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
 
-          <div className='flex w-1/2 flex-col gap-2'>
+          <div className='flex w-1/2 min-w-0 flex-col gap-2'>
             <FormField
               control={form.control}
               name='tags'
@@ -289,30 +315,49 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
               control={form.control}
               name='postLayoutModifierChainId'
               render={({ field }) => (
-                <FormItem>
+                <FormItem className='min-w-0 grid-cols-[minmax(0,1fr)]'>
                   <FormLabel>{t('form_label_collection_postLayoutModifierChain')}</FormLabel>
-                  <FormControl>
-                    <div className='flex gap-1'>
-                      <select
-                        {...field}
-                        className='h-10 w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50'
-                      >
-                        <option value=''>{t('form_placeholder_modifierchain')}</option>
+                  <div className='flex gap-1'>
+                    <Select
+                      value={
+                        field.value === undefined || field.value === ''
+                          ? EMPTY_SELECTION
+                          : field.value
+                      }
+                      onValueChange={(value) =>
+                        field.onChange(value === EMPTY_SELECTION ? '' : value)
+                      }
+                    >
+                      <FormControl>
+                        <SelectTrigger
+                          ref={field.ref}
+                          onBlur={field.onBlur}
+                          className='w-full min-w-0'
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value={EMPTY_SELECTION}>
+                          {t('form_placeholder_modifierchain')}
+                        </SelectItem>
                         {modifierChains.map((chain) => (
-                          <option key={chain.id} value={chain.id}>
+                          <SelectItem key={chain.id} value={chain.id}>
                             {chain.name}
-                          </option>
+                          </SelectItem>
                         ))}
-                      </select>
-                      <div
-                        onClick={() => void applyLayoutModifiersChain()}
-                        className='soft-button'
-                        title={t('btn_apply_modifiers')}
-                      >
-                        <Play size={16} />
-                      </div>
-                    </div>
-                  </FormControl>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type='button'
+                      variant='soft'
+                      size='soft'
+                      onClick={() => void applyLayoutModifiersChain()}
+                      title={t('btn_apply_modifiers')}
+                    >
+                      <Play size={16} />
+                    </Button>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -322,30 +367,49 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
               control={form.control}
               name='postOcrModifierChainId'
               render={({ field }) => (
-                <FormItem>
+                <FormItem className='min-w-0 grid-cols-[minmax(0,1fr)]'>
                   <FormLabel>{t('form_label_collection_postOcrModifierChain')}</FormLabel>
-                  <FormControl>
-                    <div className='flex gap-1'>
-                      <select
-                        {...field}
-                        className='h-10 w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50'
-                      >
-                        <option value=''>{t('form_placeholder_modifierchain')}</option>
+                  <div className='flex gap-1'>
+                    <Select
+                      value={
+                        field.value === undefined || field.value === ''
+                          ? EMPTY_SELECTION
+                          : field.value
+                      }
+                      onValueChange={(value) =>
+                        field.onChange(value === EMPTY_SELECTION ? '' : value)
+                      }
+                    >
+                      <FormControl>
+                        <SelectTrigger
+                          ref={field.ref}
+                          onBlur={field.onBlur}
+                          className='w-full min-w-0'
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value={EMPTY_SELECTION}>
+                          {t('form_placeholder_modifierchain')}
+                        </SelectItem>
                         {modifierChains.map((chain) => (
-                          <option key={chain.id} value={chain.id}>
+                          <SelectItem key={chain.id} value={chain.id}>
                             {chain.name}
-                          </option>
+                          </SelectItem>
                         ))}
-                      </select>
-                      <div
-                        onClick={() => void applyOcrModifiersChain()}
-                        className='soft-button'
-                        title={t('btn_apply_modifiers')}
-                      >
-                        <Play size={16} />
-                      </div>
-                    </div>
-                  </FormControl>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type='button'
+                      variant='soft'
+                      size='soft'
+                      onClick={() => void applyOcrModifiersChain()}
+                      title={t('btn_apply_modifiers')}
+                    >
+                      <Play size={16} />
+                    </Button>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -354,7 +418,7 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
         </div>
         <div className='mt-2 flex h-full flex-col'>
           <FormLabel>{t('form_label_collection_manifest')}</FormLabel>
-          <ul className='mt-1 max-h-32 flex-1 overflow-auto rounded border bg-white p-2'>
+          <ul className='mt-1 max-h-32 flex-1 overflow-auto rounded-md border bg-primary p-2'>
             {sourceIds.map((id) => (
               <Link
                 className='block break-all underline'

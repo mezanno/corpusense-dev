@@ -41,7 +41,7 @@ test.describe('smoke', () => {
     await page.goto('/collections');
 
     await expect(page.getByRole('button', { name: CREATE_COLLECTION, exact: true })).toBeVisible();
-    await expect(page.getByRole('alert')).toContainText(EMPTY_COLLECTIONS);
+    await expect(page.getByText(EMPTY_COLLECTIONS)).toBeVisible();
 
     expect(pageErrors).toEqual([]);
   });

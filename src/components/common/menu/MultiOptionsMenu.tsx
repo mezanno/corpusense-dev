@@ -1,4 +1,5 @@
 import { useWorkerContext } from '@/components/reducers/WorkerContext';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +17,6 @@ import { Spinner } from '@/components/ui/spinner';
 import { Scope } from '@/data/models/scope/scope';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ClockLoader } from 'react-spinners';
 
 interface MultiOptionsMenuItem {
   name: string;
@@ -36,7 +36,7 @@ interface MultiOptionsMenuParams {
 const MultiOptionsMenu = ({
   params,
   scope,
-  color = 'text-black',
+  color = 'text-foreground',
 }: {
   params: MultiOptionsMenuParams;
   scope: Scope;
@@ -92,8 +92,10 @@ const MultiOptionsMenu = ({
     <div className={`relative ${color}`}>
       {/* modal={false} : fix a bug with the Dialog+ContextMenu : https://github.com/radix-ui/primitives/issues/1836 */}
       <DropdownMenu modal={false}>
-        <DropdownMenuTrigger className='soft-button' title={t(params.name)}>
-          {isRunning ? <ClockLoader size={24} /> : params.icon}
+        <DropdownMenuTrigger asChild>
+          <Button variant='soft' size='soft' title={t(params.name)}>
+            {isRunning ? <Spinner size='small' className='text-current' /> : params.icon}
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className={` ${color}`}>
           <DropdownMenuLabel className='flex items-center gap-2 space-x-2'>

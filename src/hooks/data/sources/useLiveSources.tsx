@@ -8,20 +8,21 @@ import {
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
 
+const EMPTY_SOURCES: Source[] = [];
+
 const useLiveSources = () => {
   const sourceLiveRepository = useMemo(() => getSourceLiveRepository(), []);
 
-  const remoteSources = useLiveQuery(
-    sourceLiveRepository.getAll('remote'),
-    [sourceLiveRepository],
-    [] as Source[],
-  );
+  const remoteSourcesQuery = useLiveQuery(sourceLiveRepository.getAll('remote'), [
+    sourceLiveRepository,
+  ]);
 
-  const localSources = useLiveQuery(
-    sourceLiveRepository.getAll('local'),
-    [sourceLiveRepository],
-    [] as Source[],
-  );
+  const localSourcesQuery = useLiveQuery(sourceLiveRepository.getAll('local'), [
+    sourceLiveRepository,
+  ]);
+
+  const remoteSources: Source[] = remoteSourcesQuery ?? EMPTY_SOURCES;
+  const localSources: Source[] = localSourcesQuery ?? EMPTY_SOURCES;
 
   const sourcesCount = useMemo(() => {
     return {
@@ -66,6 +67,8 @@ const useLiveSources = () => {
   return {
     remoteSources,
     localSources,
+    isLoadingRemoteSources: remoteSourcesQuery === undefined,
+    isLoadingLocalSources: localSourcesQuery === undefined,
     sourcesCount,
     removeUnusedSources,
   };

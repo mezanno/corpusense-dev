@@ -1,4 +1,4 @@
-import { IconWithTooltip } from '@/components/common/IconWithTooltip';
+import { IconButtonWithTooltip } from '@/components/common/IconButtonWithTooltip';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import { generateTextForCollection } from '@/data/utils/export';
 import useCollectionOcrStatus from '@/hooks/data/collections/useCollectionOcrStatus';
@@ -33,9 +33,13 @@ const OcrStatus = ({ collectionId }: { collectionId: string }) => {
   };
 
   return (
-    <IconWithTooltip tooltip={t('info_ocr_available')} onClick={() => void handleClick()}>
+    <IconButtonWithTooltip
+      variant='ghost'
+      tooltip={t('info_ocr_available')}
+      onClick={() => void handleClick()}
+    >
       <BookA />
-    </IconWithTooltip>
+    </IconButtonWithTooltip>
   );
 };
 

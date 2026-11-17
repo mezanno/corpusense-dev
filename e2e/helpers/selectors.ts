@@ -11,18 +11,27 @@ export const CREATE_COLLECTION = 'Créer une nouvelle collection'; // → btn_cr
 export const OPEN_MANIFEST = 'Ouvrir un manifest'; // → btn_open_manifest
 export const LOAD_MANIFEST_STEP_1 = '1. Charger un manifest IIIF'; // → title_load_manifest_step_1
 export const MANIFEST_INPUT_PLACEHOLDER = 'URL du manifest ou identifiant ARK (Gallica)'; // → form_placeholder_manifest_content
+export const MANIFEST_NAME_LABEL = 'Nom du manifest'; // → form_placeholder_manifest_name
 export const ADD_TO_LIBRARY = 'Ajouter à ma bibliothèque'; // → btn_add_manifest_to_library
 export const NAV_SOURCES = 'Sources de données'; // → nav_sources
 
 // --- Ajouts étape 3 (S1 : import manifest → bibliothèque) ---
 export const ADD_NEW_DOCUMENT = 'Ajouter un nouveau document'; // → btn_add_pdf (carte pointillée des tableaux de bord de sources)
 export const PAGE_TITLE_IIIF_STORAGE = 'Bibliothèques en ligne'; // → page_title_iiif_storage
+export const PAGE_TITLE_MODIFIER_CHAINS = 'Chaînes de modificateurs'; // → page_title_modifierchain_manager
 export const LOAD_MANIFEST_STEP_2 = '2. Ajouter le manifest à votre bibliothèque Corpusense'; // → title_load_manifest_step_2
 export const BTN_CLOSE = 'Fermer'; // → btn_close (bouton d'annulation du dialogue d'import)
 export const MANIFEST_GRID = 'grille des manifests'; // → aria_label_manifest_grid (section de la liste des sources, explorateur)
 
 // --- Ajouts étape 3 (S2 : collection depuis la source, inspecteur) ---
 export const CANVAS_GALLERY = 'galerie des canvas'; // → aria_label_canvas_gallery
+export const OPEN_CANVAS = 'Ouvrir la page'; // → btn_open_canvas (suivi du nom de la page)
+export const REORDER_CANVAS = 'Déplacer la page'; // → btn_reorder_canvas (suivi du nom de la page)
+export const DELETE_COLLECTION = 'Supprimer la collection'; // → btn_delete_collection
+export const ADD_FIRST_MODIFIER = 'Ajouter un premier modificateur'; // → btn_add_first_modifier
+export const INSERT_MODIFIER = 'Insérer un modificateur'; // → btn_insert_modifier
+export const INSERT_MODIFIER_BEFORE = 'Insérer un modificateur avant'; // → btn_insert_modifier_before
+export const DELETE_MODIFIER = 'Supprimer le modificateur'; // → btn_delete_modifier
 export const DEFINE_SELECTION_START = 'Définir le début de sélection ici'; // → menu_define_start
 export const CREATE_FROM_SELECTION = 'Créer une collection à partir de la sélection'; // → menu_create_from_selection
 export const BTN_CREATE = 'Créer'; // → btn_create (confirmation du dialogue de création)

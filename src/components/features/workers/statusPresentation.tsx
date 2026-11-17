@@ -1,7 +1,7 @@
+import { Spinner } from '@/components/ui/spinner';
 import { TaskStatus, WorkerStatus } from '@/data/models/worker/worker';
-import { CalendarClock, CircleAlert, CircleCheck, OctagonPause } from 'lucide-react';
+import { CalendarClock, CircleAlert, CircleCheck, Clock3, OctagonPause } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { ClipLoader, ClockLoader, GridLoader } from 'react-spinners';
 
 type StatusPresentation = {
   color: string;
@@ -10,54 +10,54 @@ type StatusPresentation = {
 
 export const workerStatusPresentation: Record<WorkerStatus, StatusPresentation> = {
   [WorkerStatus.INPROGRESS]: {
-    color: 'text-blue-500',
-    icon: <GridLoader color='#1c71d8' size={4} />,
+    color: 'text-info',
+    icon: <Spinner size='small' className='text-current' />,
   },
   [WorkerStatus.INPROGRESS_WITH_ERRORS]: {
-    color: 'text-orange-500',
-    icon: <GridLoader color='#1c71d8' size={4} />,
+    color: 'text-warning',
+    icon: <Spinner size='small' className='text-current' />,
   },
   [WorkerStatus.COMPLETED]: {
-    color: 'text-green-700',
-    icon: <CircleCheck color='green' />,
+    color: 'text-success',
+    icon: <CircleCheck />,
   },
   [WorkerStatus.COMPLETED_WITH_ERRORS]: {
-    color: 'text-red-500',
-    icon: <CircleAlert color='red' />,
+    color: 'text-destructive',
+    icon: <CircleAlert />,
   },
   [WorkerStatus.UNFINISHED]: {
-    color: 'text-gray-500',
-    icon: <OctagonPause color='#000000' />,
+    color: 'text-muted-foreground',
+    icon: <OctagonPause />,
   },
   [WorkerStatus.UNFINISHED_WITH_ERRORS]: {
-    color: 'text-red-500',
-    icon: <CircleAlert color='red' />,
+    color: 'text-destructive',
+    icon: <CircleAlert />,
   },
 };
 
 export const taskStatusPresentation: Record<TaskStatus, StatusPresentation> = {
   [TaskStatus.WAITING]: {
-    color: 'text-yellow-700',
-    icon: <ClockLoader size={20} />,
+    color: 'text-warning',
+    icon: <Clock3 size={20} />,
   },
   [TaskStatus.POSTING]: {
-    color: 'text-blue-500',
-    icon: <ClipLoader size={20} />,
+    color: 'text-info',
+    icon: <Spinner size='small' className='text-current' />,
   },
   [TaskStatus.POSTED]: {
-    color: 'text-blue-500',
+    color: 'text-info',
     icon: <CalendarClock />,
   },
   [TaskStatus.INPROGRESS]: {
-    color: 'text-blue-500',
-    icon: <GridLoader size={10} />,
+    color: 'text-info',
+    icon: <Spinner size='small' className='text-current' />,
   },
   [TaskStatus.COMPLETED]: {
-    color: 'text-green-700',
+    color: 'text-success',
     icon: null,
   },
   [TaskStatus.COMPLETED_WITH_ERRORS]: {
-    color: 'text-red-500',
-    icon: <CircleAlert size={20} color='red' />,
+    color: 'text-destructive',
+    icon: <CircleAlert size={20} />,
   },
 };

@@ -1,3 +1,4 @@
+import NothingToShow from '@/components/common/NothingToShow';
 import ResultsAvailable from '@/components/common/ResultsAvailable';
 import CanvasViewer from '@/components/features/canvasViewer/CanvasViewer';
 import LlmStatus from '@/components/features/collections/LlmStatus';
@@ -103,22 +104,18 @@ const CollectionInspectorContent = ({
                   setCanvasToDisplay={setCanvasToDisplay}
                 />
               ) : (
-                <div className='flex h-full w-full items-center justify-center text-muted-foreground'>
-                  {t('info_empty_collection')}
-                </div>
+                <NothingToShow message={t('info_empty_collection')} />
               )}
             </div>
           ) : (
-            <div className='p-4 text-center text-muted-foreground'>
-              {t('info_empty_collection')}
-            </div>
+            <NothingToShow message={t('info_empty_collection')} />
           )}
         </ResizablePanel>
-        <ResizableHandle withHandle className='w-1 cursor-col-resize bg-dark-slate-gray' />
+        <ResizableHandle withHandle />
         <ResizablePanel className='ml-1 flex-1 overflow-hidden' minSize={30}>
           {canvasToDisplay === null ? (
-            <div className='panel flex h-full w-full items-center justify-center text-2xl text-red-500'>
-              {t('info_no_canvas_selected')}
+            <div className='panel flex h-full w-full items-center justify-center'>
+              <NothingToShow message={t('info_no_canvas_selected')} />
             </div>
           ) : (
             <div className='flex h-full w-full flex-col'>

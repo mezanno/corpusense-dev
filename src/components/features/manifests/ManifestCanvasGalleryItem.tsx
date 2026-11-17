@@ -10,15 +10,20 @@ import {
 } from '@/components/ui/context-menu';
 import { Canvas } from '@iiif/presentation-3';
 
-import Loading from '@/components/common/Loading';
+import GalleryThumbnail from '@/components/common/GalleryThumbnail';
+import { galleryItemStyle } from '@/components/common/galleryItemStyle';
+import { openContextMenuOnKeyDown } from '@/components/common/openContextMenuOnKeyDown';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { getLabel } from '@/data/utils/canvas';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import useThumbnail from '@/hooks/data/sources/useThumbnail';
 import useDialog from '@/hooks/ui/useDialog';
 import { useCanvasSelection } from '@/hooks/useCanvasSelection';
+import { cn } from '@/lib/utils';
 import { truncateMiddle } from '@/utils/utils';
-import { memo, useCallback, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface ManifestCanvasGalleryItemProps {
@@ -54,8 +59,6 @@ const ManifestCanvasGalleryItem = ({
 
   const { openForm } = useDialog();
   const [search, setSearch] = useState<string>('');
-  const [loadedThumbUrl, setLoadedThumbUrl] = useState<string | undefined>(undefined);
-  const imgRef = useRef<HTMLImageElement>(null);
 
   const filteredCollections = useMemo(() => {
     return collections.filter((col) => col.name.toLowerCase().includes(search.toLowerCase()));
@@ -64,7 +67,6 @@ const ManifestCanvasGalleryItem = ({
   const { thumbnail, isLoading, error } = useThumbnail({ canvas, sourceId });
 
   const thumbUrl = thumbnail?.[0]?.id;
-  const isImgLoaded = thumbUrl !== undefined && loadedThumbUrl === thumbUrl;
 
   const handleSetSelectionStart = useCallback(() => {
     setSelectionStart(index);
@@ -117,14 +119,6 @@ const ManifestCanvasGalleryItem = ({
   const canvasItemId = match ? match[0] : '';
   const itemIsSelected = isSelected(index);
 
-  const handleImgLoad = useCallback(() => {
-    setLoadedThumbUrl(thumbUrl);
-  }, [thumbUrl]);
-
-  const handleImgError = useCallback(() => {
-    setLoadedThumbUrl(undefined);
-  }, []);
-
   return (
     <>
       {/* modal={false} : fix a bug with the Dialog+ContextMenu : https://github.com/radix-ui/primitives/issues/1836 */}
@@ -132,42 +126,39 @@ const ManifestCanvasGalleryItem = ({
         <div className='no-select flex h-full w-full justify-center' draggable={false}>
           <ContextMenuTrigger>
             <div
-              className={`group flex h-fit w-fit cursor-pointer flex-col items-center rounded-md p-1 shadow transition duration-200 hover:scale-105 ${idDisplayed ? 'bg-saffron-400' : 'bg-saffron-900'} ${itemIsSelected ? 'ring-3 ring-saffron-300' : ''} selectable-item`}
+              className={cn(
+                galleryItemStyle,
+                'selectable-item relative',
+                itemIsSelected && 'ring-3 ring-ring',
+              )}
+              data-state={idDisplayed ? 'active' : 'inactive'}
               style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
               onClick={handleOnClick}
               data-index={index}
               data-canvas-id={canvas.id}
               role='listitem'
             >
-              {error !== null ? (
-                <div className='text-sm text-red-400'>{error}</div>
-              ) : (
-                <div className='relative flex h-full w-full flex-1 items-center justify-center overflow-hidden p-1'>
-                  {(!isImgLoaded || isLoading || thumbnail === null) && (
-                    <div className='absolute inset-0 z-10 flex items-center justify-center rounded-md bg-saffron-900 p-2'>
-                      <Loading />
-                    </div>
-                  )}
-                  {thumbUrl !== undefined && (
-                    <img
-                      ref={imgRef}
-                      src={thumbUrl}
-                      alt={canvas.label ? getLabel(canvas) : 'canvas thumbnail'}
-                      loading='lazy'
-                      decoding='async'
-                      onLoad={handleImgLoad}
-                      onError={handleImgError}
-                      className={`max-h-full max-w-full object-contain transition-opacity duration-200 ${isImgLoaded && !isLoading ? 'opacity-100' : 'opacity-0'}`}
-                      draggable={false}
-                    />
-                  )}
-                </div>
-              )}
+              <Button
+                type='button'
+                variant='ghost'
+                className='pointer-events-none absolute inset-0 z-10 h-full w-full hover:bg-transparent focus-visible:ring-2 focus-visible:ring-inset'
+                aria-label={t('btn_open_canvas', {
+                  name: canvas.label ? getLabel(canvas) : index + 1,
+                })}
+                aria-pressed={idDisplayed}
+                onKeyDown={openContextMenuOnKeyDown}
+              />
+              <GalleryThumbnail
+                url={thumbUrl}
+                isLoading={isLoading || thumbnail === null}
+                error={error}
+                alt={canvas.label ? getLabel(canvas) : 'canvas thumbnail'}
+              />
               <div className='flex w-full justify-between p-1 text-xs'>
                 {canvas.label !== undefined && canvas.label !== null && (
                   <span>{truncateMiddle(getLabel(canvas))}</span>
                 )}
-                <span className='text-dark-slate-gray-300 italic'>{canvasItemId}</span>
+                <span className='text-muted-foreground italic'>{canvasItemId}</span>
               </div>
             </div>
           </ContextMenuTrigger>
@@ -186,7 +177,7 @@ const ManifestCanvasGalleryItem = ({
                   </ContextMenuSubTrigger>
                   <ContextMenuSubContent>
                     <div className='p-2'>
-                      <input
+                      <Input
                         type='text'
                         placeholder={t('form_placeholder_search_collection')}
                         value={search}

@@ -60,6 +60,7 @@ const LoadModifierChainForm = ({
         <FormField
           control={form.control}
           name='fromChainId'
+          required
           render={({ field }) => (
             <FormItem className='w-full'>
               <FormLabel id='form-fromModel'>{t('form_label_load_modifierchain')}</FormLabel>

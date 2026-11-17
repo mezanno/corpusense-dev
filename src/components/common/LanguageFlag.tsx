@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/select';
 import { useTranslation } from 'react-i18next';
 
+// Flag colors are part of the represented national symbols, not UI theme colors.
 const FrFlag = () => {
   return (
     <div>
@@ -68,22 +69,24 @@ const EnFlag = () => {
 };
 
 const LanguageFlag = () => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   return (
     <Select
-      defaultValue={i18n.language.substring(0, 2)}
+      value={(i18n.resolvedLanguage ?? i18n.language).substring(0, 2)}
       onValueChange={(value) => void i18n.changeLanguage(value)}
     >
-      <SelectTrigger>
+      <SelectTrigger aria-label={t('aria_label_language')}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
         <SelectItem value='fr'>
           <FrFlag />
+          <span className='sr-only'>{t('language_french')}</span>
         </SelectItem>
         <SelectItem value='en'>
           <EnFlag />
+          <span className='sr-only'>{t('language_english')}</span>
         </SelectItem>
       </SelectContent>
     </Select>

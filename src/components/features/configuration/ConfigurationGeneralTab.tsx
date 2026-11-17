@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
+import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { getDatabaseRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { GITHUB_TOKEN_STORAGE_KEY } from '@/hooks/data/convertedFiles/useRepository';
@@ -87,26 +89,28 @@ const ConfigurationGeneralTab = () => {
             <label htmlFor='github_token' className='mb-1 block font-medium'>
               {t('form_label_github_token')}
             </label>
-            <input
+            <Input
               type='password'
+              autoComplete='off'
               id='github_token'
               {...registerGitHub('github_token')}
-              className='w-full rounded border border-gray-300 px-3 py-2'
+              className='w-full'
             />
           </div>
-          <button className='soft-button' type='submit' title={t('btn_save')}>
+          <Button variant='soft' size='soft' type='submit' title={t('btn_save')}>
             {t('btn_save')}
-          </button>
+          </Button>
         </form>
       </div>
 
-      <div className='mt-2 border border-red-500 p-1 text-red-500'>
+      <div className='mt-2 border border-destructive p-1 text-destructive'>
         <div>
           <strong>{t('attention')}</strong> {t('info_experimental_features')}
         </div>
         <div className='mt-2 flex items-center gap-2'>
-          <div>{t('btn_experimental_features')}</div>
+          <label htmlFor='experimental-features'>{t('btn_experimental_features')}</label>
           <Checkbox
+            id='experimental-features'
             checked={experimentalFeaturesActivated}
             onCheckedChange={handleCheckboxChange}
           />
@@ -117,15 +121,15 @@ const ConfigurationGeneralTab = () => {
         <strong>{t('title_backup_restore')}</strong>
         <div>{t('info_backup_restore')}</div>
         <div className='mt-2 flex gap-2'>
-          <button className='soft-button' onClick={exportDatabase} disabled={isBusy}>
+          <Button variant='soft' size='soft' onClick={exportDatabase} disabled={isBusy}>
             <Download size={16} />
             {t('btn_export_indexeddb')}
-          </button>
-          <button className='soft-button' onClick={triggerImportPicker} disabled={isBusy}>
+          </Button>
+          <Button variant='soft' size='soft' onClick={triggerImportPicker} disabled={isBusy}>
             <Upload size={16} />
             {t('btn_import_indexeddb')}
-          </button>
-          <input
+          </Button>
+          <Input
             ref={importInputRef}
             type='file'
             accept='.json'
@@ -181,18 +185,18 @@ const ConfigurationGeneralTab = () => {
         )}
       </div>
 
-      <div className='mt-2 gap-2 border border-red-500 p-1 text-red-500'>
+      <div className='mt-2 gap-2 border border-destructive p-1 text-destructive'>
         <strong className='mt-2'>Indexeddb</strong>
         <div>{t('info_reset_indexeddb')}</div>
         <div className='mt-2 flex gap-2'>
-          <button className='soft-button' onClick={onResetIndexedDB}>
+          <Button variant='soft' size='soft' onClick={onResetIndexedDB}>
             <DatabaseZap />
             {t('btn_reset_indexeddb')}
-          </button>
-          <button className='soft-button' onClick={onResetSources}>
+          </Button>
+          <Button variant='soft' size='soft' onClick={onResetSources}>
             <DatabaseZap />
             {t('btn_reset_sources')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

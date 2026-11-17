@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import { createContext, ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -88,18 +89,19 @@ export const AlertDialogProvider = ({ children }: { children: React.ReactNode })
             <ScrollArea className='flex-1 overflow-y-auto pr-2'>{dialogProps.children}</ScrollArea>
 
             <AlertDialogFooter>
-              <button className='soft-button' onClick={onCancel}>
+              <Button variant='soft' size='soft' onClick={onCancel}>
                 {dialogProps?.onCancel?.message ?? t('btn_cancel')}
-              </button>
+              </Button>
 
               {dialogProps?.onConfirm?.message !== undefined && (
-                <button
-                  className={canSubmit === true ? 'soft-button-danger' : 'soft-button-disabled'}
+                <Button
+                  variant='confirmation'
+                  size='soft'
                   onClick={onConfirm}
                   disabled={canSubmit === false}
                 >
                   {dialogProps?.onConfirm?.message}
-                </button>
+                </Button>
               )}
             </AlertDialogFooter>
           </AlertDialogContent>

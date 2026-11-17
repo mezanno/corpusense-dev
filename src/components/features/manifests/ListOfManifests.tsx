@@ -1,4 +1,5 @@
 import useLiveSources from '@/hooks/data/sources/useLiveSources';
+import useReducedMotion from '@/hooks/ui/useReducedMotion';
 import { CorpusenseRoutes } from '@/hooks/useAppNavigation';
 import {
   FloatingPortal,
@@ -19,6 +20,7 @@ import ManifestThumbnailLoop from './ManifestThumbnailFloatingView';
 const ListOfManifests = ({ currendManifestId }: { currendManifestId: string }) => {
   const { t } = useTranslation();
   const { remoteSources, localSources } = useLiveSources();
+  const reducedMotion = useReducedMotion();
 
   const sources = useMemo(() => [...localSources, ...remoteSources], [localSources, remoteSources]);
 
@@ -49,9 +51,9 @@ const ListOfManifests = ({ currendManifestId }: { currendManifestId: string }) =
     activeRef.current?.scrollIntoView({
       block: 'nearest',
       inline: 'nearest',
-      behavior: 'smooth',
+      behavior: reducedMotion ? 'instant' : 'smooth',
     });
-  }, [currendManifestId, sources]);
+  }, [currendManifestId, sources, reducedMotion]);
 
   const setHovered = (thumbnailBlobId: string, isHovered: boolean) => {
     if (isHovered) {
@@ -66,7 +68,7 @@ const ListOfManifests = ({ currendManifestId }: { currendManifestId: string }) =
 
   return (
     <section
-      className='relative flex h-full w-full flex-col rounded-md bg-white/50 p-2'
+      className='relative flex h-full w-full flex-col rounded-md bg-primary/50 p-2'
       aria-label={t('aria_label_manifest_grid')}
     >
       <span className='flex gap-2'>
@@ -126,7 +128,7 @@ const ListOfManifests = ({ currendManifestId }: { currendManifestId: string }) =
             <div
               ref={setFloating}
               style={floatingStyles}
-              className='pointer-events-none z-50 max-h-96 max-w-96 rounded-md bg-white p-1 shadow-lg'
+              className='pointer-events-none z-50 max-h-96 max-w-96 rounded-md bg-primary p-1 shadow-lg'
             >
               <ManifestThumbnailLoop thumbnailBlobId={hoveredThumbnailBlobId} />
             </div>

@@ -129,7 +129,7 @@ const WorkerTable = (props: WorkerTableProps) => {
                 onClick={() => handleDeleteWorker(row.original.id)}
                 className='text-destructive'
               >
-                <Trash color='red' />
+                <Trash className='text-destructive' />
                 {t('btn_delete')}
               </DropdownMenuItem>
             </DropdownMenuContent>

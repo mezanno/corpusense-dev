@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -41,7 +42,6 @@ const ModifierNode = ({ id, data }: NodeProps<ModifierNodeType>) => {
         <Handle
           position={Position.Left}
           type='target'
-          onClick={() => data.onInsertBefore(modifier.id)}
           style={{
             background: 'white',
             border: 'none',
@@ -55,10 +55,23 @@ const ModifierNode = ({ id, data }: NodeProps<ModifierNodeType>) => {
           }}
           className='cursor-pointer'
         >
-          <PlusCircle size={20} />
+          <Button
+            type='button'
+            variant='ghost'
+            size='icon'
+            className='nodrag nopan pointer-events-auto h-6 w-6 [&_svg]:size-5'
+            aria-label={t('btn_insert_modifier_before')}
+            onClick={() => data.onInsertBefore(modifier.id)}
+            onKeyDown={(event) => event.stopPropagation()}
+          >
+            <PlusCircle />
+          </Button>
         </Handle>
       )}
-      <div className='flex max-w-50 flex-col items-end space-y-1 p-2 text-left'>
+      <div
+        className='flex max-w-50 flex-col items-end space-y-1 p-2 text-left'
+        onKeyDown={(event) => event.stopPropagation()}
+      >
         <div className='flex w-full justify-between'>
           <Select value={modifier.type} onValueChange={(value) => onTypeChange(modifier.id, value)}>
             <SelectTrigger>
@@ -72,12 +85,16 @@ const ModifierNode = ({ id, data }: NodeProps<ModifierNodeType>) => {
               ))}
             </SelectContent>
           </Select>
-          <div
+          <Button
+            type='button'
+            variant='ghost'
+            size='icon'
+            aria-label={t('btn_delete_modifier')}
             onClick={() => onDelete(modifier.id)}
-            className='cursor-pointer text-black/50 hover:text-black'
+            className='nodrag nopan h-8 w-8 text-muted-foreground hover:text-foreground'
           >
             <Trash size={16} />
-          </div>
+          </Button>
         </div>
 
         <ModifierForm
@@ -92,7 +109,6 @@ const ModifierNode = ({ id, data }: NodeProps<ModifierNodeType>) => {
         <Handle
           position={Position.Right}
           type='source'
-          onClick={() => data.onInsertAfter(modifier.id)}
           style={{
             background: 'white',
             border: 'none',
@@ -105,7 +121,17 @@ const ModifierNode = ({ id, data }: NodeProps<ModifierNodeType>) => {
             right: -12, // ajuste la position
           }}
         >
-          <PlusCircle size={20} />
+          <Button
+            type='button'
+            variant='ghost'
+            size='icon'
+            className='nodrag nopan pointer-events-auto h-6 w-6 [&_svg]:size-5'
+            aria-label={t('btn_insert_modifier_after')}
+            onClick={() => data.onInsertAfter(modifier.id)}
+            onKeyDown={(event) => event.stopPropagation()}
+          >
+            <PlusCircle />
+          </Button>
         </Handle>
       )}
     </>

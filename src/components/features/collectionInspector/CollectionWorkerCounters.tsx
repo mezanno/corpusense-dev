@@ -1,7 +1,7 @@
 import { useWorkerContext } from '@/components/reducers/WorkerContext';
+import { Spinner } from '@/components/ui/spinner';
 import { WorkerStatus } from '@/data/models/worker/worker';
 import { useMemo } from 'react';
-import { PacmanLoader } from 'react-spinners';
 import WorkerDurationCounter from './WorkerDurationCounter';
 
 const CollectionWorkerCounters = ({ collectionId }: { collectionId: string }) => {
@@ -22,7 +22,7 @@ const CollectionWorkerCounters = ({ collectionId }: { collectionId: string }) =>
         <div className='flex gap-2' key={`${worker.id}-${worker.estimatedDuration}`}>
           <p className='flex flex-col items-baseline gap-1 text-sm font-semibold'>
             <span className='flex items-center gap-8'>
-              <PacmanLoader size={10} />
+              <Spinner size='small' className='text-current' />
               {worker.name}
             </span>
             <WorkerDurationCounter estimatedDuration={worker.estimatedDuration} />

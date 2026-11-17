@@ -1,4 +1,6 @@
+import NothingToShow from '@/components/common/NothingToShow';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
+import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -39,6 +41,7 @@ import { analogue } from 'simpler-color';
 import { v4 as uuid } from 'uuid';
 import { ColorPicker } from './ColorPicker';
 
+// Default persisted field/annotation color, not an interface theme color.
 const baseColor = '#a4d6f6';
 
 const ModelViewer = ({ modelId }: { modelId: string }) => {
@@ -69,7 +72,7 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
   }, [model]);
 
   if (model === undefined) {
-    return <div className='panel text-red-500'>{t('error_model_undefined')}</div>;
+    return <div className='panel text-destructive'>{t('error_model_undefined')}</div>;
   }
 
   const handleAddField = () => {
@@ -139,33 +142,36 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
       <div className='flex items-center space-x-2'>
         <h3 className='text-lg'>
           {t('title_active_model')}
-          <input
+          <Input
             type='text'
+            aria-label={t('form_label_model_name')}
             className='font-bold'
             value={modelName}
             onChange={(e) => setModelName(e.target.value)}
           />
         </h3>
-        <button title={t('btn_add_datafield')} onClick={handleAddField} className='soft-button'>
-          <CirclePlus color='orange' />
-        </button>
-        <button className='soft-button' title={t('btn_save_model')} onClick={handleSave}>
-          <Save color='green' />
-        </button>
-        <button
-          className='soft-button'
+        <Button title={t('btn_add_datafield')} onClick={handleAddField} variant='soft' size='soft'>
+          <CirclePlus className='text-warning' />
+        </Button>
+        <Button variant='soft' size='soft' title={t('btn_save_model')} onClick={handleSave}>
+          <Save className='text-success' />
+        </Button>
+        <Button
+          variant='soft'
+          size='soft'
           onClick={() => openModelPreviewDialog(model)}
           title={t('btn_model_preview')}
         >
           <Eye />
-        </button>
-        <button
-          className='soft-button'
+        </Button>
+        <Button
+          variant='soft'
+          size='soft'
           onClick={() => openModelUsageList(model)}
           title={t('btn_model_preview')}
         >
           <GalleryHorizontalEnd />
-        </button>
+        </Button>
       </div>
 
       <div className='mt-2 flex w-full justify-center'>
@@ -186,7 +192,7 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
             {({ height, width }) => (
               <ScrollArea style={{ height, width }}>
                 <Table className='border'>
-                  <TableHeader className='bg-white/30'>
+                  <TableHeader className='bg-primary/30'>
                     <TableRow>
                       <TableHead className='w-2/12'>{t('table_col_title_name')}</TableHead>
                       <TableHead className='w-1/12'>{t('table_col_title_type')}</TableHead>
@@ -266,30 +272,36 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
                         <TableCell>
                           <div className='flex space-x-1'>
                             {index > 0 && (
-                              <button
-                                className='cursor-pointer'
+                              <Button
+                                variant='ghost'
+                                size='icon'
+                                className='h-auto w-auto cursor-pointer p-0 [&_svg]:size-6'
                                 title={t('btn_moveup_datafield')}
                                 onClick={() => handleSwapFields(index, 'up')}
                               >
                                 <CircleArrowUp />
-                              </button>
+                              </Button>
                             )}
                             {index < fields.length - 1 && (
-                              <button
-                                className='cursor-pointer'
+                              <Button
+                                variant='ghost'
+                                size='icon'
+                                className='h-auto w-auto cursor-pointer p-0 [&_svg]:size-6'
                                 title={t('btn_movedown_datafield')}
                                 onClick={() => handleSwapFields(index, 'down')}
                               >
                                 <CircleArrowDown />
-                              </button>
+                              </Button>
                             )}
-                            <button
+                            <Button
+                              variant='ghost'
+                              size='icon'
                               title={t('btn_delete_datafield')}
-                              className='cursor-pointer'
+                              className='h-auto w-auto cursor-pointer p-0 [&_svg]:size-6'
                               onClick={() => handleDeleteField(index)}
                             >
                               <CircleX />
-                            </button>
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -300,7 +312,7 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
             )}
           </AutoSizer>
         ) : (
-          <div>{t('info_empty_model')}</div>
+          <NothingToShow message={t('info_empty_model')} />
         )}
       </div>
     </div>

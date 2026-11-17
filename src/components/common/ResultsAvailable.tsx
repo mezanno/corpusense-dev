@@ -1,4 +1,5 @@
 import { useWorkerContext } from '@/components/reducers/WorkerContext';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,17 +29,20 @@ const ResultsAvailable = ({ scope, showTitle }: { scope: Scope; showTitle?: bool
   };
 
   return (
-    <div
-      className='soft-button'
-      title={t('info_results_available')}
-      aria-label={t('info_results_available')}
-    >
+    <div>
       <DropdownMenu>
-        <DropdownMenuTrigger className='flex items-center gap-2'>
-          <FileDown />
-          {(showTitle === undefined || showTitle === true) && (
-            <span className='text-sm'>{t('info_results_available')}</span>
-          )}
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant='soft'
+            size='soft'
+            title={t('info_results_available')}
+            aria-label={t('info_results_available')}
+          >
+            <FileDown />
+            {(showTitle === undefined || showTitle === true) && (
+              <span className='text-sm'>{t('info_results_available')}</span>
+            )}
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           {workersWithResults

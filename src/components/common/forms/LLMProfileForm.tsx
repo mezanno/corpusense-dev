@@ -62,6 +62,7 @@ const LLMProfileForm = ({
         <FormField
           control={form.control}
           name='name'
+          required
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('form_label_llm_profile_name')}</FormLabel>
@@ -75,6 +76,7 @@ const LLMProfileForm = ({
         <FormField
           control={form.control}
           name='baseUrl'
+          required
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('form_label_llm_profile_base_url')}</FormLabel>
@@ -101,6 +103,7 @@ const LLMProfileForm = ({
         <FormField
           control={form.control}
           name='model'
+          required
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('form_label_llm_profile_model')}</FormLabel>

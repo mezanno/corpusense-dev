@@ -80,11 +80,12 @@ const NewCollectionForm = ({
         <FormField
           control={form.control}
           name='name'
+          required
           render={({ field }) => (
             <FormItem>
               <FormLabel id='form-label'>{t('form_label_collection_name')}</FormLabel>
               <FormControl>
-                <Input {...field} aria-describedby='form-label' autoFocus />
+                <Input {...field} autoFocus />
               </FormControl>
               <FormMessage />
             </FormItem>

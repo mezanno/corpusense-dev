@@ -42,7 +42,7 @@ const Welcome = () => {
         <ul className='list-disc pl-5'>
           <li>
             <Link
-              className='font-medium text-blue-600 hover:underline dark:text-blue-500'
+              className='font-medium text-info hover:underline'
               to={`/${CorpusenseRoutes.MANIFEST}?manifestId=https://gallica.bnf.fr/iiif/ark:/12148/bd6t543024772/manifest.json`}
             >
               {t('getting_started.example1')}
@@ -50,7 +50,7 @@ const Welcome = () => {
           </li>
           <li>
             <Link
-              className='font-medium text-blue-600 hover:underline dark:text-blue-500'
+              className='font-medium text-info hover:underline'
               to={`/${CorpusenseRoutes.MANIFEST}?manifestId=https://gallica.bnf.fr/iiif/ark:/12148/bpt6k12410870/manifest.json`}
             >
               {t('getting_started.example2')}

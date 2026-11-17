@@ -162,15 +162,16 @@ const AnnotationForm = ({
             <FormField
               control={form.control}
               name='type'
+              required
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('form_label_type')}*</FormLabel>
+                  <FormLabel>{t('form_label_type')}</FormLabel>
                   <Select
                     key={field.value}
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
-                    <FormControl className='bg-white'>
+                    <FormControl className='bg-primary'>
                       <SelectTrigger>
                         <SelectValue placeholder={t('form_placeholder_select_type')} />
                       </SelectTrigger>
@@ -195,7 +196,7 @@ const AnnotationForm = ({
                   <FormLabel>{t('form_label_value')}</FormLabel>
                   <FormControl>
                     <Textarea
-                      className='max-h-52 bg-white'
+                      className='max-h-52 bg-primary'
                       placeholder={t('form_placeholder_value')}
                       value={field.value}
                       onChange={(e) => {
@@ -208,9 +209,9 @@ const AnnotationForm = ({
               )}
             />
           </div>
-          <button type='submit' className='soft-button'>
+          <Button type='submit' variant='soft' size='soft'>
             <Save /> {t('btn_save')}
-          </button>
+          </Button>
         </form>
       </Form>
 

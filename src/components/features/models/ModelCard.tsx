@@ -1,7 +1,10 @@
+import { cardSelection } from '@/components/common/cardSelection';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { DataModel } from '@/data/models/dataModel/dataModel';
 import { useModelIO } from '@/hooks/data/models/useModelIO';
+import { cn } from '@/lib/utils';
 import { Download, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 // import ReactJsonView from '@microlink/react-json-view';
@@ -19,7 +22,7 @@ export function ModelCard({
   const { openDialog } = useAlertDialogContext();
   const { removeModel, exportModel } = useModelIO();
 
-  const handleRemoveModel: React.MouseEventHandler<HTMLDivElement> = (event) => {
+  const handleRemoveModel: React.MouseEventHandler<HTMLButtonElement> = (event) => {
     event.stopPropagation();
     openDialog({
       title: t('title_are_you_sure'),
@@ -36,7 +39,7 @@ export function ModelCard({
     });
   };
 
-  const handleDownloadModel: React.MouseEventHandler<HTMLDivElement> = (event) => {
+  const handleDownloadModel: React.MouseEventHandler<HTMLButtonElement> = (event) => {
     event.stopPropagation();
     void (async () => {
       await exportModel(model.id);
@@ -45,32 +48,48 @@ export function ModelCard({
 
   return (
     <Card
-      className={`card-model flex w-full max-w-[300px] flex-col justify-evenly overflow-hidden p-2 ${model.id === selectedModelId ? 'bg-white' : 'bg-white/50'} `}
-      onClick={() => setSelectedModelId(model.id)}
-      style={{ cursor: 'pointer' }}
+      className={cn(
+        'card-model relative flex w-full max-w-[300px] flex-col justify-evenly overflow-hidden bg-primary/50 p-2 data-[state=selected]:bg-primary',
+        cardSelection,
+      )}
+      data-state={model.id === selectedModelId ? 'selected' : 'unselected'}
     >
-      <CardContent className='flex w-full justify-between gap-1'>
+      <Button
+        type='button'
+        variant='ghost'
+        className='absolute inset-0 z-10 h-full w-full rounded-xl hover:bg-transparent focus-visible:ring-2 focus-visible:ring-inset'
+        aria-label={model.name}
+        aria-pressed={model.id === selectedModelId}
+        onClick={() => setSelectedModelId(model.id)}
+      />
+      <CardContent className='pointer-events-none flex w-full justify-between gap-1'>
         <h3 className='truncate text-left text-sm font-bold' title={model.name}>
           {model.name}
         </h3>
       </CardContent>
-      <CardFooter className='flex justify-end space-x-2'>
-        <div
+      <CardFooter className='pointer-events-none relative z-20 flex justify-end space-x-2'>
+        <Button
+          type='button'
+          variant='ghost'
+          size='icon'
           onClick={handleRemoveModel}
           title={t('btn_delete')}
           aria-label={t('btn_delete')}
-          className='cursor-pointer text-red-400 hover:text-red-600'
+          className='pointer-events-auto h-7 w-7 text-destructive'
         >
           <Trash2 size={20} />
-        </div>
-        <div
+        </Button>
+        <Button
+          type='button'
+          variant='ghost'
+          size='icon'
           onClick={handleDownloadModel}
           title={t('btn_download_model')}
           aria-label={t('btn_download_model')}
-          className='cursor-pointer text-black/50 hover:text-black'
+          className='pointer-events-auto h-7 w-7 text-muted-foreground hover:text-foreground'
         >
           <Download size={20} />
-        </div>
+        </Button>
       </CardFooter>
     </Card>
   );

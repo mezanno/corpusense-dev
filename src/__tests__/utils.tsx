@@ -11,6 +11,7 @@ import { AlertDialogProvider } from '@/components/reducers/AlertDialogContext';
 import { CollectionProvider } from '@/components/reducers/CollectionContext';
 import { ConnectedUserProvider } from '@/components/reducers/ConnectedUserContext';
 import { WorkerProvider } from '@/components/reducers/WorkerContext';
+import { ThemeProvider } from '@/hooks/ui/useTheme';
 import { ExperimentalProvider } from '@/hooks/useExperimental';
 
 const testQueryClient = new QueryClient({
@@ -31,21 +32,23 @@ export function renderWithProviders(
   }: { preloadedState?: Partial<RootState>; store?: ReturnType<typeof createMockStore> } = {},
 ) {
   return render(
-    <QueryClientProvider client={testQueryClient}>
-      <Provider store={store}>
-        <ConnectedUserProvider>
-          <ExperimentalProvider>
-            <AlertDialogProvider>
-              <CollectionProvider>
-                <WorkerProvider>
-                  <MemoryRouter>{ui}</MemoryRouter>{' '}
-                </WorkerProvider>
-              </CollectionProvider>
-            </AlertDialogProvider>
-          </ExperimentalProvider>
-        </ConnectedUserProvider>
-      </Provider>
-    </QueryClientProvider>,
+    <ThemeProvider>
+      <QueryClientProvider client={testQueryClient}>
+        <Provider store={store}>
+          <ConnectedUserProvider>
+            <ExperimentalProvider>
+              <AlertDialogProvider>
+                <CollectionProvider>
+                  <WorkerProvider>
+                    <MemoryRouter>{ui}</MemoryRouter>{' '}
+                  </WorkerProvider>
+                </CollectionProvider>
+              </AlertDialogProvider>
+            </ExperimentalProvider>
+          </ConnectedUserProvider>
+        </Provider>
+      </QueryClientProvider>
+    </ThemeProvider>,
     renderOptions,
   );
 }

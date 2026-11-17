@@ -11,7 +11,9 @@ const WorkerStatusIcon = ({ scope }: { scope: Scope }) => {
     status.kind === 'worker'
       ? workerStatusPresentation[status.status]
       : taskStatusPresentation[status.status];
-  return presentation.icon;
+  return presentation.icon === null ? null : (
+    <span className={`rounded-md bg-primary p-1 ${presentation.color}`}>{presentation.icon}</span>
+  );
 };
 
 export default WorkerStatusIcon;

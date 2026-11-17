@@ -73,7 +73,7 @@ test.describe.serial('parcours import manifest → collection', () => {
 
     // La carte mène à l'explorateur : la source figure aussi dans sa liste
     // « Sources de données » (liste des sources importées, côté explorateur).
-    await page.getByRole('heading', { name: MANIFEST_FIXTURE_TITLE }).click();
+    await page.getByRole('button', { name: MANIFEST_FIXTURE_TITLE }).click();
     await expect(page).toHaveURL(/\/manifest\?manifestId=/);
     const sourcesList = page.getByRole('region', { name: MANIFEST_GRID });
     await expect(sourcesList.getByRole('heading', { name: NAV_SOURCES })).toBeVisible();

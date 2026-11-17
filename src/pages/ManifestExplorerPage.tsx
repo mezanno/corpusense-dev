@@ -1,10 +1,10 @@
+import CanvasNavigation from '@/components/common/CanvasNavigation';
 import Loading from '@/components/common/Loading';
 import NothingToShow from '@/components/common/NothingToShow';
+import Welcome from '@/components/common/Welcome';
 import CanvasViewer from '@/components/features/canvasViewer/CanvasViewer';
 import ManifestCanvasGallery from '@/components/features/manifests/ManifestCanvasGallery';
 import ManifestExplorer from '@/components/features/manifests/ManifestExplorer';
-import ManifestNavigation from '@/components/features/manifests/ManifestNavigation';
-import NoManifestToShow from '@/components/features/manifests/NoManifestToShow';
 import { CanvasSelectionProvider } from '@/components/reducers/CanvasSelectionContext';
 import { useManifestPageContext } from '@/components/reducers/ManifestPageContext';
 import useKeyboard from '@/hooks/ui/useKeyboard';
@@ -23,6 +23,8 @@ const ManifestExplorerPage = () => {
     setCanvasToDisplay,
     handleNext,
     handlePrevious,
+    hasPrevious,
+    hasNext,
   } = useManifestPageContext();
 
   const onKeyPressed = (key: string) => {
@@ -41,7 +43,11 @@ const ManifestExplorerPage = () => {
   if (manifest === undefined || sourceWithContent == null) {
     return (
       <div className='flex h-full w-full flex-col items-center justify-center space-y-2 p-2'>
-        <NoManifestToShow />
+        <NothingToShow message={t('info_no_manifest')}>
+          <div className='m-2 flex h-full w-full max-w-[800px] flex-col justify-center p-2'>
+            <Welcome />
+          </div>
+        </NothingToShow>
       </div>
     );
   }
@@ -50,7 +56,7 @@ const ManifestExplorerPage = () => {
     <div className='flex h-full w-full'>
       {/* <div className='h-full'>
         <Toggle
-          className='soft-button mt-4'
+          variant='soft' size='icon' className='mt-4'
           onClick={() => setMetadataVisible(!metadataVisible)}
           title={`${metadataVisible ? t('btn_close_metadata') : t('btn_open_metadata')}`}
           pressed={metadataVisible}
@@ -70,7 +76,7 @@ const ManifestExplorerPage = () => {
               <ManifestExplorer manifest={manifest} source={sourceWithContent} />
             </ResizablePanel>
 
-            <ResizableHandle withHandle className='w-1 cursor-col-resize bg-dark-slate-gray' />
+            <ResizableHandle withHandle />
           </>
         )}
 
@@ -85,7 +91,7 @@ const ManifestExplorerPage = () => {
                 />
               </CanvasSelectionProvider>
             </ResizablePanel>
-            <ResizableHandle withHandle className='w-1 cursor-col-resize bg-dark-slate-gray' />
+            <ResizableHandle withHandle />
           </>
         )}
 
@@ -99,7 +105,12 @@ const ManifestExplorerPage = () => {
             ) : (
               <>
                 <CanvasViewer canvas={canvasToDisplay} sourceId={sourceWithContent.id} />
-                <ManifestNavigation />
+                <CanvasNavigation
+                  hasPrevious={hasPrevious}
+                  hasNext={hasNext}
+                  onPrevious={handlePrevious}
+                  onNext={handleNext}
+                />
               </>
             )}
           </section>

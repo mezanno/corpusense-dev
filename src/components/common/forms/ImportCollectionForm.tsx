@@ -6,6 +6,7 @@ import {
   FormDescription,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -83,8 +84,10 @@ const ImportCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
           <FormField
             control={form.control}
             name='file'
+            required
             render={({ field }) => (
               <FormItem>
+                <FormLabel>{t('form_description_select_collection')}</FormLabel>
                 <FormControl>
                   <Input
                     type='file'

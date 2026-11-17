@@ -1,3 +1,4 @@
+import Loading from '@/components/common/Loading';
 import ExpertReportCard from '@/components/features/expert/ExpertReportCard';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useModels } from '@/hooks/data/models/useModels';
@@ -9,10 +10,20 @@ import { useTranslation } from 'react-i18next';
 
 const ExpertPage = () => {
   const { t } = useTranslation();
-  const { sourcesCount } = useLiveSources();
-  const { collectionCount } = useCollections();
-  const { modelCount } = useModels();
-  const { modifierCount } = useModifierChainLive();
+  const { sourcesCount, isLoadingLocalSources, isLoadingRemoteSources } = useLiveSources();
+  const { collectionCount, isLoading: isLoadingCollections } = useCollections();
+  const { modelCount, isLoading: isLoadingModels } = useModels();
+  const { modifierCount, isLoading: isLoadingModifiers } = useModifierChainLive();
+
+  if (
+    isLoadingLocalSources ||
+    isLoadingRemoteSources ||
+    isLoadingCollections ||
+    isLoadingModels ||
+    isLoadingModifiers
+  ) {
+    return <Loading />;
+  }
 
   return (
     <div className='flex w-full flex-col gap-2'>

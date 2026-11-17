@@ -21,6 +21,7 @@ import {
   LOAD_MANIFEST_STEP_1,
   LOAD_MANIFEST_STEP_2,
   MANIFEST_INPUT_PLACEHOLDER,
+  MANIFEST_NAME_LABEL,
   OPEN_MANIFEST,
   PAGE_TITLE_IIIF_STORAGE,
   TITLE_METADATA_COLLECTION,
@@ -60,7 +61,7 @@ export async function importFixtureManifest(page: Page): Promise<void> {
 
   // Étape 2 : le manifest chargé est présenté, son nom est proposé au champ de renommage.
   await expect(dialog.getByText(LOAD_MANIFEST_STEP_2)).toBeVisible();
-  const nameField = dialog.getByRole('textbox', { name: MANIFEST_FIXTURE_TITLE });
+  const nameField = dialog.getByRole('textbox', { name: MANIFEST_NAME_LABEL });
   await expect(nameField).toBeVisible();
   await nameField.fill(MANIFEST_FIXTURE_TITLE);
 
@@ -85,7 +86,7 @@ export async function createCollectionFromSource(
   collectionName: string,
 ): Promise<void> {
   await page.goto('/iiifSources');
-  const sourceCard = page.getByRole('heading', { name: MANIFEST_FIXTURE_TITLE });
+  const sourceCard = page.getByRole('button', { name: MANIFEST_FIXTURE_TITLE });
   await expect(sourceCard).toBeVisible();
   await sourceCard.click();
   await expect(page).toHaveURL(/\/manifest\?manifestId=/);

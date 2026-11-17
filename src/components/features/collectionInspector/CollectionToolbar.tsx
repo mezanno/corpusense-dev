@@ -1,5 +1,6 @@
 import { IconButtonWithTooltip } from '@/components/common/IconButtonWithTooltip';
 import Toolbar from '@/components/common/ToolBar';
+import { Button } from '@/components/ui/button';
 import { Collection } from '@/data/models/collection/collection';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import useDialog from '@/hooks/ui/useDialog';
@@ -45,14 +46,15 @@ const CollectionToolbar = memo(function CollectionToolbarFunc({
       <IconButtonWithTooltip tooltip={t('btn_duplicate')} onClick={() => void handleDuplicate()}>
         <Copy />
       </IconButtonWithTooltip>
-      <button
-        className='soft-button'
+      <Button
+        variant='soft'
+        size='soft'
         onClick={handleExport}
         aria-label={t('btn_export_collection')}
         title={t('btn_export_collection')}
       >
         <DownloadIcon />
-      </button>
+      </Button>
     </div>
   );
 });

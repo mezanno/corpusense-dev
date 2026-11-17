@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
+import LogConsole from '@/components/common/logger/LogConsole';
+import ProgressPanel from '@/components/common/logger/ProgressPanel';
 import {
   Form,
   FormControl,
@@ -9,14 +11,13 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Progress } from '@/components/ui/progress';
 import useRepository from '@/hooks/data/convertedFiles/useRepository';
 import useSource from '@/hooks/data/sources/useSource';
 import { FormProps } from '@/hooks/ui/useDialog';
 import i18n from '@/i18n';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, CheckCircle } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -31,7 +32,6 @@ const UploadSourceForm = ({ formRef, setCanSubmit, sourceId }: UploadSourceFormP
   const { t } = useTranslation();
   const { uploadToRepository, nameAlreadyExists, logs, status, progress } = useRepository();
   const { sourceWithContent } = useSource(sourceId);
-  const logsEndRef = useRef<HTMLDivElement>(null);
 
   const formSchema = z
     .object({
@@ -67,10 +67,6 @@ const UploadSourceForm = ({ formRef, setCanSubmit, sourceId }: UploadSourceFormP
     );
   }, [form.formState.isDirty, form.formState.isValid, form.formState.isValidating, status]);
 
-  useEffect(() => {
-    logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [logs]);
-
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (sourceWithContent === undefined) return;
     await uploadToRepository(sourceWithContent, values.name);
@@ -83,16 +79,12 @@ const UploadSourceForm = ({ formRef, setCanSubmit, sourceId }: UploadSourceFormP
         <FormField
           control={form.control}
           name='name'
+          required
           render={({ field }) => (
             <FormItem>
               <FormLabel id='form-label'>{t('form_label_repository_name')}</FormLabel>
               <FormControl>
-                <Input
-                  {...field}
-                  aria-describedby='form-label'
-                  autoFocus
-                  disabled={status === 'processing'}
-                />
+                <Input {...field} autoFocus disabled={status === 'processing'} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -101,33 +93,31 @@ const UploadSourceForm = ({ formRef, setCanSubmit, sourceId }: UploadSourceFormP
       </form>
 
       {(status === 'processing' || progress > 0) && (
-        <div className='mt-2 flex items-center space-x-2 border border-dashed bg-[#0c111d] p-2 text-[#94a3b8]'>
-          <p>{t('info_progress', { progress: progress })}</p>
-          <Progress value={progress} className='flex-1' />
+        <div className='mt-2'>
+          <ProgressPanel progress={progress} />
         </div>
       )}
 
       {status === 'done' && (
-        <div className='mt-2 flex w-full justify-center gap-2 text-green-500'>
+        <div className='mt-2 flex w-full justify-center gap-2 text-success'>
           <CheckCircle />
           {t('info_done')}
         </div>
       )}
 
       {status === 'error' && (
-        <div className='mt-2 flex w-full justify-center gap-2 text-red-500'>
+        <div className='mt-2 flex w-full justify-center gap-2 text-destructive'>
           <AlertCircle />
           {t('oups')}
         </div>
       )}
 
       {logs.length > 0 && (
-        <div className='mt-2 h-[150px] overflow-y-auto rounded-md bg-[#0c111d] p-2 font-mono text-sm text-[#94a3b8]'>
+        <LogConsole className='mt-2' scrollKey={logs}>
           {logs.map((log, index) => (
             <div key={index}>{log}</div>
           ))}
-          <div ref={logsEndRef} />
-        </div>
+        </LogConsole>
       )}
     </Form>
   );

@@ -1,4 +1,5 @@
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
+import { Button } from '@/components/ui/button';
 import { LLMProfile } from '@/data/models/LLMProfile';
 import useDialog from '@/hooks/ui/useDialog';
 import { Copy, Pencil, Plus, Trash2 } from 'lucide-react';
@@ -63,10 +64,10 @@ const ConfigurationLLMTab = () => {
     <div className='mt-2'>
       <div className='mb-2 flex items-center justify-between'>
         <h2>{t('section_llm_profiles')}</h2>
-        <button className='soft-button' onClick={() => void handleAdd()}>
+        <Button variant='soft' size='soft' onClick={() => void handleAdd()}>
           <Plus size={16} />
           {t('btn_add_llm_profile')}
-        </button>
+        </Button>
       </div>
 
       {profiles.length === 0 ? (
@@ -89,27 +90,30 @@ const ConfigurationLLMTab = () => {
                 <td className='py-1 pr-4 text-muted-foreground'>{profile.model}</td>
                 <td className='py-1'>
                   <div className='flex gap-1'>
-                    <button
-                      className='soft-button'
+                    <Button
+                      variant='soft'
+                      size='soft'
                       onClick={() => void handleEdit(profile)}
                       title={t('btn_edit')}
                     >
                       <Pencil size={14} />
-                    </button>
-                    <button
-                      className='soft-button'
+                    </Button>
+                    <Button
+                      variant='soft'
+                      size='soft'
                       onClick={() => handleDuplicate(profile)}
                       title={t('btn_duplicate')}
                     >
                       <Copy size={14} />
-                    </button>
-                    <button
-                      className='soft-button'
+                    </Button>
+                    <Button
+                      variant='soft'
+                      size='soft'
                       onClick={() => handleRemove(profile.id)}
                       title={t('btn_delete')}
                     >
                       <Trash2 size={14} />
-                    </button>
+                    </Button>
                   </div>
                 </td>
               </tr>

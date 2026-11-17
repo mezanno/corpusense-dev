@@ -75,11 +75,12 @@ const NewModelForm = ({ formRef, setCanSubmit }: FormProps) => {
         <FormField
           control={form.control}
           name='name'
+          required
           render={({ field }) => (
             <FormItem>
               <FormLabel id='form-name'>{t('form_label_model_name')}</FormLabel>
               <FormControl>
-                <Input {...field} aria-describedby='form-name' autoFocus />
+                <Input {...field} autoFocus />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -92,7 +93,7 @@ const NewModelForm = ({ formRef, setCanSubmit }: FormProps) => {
             <FormItem>
               <FormLabel id='form-description'>{t('form_label_model_description')}</FormLabel>
               <FormControl>
-                <Input {...field} aria-describedby='form-description' />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

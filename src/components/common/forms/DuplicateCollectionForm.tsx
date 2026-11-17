@@ -70,11 +70,12 @@ const DuplicateCollectionForm = ({
         <FormField
           control={form.control}
           name='name'
+          required
           render={({ field }) => (
             <FormItem>
               <FormLabel id='form-name'>{t('form_label_collection_name')}</FormLabel>
               <FormControl>
-                <Input {...field} aria-describedby='form-name' autoFocus />
+                <Input {...field} autoFocus />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -1,4 +1,4 @@
-import { DataField } from '@/data/models/dataModel/dataModel';
+import { DataField, DataModel } from '@/data/models/dataModel/dataModel';
 import { DataModelCreateDTO } from '@/data/models/dataModel/dataModel.dto';
 import {
   getModelLiveRepository,
@@ -9,11 +9,14 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useMemo } from 'react';
 import { v4 as uuid } from 'uuid';
 
+const EMPTY_MODELS: DataModel[] = [];
+
 export const useModels = () => {
   const modelRepository = useMemo(() => getModelRepository(), []);
   const modelLiveRepository = useMemo(() => getModelLiveRepository(), []);
 
-  const models = useLiveQuery(modelLiveRepository.getAll(), [], []);
+  const modelsQuery = useLiveQuery(modelLiveRepository.getAll(), []);
+  const models: DataModel[] = modelsQuery ?? EMPTY_MODELS;
 
   const modelCount = useMemo(() => {
     return models.length;
@@ -67,6 +70,7 @@ export const useModels = () => {
 
   return {
     models,
+    isLoading: modelsQuery === undefined,
     modelCount,
     getModelById,
     getDatafieldById,

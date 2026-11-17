@@ -7,6 +7,15 @@ Pour pouvoir utiliser l'extraction de données dans Corpusense (Mistral), il fau
 Il suffit ensuite de saisir la clé dans le champ texte **Clé API Mistral** et de cliquer sur le bouotn **Enregistrer**.
 ![Capture d'écran de Gallica](./images/corpusense_apikey_mistral.png){height=150}
 
+## Changer de thème ou de mode d'affichage
+
+La page de configuration contient un onglet **Thème**. Dans la section **Apparence**, deux réglages sont disponibles :
+
+- **Thème** : choisit l'ensemble des couleurs de l'interface. Dix thèmes sont proposés : **Héritage** (l'apparence historique, par défaut), Forêt, Prune, Cuivre, Encre, Brume, Océan, Rose poudré, Olive et Charbon (aux contrastes volontairement élevés).
+- **Mode d'affichage** : **Clair**, **Sombre** ou **Système** (l'application suit alors le réglage de l'ordinateur). Chaque thème existe en version claire et en version sombre.
+
+Ces réglages s'appliquent immédiatement et sont mémorisés sur le poste de travail ; ils ne font pas partie des données du corpus.
+
 ## Ouvrir un manifest
 
 Corpusense permet l'ouverture d'un manifest IIIF de 4 façons différentes :

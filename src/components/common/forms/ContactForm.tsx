@@ -5,11 +5,13 @@ import {
   FormDescription,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { FormProps } from '@/hooks/ui/useDialog';
+import useReducedMotion from '@/hooks/ui/useReducedMotion';
 import emailjs from '@emailjs/browser';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
@@ -29,6 +31,7 @@ const ContactForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
   const { t } = useTranslation();
   const [error, setError] = useState<string | undefined>(undefined);
   const [showFireworks, setShowFireworks] = useState(false);
+  const reducedMotion = useReducedMotion();
 
   const form = useForm<z.infer<typeof contactFormSchema>>({
     resolver: zodResolver(contactFormSchema),
@@ -57,7 +60,7 @@ const ContactForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
         },
         import.meta.env.VITE_EMAILJS_PUBLIC_KEY as string,
       );
-      setShowFireworks(true);
+      if (!reducedMotion) setShowFireworks(true);
       setTimeout(() => {
         setShowFireworks(false);
         if (closeDialog) {
@@ -83,6 +86,7 @@ const ContactForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
           name='nom'
           render={({ field }) => (
             <FormItem className='w-full'>
+              <FormLabel>{t('form_placeholder_contact_name')}</FormLabel>
               <FormControl>
                 <Input {...field} placeholder={t('form_placeholder_contact_name')} />
               </FormControl>
@@ -93,10 +97,17 @@ const ContactForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
         <FormField
           control={form.control}
           name='email'
+          required
           render={({ field }) => (
             <FormItem className='w-full'>
+              <FormLabel>{t('form_placeholder_contact_email')}</FormLabel>
               <FormControl>
-                <Input {...field} placeholder={t('form_placeholder_contact_email')} />
+                <Input
+                  {...field}
+                  type='email'
+                  autoComplete='email'
+                  placeholder={t('form_placeholder_contact_email')}
+                />
               </FormControl>
               <FormMessage>{error}</FormMessage>
             </FormItem>
@@ -105,8 +116,10 @@ const ContactForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
         <FormField
           control={form.control}
           name='object'
+          required
           render={({ field }) => (
             <FormItem className='w-full'>
+              <FormLabel>{t('form_placeholder_contact_object')}</FormLabel>
               <FormControl>
                 <Input {...field} placeholder={t('form_placeholder_contact_object')} />
               </FormControl>
@@ -117,8 +130,10 @@ const ContactForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
         <FormField
           control={form.control}
           name='message'
+          required
           render={({ field }) => (
             <FormItem className='w-full'>
+              <FormLabel>{t('form_placeholder_contact_message')}</FormLabel>
               <FormControl>
                 <Textarea
                   {...field}
@@ -130,7 +145,7 @@ const ContactForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
             </FormItem>
           )}
         />
-        {showFireworks && <Fireworks autorun={{ speed: 2, duration: 4 }} />}
+        {showFireworks && !reducedMotion && <Fireworks autorun={{ speed: 2, duration: 4 }} />}
       </form>
     </Form>
   );

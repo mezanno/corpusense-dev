@@ -7,6 +7,28 @@
     <meta name="theme-color" content="#ffffff" />
     <link rel="apple-touch-icon" href="/images/logo.png" />
     <title>CorpuSense</title>
+    <script>
+      // Anti-flash : pose les attributs de thème avant le premier rendu, rôle que
+      // jouait le ThemeScript de next-themes sous Next.js (voir docs/plan-ui-coherence.md, lot 10).
+      (function () {
+        var mode = 'system';
+        var palette = 'heritage';
+        try {
+          mode = localStorage.getItem('themeMode') || 'system';
+          palette = localStorage.getItem('themePalette') || 'heritage';
+        } catch (e) {
+          /* stockage indisponible : thème système */
+        }
+        var resolved =
+          mode === 'light' || mode === 'dark'
+            ? mode
+            : window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light';
+        document.documentElement.setAttribute('data-theme', resolved);
+        document.documentElement.setAttribute('data-palette', palette);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -10,13 +11,17 @@ type Props = {
 const AddNode = ({ data }: Props) => {
   const { t } = useTranslation();
   return (
-    <div
+    <Button
+      type='button'
+      variant='ghost'
+      size='soft'
       onClick={data.onAdd}
-      className='nodrag nopan flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed bg-white p-8 hover:border-primary'
+      onKeyDown={(event) => event.stopPropagation()}
+      className='nodrag nopan flex h-auto cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed bg-primary p-8 hover:border-primary [&_svg]:size-8'
     >
       <Plus size={32} />
       <span>{t('btn_add_first_modifier')}</span>
-    </div>
+    </Button>
   );
 };
 

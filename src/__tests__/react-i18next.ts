@@ -26,10 +26,15 @@ export const Trans = ({
   return React.createElement(React.Fragment, null, key);
 };
 
+const i18nMock = {
+  changeLanguage: vi.fn(() => Promise.resolve()),
+  language: 'fr',
+  resolvedLanguage: 'fr',
+  on: vi.fn(),
+  off: vi.fn(),
+};
+
 export const useTranslation = () => ({
   t: tMock,
-  i18n: {
-    changeLanguage: vi.fn(() => Promise.resolve()),
-    language: 'fr',
-  },
+  i18n: i18nMock,
 });

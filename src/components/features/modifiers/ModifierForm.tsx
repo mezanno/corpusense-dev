@@ -1,5 +1,12 @@
 import { FormControl, FormDescription, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
@@ -99,15 +106,23 @@ function ModifierForm<TSchema extends ZodObject<ZodRawShape>>({
                       </FormControl>
                     )}
                     {isEnumFieldMeta(meta) && (
-                      <FormControl>
-                        <select {...field} className='w-full rounded border p-1'>
+                      <Select
+                        value={typeof field.value === 'string' ? field.value : undefined}
+                        onValueChange={field.onChange}
+                      >
+                        <FormControl>
+                          <SelectTrigger ref={field.ref} onBlur={field.onBlur} className='w-full'>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
                           {(meta.options ?? []).map((option) => (
-                            <option key={option} value={option}>
+                            <SelectItem key={option} value={option}>
                               {option}
-                            </option>
+                            </SelectItem>
                           ))}
-                        </select>
-                      </FormControl>
+                        </SelectContent>
+                      </Select>
                     )}
                   </FormItem>
                 )}

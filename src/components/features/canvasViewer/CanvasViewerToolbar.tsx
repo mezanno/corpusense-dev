@@ -76,8 +76,8 @@ const CanvasViewerToolbar = ({
           />
           <div className='flex h-full space-x-2'>
             <Toggle
-              className='soft-button'
-              size={null}
+              variant='soft'
+              size='icon'
               title={t('btn_add_annotation')}
               onClick={handleAddAnnotation}
               pressed={mode === CanvasViewerMode.DRAW}
@@ -85,23 +85,18 @@ const CanvasViewerToolbar = ({
               <NotebookPen size={24} />
             </Toggle>
             <Toggle
-              className='soft-button'
-              size={null}
+              variant='soft'
+              size='icon'
               title={`${showAnnotations ? t('btn_hide_annotations') : t('btn_show_annotations')}`}
               onClick={toggleAnnotations}
               pressed={showAnnotations}
             >
               {showAnnotations ? <Eye size={24} /> : <EyeOff size={24} />}
             </Toggle>
-            <Toggle className='soft-button' size={null} onClick={toggleText} pressed={showText}>
+            <Toggle variant='soft' size='icon' onClick={toggleText} pressed={showText}>
               {showText ? <BookOpenText size={24} /> : <Book />}
             </Toggle>
-            <Toggle
-              className='soft-button'
-              size={null}
-              onClick={toggleMoidifiers}
-              pressed={showModifiers}
-            >
+            <Toggle variant='soft' size='icon' onClick={toggleMoidifiers} pressed={showModifiers}>
               {showModifiers ? <Wrench size={24} /> : <Wrench />}
             </Toggle>
             <Slider

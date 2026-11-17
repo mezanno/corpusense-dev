@@ -1,4 +1,4 @@
-import { IconWithTooltip } from '@/components/common/IconWithTooltip';
+import { IconButtonWithTooltip } from '@/components/common/IconButtonWithTooltip';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import useCollectionLlmStatus from '@/hooks/data/collections/useCollectionLlmStatus';
 import ReactJsonView from '@microlink/react-json-view';
@@ -31,9 +31,13 @@ const LlmStatus = ({ collectionId }: { collectionId: string }) => {
   };
 
   return (
-    <IconWithTooltip tooltip={t('info_lllm_available')} onClick={() => void handleClick()}>
+    <IconButtonWithTooltip
+      variant='ghost'
+      tooltip={t('info_lllm_available')}
+      onClick={() => void handleClick()}
+    >
       <Braces />
-    </IconWithTooltip>
+    </IconButtonWithTooltip>
   );
 };
 

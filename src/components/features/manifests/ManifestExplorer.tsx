@@ -17,7 +17,7 @@ const ManifestExplorer = ({
         <ResizablePanel minSize={33}>
           <ListOfManifests currendManifestId={source.id} />
         </ResizablePanel>
-        <ResizableHandle withHandle className='w-1 cursor-col-resize bg-dark-slate-gray' />
+        <ResizableHandle withHandle />
         <ResizablePanel minSize={33}>
           <ManifestDetails manifest={manifest} source={source} />
         </ResizablePanel>

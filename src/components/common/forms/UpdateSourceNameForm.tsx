@@ -66,6 +66,7 @@ const UpdateSourceNameForm = ({
         <FormField
           control={form.control}
           name='sourceName'
+          required
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('form_label_sourcename')}</FormLabel>

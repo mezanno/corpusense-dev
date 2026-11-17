@@ -61,7 +61,9 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
         </div>
         <div className='flex items-center space-x-2'>
           <Button
-            className='soft-button hidden size-8 lg:flex'
+            variant='soft'
+            size='icon'
+            className='hidden size-8 lg:flex'
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
             title={t('btn_collection_first_page')}
@@ -70,7 +72,9 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
             <ChevronsLeft />
           </Button>
           <Button
-            className='soft-button size-8'
+            variant='soft'
+            size='icon'
+            className='size-8'
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
             title={t('btn_collection_previous_page')}
@@ -79,7 +83,9 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
             <ChevronLeft />
           </Button>
           <Button
-            className='soft-button size-8'
+            variant='soft'
+            size='icon'
+            className='size-8'
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
             title={t('btn_collection_next_page')}
@@ -88,7 +94,9 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
             <ChevronRight />
           </Button>
           <Button
-            className='soft-button hidden size-8 lg:flex'
+            variant='soft'
+            size='icon'
+            className='hidden size-8 lg:flex'
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
             title={t('btn_collection_last_page')}

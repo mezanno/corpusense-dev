@@ -1,6 +1,8 @@
+import NothingToShow from '@/components/common/NothingToShow';
 import ScopeLabel from '@/components/common/ScopeLabel';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import { useWorkerContext } from '@/components/reducers/WorkerContext';
+import { Button } from '@/components/ui/button';
 import {
   canInterruptWorker,
   canRecoverWorker,
@@ -24,9 +26,7 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
   const { openDialog } = useAlertDialogContext();
 
   if (worker === undefined) {
-    return (
-      <div className='p-4 text-center text-gray-500 italic'>{t('info_no_worker_selected')}</div>
-    );
+    return <NothingToShow message={t('info_no_worker_selected')} />;
   }
 
   const displayRestartButton = canRecoverWorker(worker.status);
@@ -78,25 +78,19 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
 
         <div className='flex gap-2'>
           {displayRestartButton && (
-            <button
-              className='soft-button border-yellow-700 text-yellow-700'
-              onClick={handleRecoverWorker}
-            >
+            <Button variant='recovery' size='soft' onClick={handleRecoverWorker}>
               {t('btn_recover')}
-            </button>
+            </Button>
           )}
           {displayStopButton && (
-            <button className='soft-button border-red-500 text-red-500' onClick={handleStopWorker}>
+            <Button variant='stop' size='soft' onClick={handleStopWorker}>
               {t('btn_stop_worker')}
-            </button>
+            </Button>
           )}
           {resultExists && (
-            <button
-              className='soft-button border-blue-500 text-blue-500'
-              onClick={handleExportResult}
-            >
+            <Button variant='export' size='soft' onClick={handleExportResult}>
               {t('btn_export_result', { name: worker.name })}
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -115,7 +109,7 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
               className={`flex items-center gap-2 ${taskStatusPresentation[task.status].color}`}
             >
               <span
-                className={`rounded px-2 py-1 text-sm ${taskStatusPresentation[task.status].color} bg-opacity-10`}
+                className={`rounded-md px-2 py-1 text-sm ${taskStatusPresentation[task.status].color} bg-opacity-10`}
               >
                 {taskStatusPresentation[task.status].icon}
               </span>
@@ -127,9 +121,16 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
                 </span>
               )}
               {!isTaskWaiting(task.status) && (
-                <div className='cursor-pointer hover:scale-110' title={t('btn_delete')}>
-                  <CircleX size={20} onClick={() => handleRemoveResult(task.id)} />
-                </div>
+                <Button
+                  type='button'
+                  variant='ghost'
+                  size='icon'
+                  className='h-7 w-7 hover:scale-110'
+                  aria-label={t('btn_delete_task_result', { id: task.id })}
+                  onClick={() => handleRemoveResult(task.id)}
+                >
+                  <CircleX />
+                </Button>
               )}
             </li>
           ))}

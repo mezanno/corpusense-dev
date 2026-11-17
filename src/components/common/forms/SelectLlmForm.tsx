@@ -61,6 +61,7 @@ const SelectLlmForm = ({ formRef, setCanSubmit, onResult }: FormProps<string>) =
         <FormField
           control={form.control}
           name='profileId'
+          required
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('form_label_select_llm_profile')}</FormLabel>

@@ -1,3 +1,5 @@
+import NothingToShow from '@/components/common/NothingToShow';
+import { Input } from '@/components/ui/input';
 import { SourceWithContent } from '@/data/models/source/source';
 import { useCanvasSelection } from '@/hooks/useCanvasSelection';
 import { Canvas } from '@iiif/presentation-3';
@@ -87,11 +89,12 @@ const ManifestCanvasGallery = ({
   return (
     <section className='center h-full w-full p-4' aria-label={t('aria_label_canvas_gallery')}>
       {canvases.length == 0 ? (
-        <div role='alert'>{t('info_empty_manifest')}</div>
+        <NothingToShow message={t('info_empty_manifest')} />
       ) : (
         <>
-          <div className='m-2 flex items-center justify-end gap-2 text-sm text-gray-600 italic'>
-            <input
+          <div className='m-2 flex items-center justify-end gap-2 text-sm text-muted-foreground italic'>
+            <Input
+              aria-label={t('aria_label_canvas_index')}
               className='w-20'
               type='number'
               min={1}
@@ -175,7 +178,7 @@ const ManifestCanvasGallery = ({
             </AutoSizer>
             {selectionCount > 0 && (
               <div className='absolute flex w-full justify-center'>
-                <div className='mt-2 rounded-xl border bg-white/85 px-2 font-bold italic'>
+                <div className='mt-2 rounded-xl border bg-primary/85 px-2 font-bold italic'>
                   {t('info_selection_count', { count: selectionCount })}
                 </div>
               </div>
