@@ -14,13 +14,18 @@ import { WorkerProvider } from '@/components/reducers/WorkerContext';
 import { ThemeProvider } from '@/hooks/ui/useTheme';
 import { ExperimentalProvider } from '@/hooks/useExperimental';
 
-const testQueryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
+// Un QueryClient NEUF par rendu (lot 41) : le cache partagé au niveau module
+// faisait déborder des requêtes déjà résolues d'un test sur l'autre. `retry: false`
+// est conservé, conformément aux frontières du plan de tests des hooks.
+function createTestQueryClient(): QueryClient {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
     },
-  },
-});
+  });
+}
 
 // This function is used to render a component with the redux store and provider
 export function renderWithProviders(
@@ -31,23 +36,28 @@ export function renderWithProviders(
     ...renderOptions
   }: { preloadedState?: Partial<RootState>; store?: ReturnType<typeof createMockStore> } = {},
 ) {
+  const queryClient = createTestQueryClient();
+  // Le routeur est AU-DESSUS de tous les providers, comme dans `App.tsx`
+  // (BrowserRouter entre ThemeProvider et QueryClientProvider) : le contenu des
+  // dialogues montés par l'`AlertDialogProvider` est ainsi dans le routeur,
+  // exactement comme en production (lot 41).
   return render(
     <ThemeProvider>
-      <QueryClientProvider client={testQueryClient}>
-        <Provider store={store}>
-          <ConnectedUserProvider>
-            <ExperimentalProvider>
-              <AlertDialogProvider>
-                <CollectionProvider>
-                  <WorkerProvider>
-                    <MemoryRouter>{ui}</MemoryRouter>{' '}
-                  </WorkerProvider>
-                </CollectionProvider>
-              </AlertDialogProvider>
-            </ExperimentalProvider>
-          </ConnectedUserProvider>
-        </Provider>
-      </QueryClientProvider>
+      <MemoryRouter>
+        <QueryClientProvider client={queryClient}>
+          <Provider store={store}>
+            <ConnectedUserProvider>
+              <ExperimentalProvider>
+                <AlertDialogProvider>
+                  <CollectionProvider>
+                    <WorkerProvider>{ui}</WorkerProvider>
+                  </CollectionProvider>
+                </AlertDialogProvider>
+              </ExperimentalProvider>
+            </ConnectedUserProvider>
+          </Provider>
+        </QueryClientProvider>
+      </MemoryRouter>
     </ThemeProvider>,
     renderOptions,
   );

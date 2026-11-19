@@ -145,7 +145,7 @@ Statut : active · Formalisée en 2026, harnais réparé le 2026-09-30, E2E dép
 - tests co-localisés dans `__tests__/` à côté du fichier source ;
 - `fake-indexeddb` pour tout test touchant un repository (D-004) ; le helper `createTestDb()` réinitialise la base Dexie entre les tests ;
 - harnais Vitest : stub `ResizeObserver` requis par `@dnd-kit`, mock i18n exportant `useTranslation` **et** `Trans` (les assertions ciblent les clés, que le mock renvoie à l'identique), mock WebGL fourni par `vitest-webgl-canvas-mock` ;
-- Vitest vérifié le 2026-10-12 : 24 fichiers réussis, 1 ignoré, 96 tests réussis et 1 todo. Baseline statique du 2026-10-08 : tsc vert, ESLint `src` : 48 erreurs / 2 warnings (backlog roadmap Q1) ;
+- Vitest vérifié le 2026-11-19 : 103 fichiers réussis, 1 ignoré, 1 385 tests réussis et 3 todo (campagnes closes : Q2 cœur données, Q11 couche hooks — 93,29 % de lignes sur `src/hooks/**` ; harnais et frontières de mock dans developpement.md §3). Baseline statique : tsc vert, ESLint `src` (ratchet) : 48 erreurs / 2 warnings (backlog roadmap Q1) ;
 - E2E : specs dans `e2e/` (non co-localisées — la co-localisation est la règle Vitest), requêtes HTTP externes abandonnées (fixtures servies en `page.route` sur un hôte factice ; WebSockets non filtrés par cette interception), assertions par rôles accessibles et libellés FR réels, sans `data-testid` ; une spec ne se commite qu'après 10 runs consécutifs verts.
 
 **Conséquences.** Le mock i18n renvoie les clés à l'identique : les tests vérifient les clés, pas les phrases. Toute nouvelle dépendance qui touche IndexedDB en production se teste sur le vrai stack, pas en `vi.mock`.

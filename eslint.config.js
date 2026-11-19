@@ -164,6 +164,20 @@ export default tseslint.config(
     ],
   },
   {
+    // Assouplissements limités aux fichiers de tests de la couche hooks (campagne Q11,
+    // docs/plan-tests-hooks.md) : leurs patterns d'observation du vrai stack — import direct
+    // de `db` pour l'injection de faute Dexie, `new Error` de fixture, corps `async` sans
+    // await, stringification d'erreurs — déclenchent des règles écrites pour le code de
+    // production. Rien n'est assoupli dans le code de production ni dans les autres tests.
+    files: ['src/hooks/**/__tests__/**'],
+    rules: {
+      'no-restricted-imports': 'off', // db importé pour hook('reading')/hook('updating') uniquement
+      'no-restricted-syntax': 'off', // erreurs de fixture injectées, jamais levées vers l'app
+      '@typescript-eslint/require-await': 'off', // corps async sans await dans it()/vi.fn()
+      '@typescript-eslint/no-base-to-string': 'off', // String(err) sur objets injectés
+    },
+  },
+  {
     files: ['**/*.js'],
     extends: [tseslint.configs.disableTypeChecked],
   },

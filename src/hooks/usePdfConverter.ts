@@ -213,8 +213,6 @@ export function usePdfConverter() {
       await manifestWritable.write(JSON.stringify(newManifest, null, 2));
       await manifestWritable.close();
 
-      console.log(newManifest);
-
       // const convertedFileRepository = getConvertedFileRepository();
       return {
         title: fileName,
