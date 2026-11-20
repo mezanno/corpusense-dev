@@ -6,7 +6,7 @@ import { getAnnotationType, getAnnotationValue } from './annotation.utils';
 
 const URL_CLASSIFYING = '/class';
 const URL_TAGGING = '/tag';
-export const changeType = (annotation: Annotation, newType: ElementType): Annotation => {
+export const changeType = <A extends AnnotationDTO>(annotation: A, newType: ElementType): A => {
   return {
     ...annotation,
     type: newType,
@@ -14,7 +14,7 @@ export const changeType = (annotation: Annotation, newType: ElementType): Annota
   };
 };
 
-export const changeValue = (annotation: Annotation, newValue: string): Annotation => {
+export const changeValue = <A extends AnnotationDTO>(annotation: A, newValue: string): A => {
   return {
     ...annotation,
     bodies: createBodies(getAnnotationType(annotation), newValue, annotation.id),

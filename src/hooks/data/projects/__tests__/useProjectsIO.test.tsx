@@ -88,7 +88,7 @@
  *   vérifiée par la stabilité du compteur sous `rerender` (test nominal).
  */
 import { Event, EventType } from '@/data/models/event';
-import { Project } from '@/data/models/project';
+import { Project } from '@/data/models/project/project';
 import { getProjectRepository } from '@/data/repositories/indexeddb/dbFactory';
 import {
   countLiveQuerySubscribers,
@@ -103,7 +103,7 @@ import useProjectsIO from '../useProjectsIO';
 
 resetTestDbBeforeEach();
 
-const PROJECT_DATE = new Date('2026-01-01T00:00:00.000Z');
+const PROJECT_DATE = '2026-01-01T00:00:00.000Z';
 
 function makeProject(id: string, name: string): Project {
   return {

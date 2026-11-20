@@ -339,12 +339,16 @@ function withFakeHandle(source: SourceWithContent, handle: FakeDirectoryHandle):
 function makeRemoteSourceArg(): SourceWithContent {
   return {
     id: 'source-remote-sans-objet',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
     name: 'Source distante de test',
     type: 'remote',
     pageCount: 1,
     thumbnailBlobId: 'blob-inutile',
     content: {
       id: 'source-remote-sans-objet',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
       type: 'remote',
       manifest: manifestFixture as unknown as SourceWithContent['content']['manifest'],
     },

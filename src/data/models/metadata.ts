@@ -1,12 +1,12 @@
 import z from 'zod';
+import { TimeStampSchema } from './timeStampSchema';
 
 const ItemMetadataAttributeSchema = z.object({
   label: z.string(),
   value: z.string(),
 });
 
-const ItemMetadataSchema = z.object({
-  id: z.string(),
+const ItemMetadataSchema = TimeStampSchema.extend({
   attribute: ItemMetadataAttributeSchema,
 });
 

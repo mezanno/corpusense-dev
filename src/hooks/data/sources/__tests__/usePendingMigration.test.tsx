@@ -134,7 +134,12 @@ const LEGACY_MANIFEST_URL = 'https://example.test/legacy-pending.json';
  * des migrations pendantes.
  */
 async function seedPendingManifest(name: string): Promise<void> {
-  await db.storedManifests.add({ id: LEGACY_MANIFEST_URL, name });
+  await db.storedManifests.add({
+    id: LEGACY_MANIFEST_URL,
+    name,
+    createdAt: '2020-01-01T00:00:00.000Z',
+    updatedAt: '2020-01-01T00:00:00.000Z',
+  });
 }
 
 /** Graine complète (détails + contenu) pour que la migration ait de quoi faire. */
@@ -145,7 +150,12 @@ async function seedPendingManifestWithContent(name: string): Promise<void> {
     id: LEGACY_MANIFEST_URL,
     thumbnail: undefined,
   } as unknown as Manifest;
-  await db.storedManifestContents.add({ id: LEGACY_MANIFEST_URL, content });
+  await db.storedManifestContents.add({
+    id: LEGACY_MANIFEST_URL,
+    content,
+    createdAt: '2020-01-01T00:00:00.000Z',
+    updatedAt: '2020-01-01T00:00:00.000Z',
+  });
 }
 
 /**

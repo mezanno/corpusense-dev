@@ -34,11 +34,13 @@
  *   sont ré-écrites (les tags existants sont silencieusement écrasés par `bulkPut`).
  *   Même inatteignable, le test « collection déjà présente » verrouille ce comportement
  *   observable et échouera si la branche redevient vivante (à réévaluer alors).
- * - branche `catch` des TAGS morte aussi : `tagRepository.addAll` fait un `bulkPut`
- *   qui n'échoue jamais sur un id déjà présent ; `error_importing_tags` est
- *   inatteignable par un import JSON valide.
- * - échec des ANNOTATIONS non isolé : leur boucle n'a pas de `try/catch` ; un rejet
- *   remonte au catch d'`importOneCollection` (`error_import_collection`, type `'error'`),
+ * - branche d'échec des TAGS morte aussi : `tagRepository.importWithDates` fait un
+ *   `bulkPut` en transaction marquée migration qui n'échoue jamais sur un id déjà
+ *   présent (dates préservées, lot 3) ; `error_importing_tags` est inatteignable par
+ *   un import JSON valide, la normalisation en frontière garantissant des dates valides.
+ * - échec des ANNOTATIONS non isolé : leur import (`importWithDates`, sans
+ *   `try/catch`) propage tout rejet au catch d'`importOneCollection`
+ *   (`error_import_collection`, type `'error'`),
  *   la collection et les sources déjà écrites restent en base, le modèle/workers/
  *   résultats/tags du même corps ne sont pas importés.
  * - résultat du re-fetch des manifests de `collection.content` ignoré (pas de vérif
@@ -197,6 +199,8 @@ const FIXED_DATE = '2026-01-01T00:00:00.000Z';
 function makeImportedModel(id: string, name: string): DataModel {
   return {
     id,
+    createdAt: FIXED_DATE,
+    updatedAt: FIXED_DATE,
     name,
     prompt: `Prompt de ${name}`,
     fields: [{ id: `${id}-champ-1`, name: 'Champ', type: 'string', color: '#111111' }],
@@ -212,14 +216,17 @@ function makeImportedWorker(id: string, collectionId: string, name = `Worker ${i
     scopeKey: `sk-${collectionId}`,
     status: WorkerStatus.COMPLETED,
     createdAt: FIXED_DATE,
+    updatedAt: FIXED_DATE,
     estimatedDuration: 0,
     queue: [],
   };
 }
 
-function makeImportedResult(id: number, collectionId: string, workerId: string): Result {
+function makeImportedResult(id: string, collectionId: string, workerId: string): Result {
   return {
     id,
+    createdAt: FIXED_DATE,
+    updatedAt: FIXED_DATE,
     scope: { collectionId },
     workerName: 'ocr-test',
     workerId,
@@ -241,11 +248,13 @@ function makeImportedSource(
   } as unknown as SourceWithContentAndThumbnail['content']['manifest'];
   return {
     id,
+    createdAt: FIXED_DATE,
+    updatedAt: FIXED_DATE,
     name: `Source ${id}`,
     type: 'remote',
     pageCount: FIXTURE_CANVAS_IDS.length,
     thumbnailBlobId: `blob-${id}`,
-    content: { id, type: 'remote', manifest },
+    content: { id, type: 'remote', manifest, createdAt: FIXED_DATE, updatedAt: FIXED_DATE },
     thumbnailBase64: 'data:image/png;base64,AAAA',
     ...overrides,
   };
@@ -266,7 +275,7 @@ function fullCollectionBody(id: string): ExportedCollection {
     ],
     model: makeImportedModel(`modele-${id}`, `Modèle ${id}`),
     workers: [makeImportedWorker(`worker-${id}`, id)],
-    results: [makeImportedResult(500, id, `worker-${id}`)],
+    results: [makeImportedResult('500', id, `worker-${id}`)],
     tags: [makeTag({ id: `tag-${id}` })],
   };
 }
@@ -488,7 +497,7 @@ describe('useCollectionImporter — importOneCollection (import d’une collecti
     expect(unwrap(await getModelRepository().getById('modele-c1')).name).toBe('Modèle c1');
     expect((await getWorkerRepository().getById('worker-c1')).ok).toBe(true);
     const results = await getResultRepository().getAll();
-    expect(results.map((result) => result.id)).toEqual([500]);
+    expect(results.map((result) => result.id)).toEqual(['500']);
     expect(await getTagRepository().getByIds(['tag-c1'])).toHaveLength(1);
 
     rendered.unmount();
@@ -691,7 +700,7 @@ describe('useCollectionImporter — importOneCollection (import d’une collecti
       'Collection première',
     );
     expect(await getTagRepository().getByIds(['tag-doublon'])).toEqual([
-      { id: 'tag-doublon', label: 'Libellé écrasé' },
+      expect.objectContaining({ id: 'tag-doublon', label: 'Libellé écrasé' }),
     ]);
 
     rendered.unmount();
@@ -782,8 +791,8 @@ describe('useCollectionImporter — importOneCollection (import d’une collecti
     const body = fullCollectionBody('resultats');
     body.workers = [makeImportedWorker('worker-resultats', 'resultats')];
     body.results = [
-      makeImportedResult(501, 'resultats', 'worker-resultats'),
-      makeImportedResult(501, 'resultats', 'worker-doublon'),
+      makeImportedResult('501', 'resultats', 'worker-resultats'),
+      makeImportedResult('501', 'resultats', 'worker-doublon'),
     ];
 
     await importOne(rendered, 'resultats.json', body);
@@ -814,13 +823,14 @@ describe('useCollectionImporter — importOneCollection (import d’une collecti
 
     await importOne(rendered, 'tags.json', body);
 
-    // CARACTÉRISATION (cf. en-tête) : `tagRepository.addAll` fait un `bulkPut` qui
-    // écrase silencieusement l'id déjà présent — `error_importing_tags` est
-    // inatteignable par un import JSON valide. Comportement verrouillé tel quel.
+    // CARACTÉRISATION (cf. en-tête) : `tagRepository.importWithDates` fait un
+    // `bulkPut` qui écrase silencieusement l'id déjà présent en préservant ses dates
+    // importées — `error_importing_tags` est inatteignable par un import JSON valide.
+    // Comportement verrouillé tel quel.
     expect(messagesSince(rendered, 0)).toContain('log_imported_tags');
     expect(errorMessages(rendered)).toEqual([]);
     expect(await getTagRepository().getByIds(['tag-stable'])).toEqual([
-      { id: 'tag-stable', label: 'Dernier libellé' },
+      expect.objectContaining({ id: 'tag-stable', label: 'Dernier libellé' }),
     ]);
 
     rendered.unmount();
@@ -835,6 +845,8 @@ describe('useCollectionImporter — importOneCollection (import d’une collecti
       content: {
         id: 'source-k',
         type: 'remote',
+        createdAt: FIXED_DATE,
+        updatedAt: FIXED_DATE,
         manifest: {
           ...manifestFixture,
           id: 'https://example.org/manifest/second.json',

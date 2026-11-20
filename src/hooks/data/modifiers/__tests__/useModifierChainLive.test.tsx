@@ -165,7 +165,7 @@
  *   (couche data), consigné, non testé.
  */
 import { ElementType } from '@/data/models/annotations/annotation';
-import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
+import { ModifierChainDTO } from '@/data/models/modifiers/modifierChain.dto';
 import { db } from '@/data/repositories/indexeddb/db';
 import { getModifierChainRepository } from '@/data/repositories/indexeddb/dbFactory';
 import {

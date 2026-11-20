@@ -1,5 +1,6 @@
 import { ImageAnnotation } from '@annotorious/annotorious';
 import { z } from 'zod';
+import { TimeStampSchema } from '../timeStampSchema';
 
 export enum ElementType {
   UNKNOWN = 'UNKNOWN',
@@ -10,7 +11,7 @@ export enum ElementType {
 
 const ElementTypeSchema = z.enum(ElementType);
 
-const AnnotationSchema = z.object({
+const AnnotationSchema = TimeStampSchema.extend({
   canvasId: z.string(),
   collectionId: z.string(),
   order: z.number(),

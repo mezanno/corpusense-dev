@@ -1,3 +1,4 @@
+import { AnnotationDraft } from '@/data/models/annotations/annotation.dto';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { modifierRegistry } from '@/data/models/modifiers/ModifierFactory';
 import { CanvasScope, CollectionScope } from '@/data/models/scope/scope';
@@ -6,7 +7,7 @@ import {
   getCollectionRepository,
   getModifierChainRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
-import { Annotation, ElementType } from '../models/annotations/annotation';
+import { ElementType } from '../models/annotations/annotation';
 import { isCanvasScope } from '../models/scope/scope.utils';
 import { UnknownModifierTypeError } from './errors';
 
@@ -83,7 +84,7 @@ const applyModifiersToScope = async (
 
 const applyModifierChainToAnnotations = async (
   modifierChainId: string,
-  annotations: Annotation[],
+  annotations: AnnotationDraft[],
 ) => {
   try {
     const { modifiers, modifierValues } = await getModifiersAndValues(modifierChainId);
@@ -97,8 +98,8 @@ const applyModifierChainToAnnotations = async (
 const applyChainToAnnotations = async (
   modifiers: AnyModifier[],
   modifierValues: Record<string, unknown>,
-  annotations: Annotation[],
-) => {
+  annotations: AnnotationDraft[],
+): Promise<AnnotationDraft[]> => {
   let updatedAnnotations = [...annotations];
   for (const modifier of modifiers) {
     const values = modifierValues[modifier.id];

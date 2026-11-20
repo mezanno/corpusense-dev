@@ -3,6 +3,7 @@ import { Canvas } from '@iiif/presentation-3';
 import { Rect } from 'openseadragon';
 import { v4 as uuid } from 'uuid';
 import { Annotation, ElementType } from '../models/annotations/annotation';
+import { AnnotationDTO } from '../models/annotations/annotation.dto';
 import { createAnnotation, createBodies } from '../models/annotations/annotation.factory';
 import { getAnnotationType, getAnnotationValue } from '../models/annotations/annotation.utils';
 import { getImage } from './canvas';
@@ -215,7 +216,7 @@ export function getDistanceBetweenAnnotationCenters(a1: ImageAnnotation, a2: Ima
   };
 }
 
-export const mergeTwoAnnotations = (a1: Annotation, a2: Annotation) => {
+export const mergeTwoAnnotations = <A extends AnnotationDTO>(a1: A, a2: A): A => {
   return {
     ...a1,
     id: a1.id,

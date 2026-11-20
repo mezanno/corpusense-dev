@@ -417,6 +417,8 @@
   "log_importing_tags": "Importing {{count}} tags for collection {{id}}...",
   "log_imported_tags": "Imported {{count}} tags",
   "error_importing_tags": "Error importing tags: {{error}}",
+  "error_importing_annotations": "Error importing annotations: {{error}}",
+  "error_invalid_imported_dates": "The timestamps provided for {{entity}} are invalid: write refused.",
   "log_collection_imported_success": "Collection {{id}} imported successfully from file: {{filename}}",
   "log_starting_import_zip": "Starting import of collections from zip file...",
   "tab_configuration_general": "General",

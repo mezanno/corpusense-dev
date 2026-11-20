@@ -3,9 +3,9 @@ import { AnnotationDTO } from '../annotations/annotation.dto';
 import { CollectionElementSchema, LegacyCollectionElementSchema } from '../collectionElement';
 import { DataModelSchema } from '../dataModel/dataModel';
 import { ObjectWithStringIdSchema } from '../objectWithStringId';
-import { ResultSchema } from '../result/result';
+import { ImportedResultSchema } from '../result/result';
 import { SourceWithContentAndThumbnailSchema } from '../source/source';
-import { TagSchema } from '../tag';
+import { TagSchema } from '../tag/tag';
 import { TimeStampSchema } from '../timeStampSchema';
 import { WorkerSchema } from '../worker/worker';
 
@@ -21,7 +21,7 @@ const CollectionDetailsSchema = TimeStampSchema.extend({
 
 export type CollectionDetails = z.infer<typeof CollectionDetailsSchema>;
 
-const CollectionContentSchema = ObjectWithStringIdSchema.extend({
+const CollectionContentSchema = TimeStampSchema.extend({
   content: z.array(CollectionElementSchema),
 });
 
@@ -38,7 +38,7 @@ export const ExportedCollectionSchema = z.object({
   annotations: z.array(z.custom<AnnotationDTO>()).optional(),
   model: DataModelSchema.optional(),
   workers: z.array(WorkerSchema).optional(),
-  results: z.array(ResultSchema).optional(),
+  results: z.array(ImportedResultSchema).optional(),
 });
 
 export type ExportedCollection = z.infer<typeof ExportedCollectionSchema>;
@@ -60,7 +60,7 @@ export const LegacyExportedCollectionSchema = z.object({
   annotations: z.array(z.custom<AnnotationDTO>()).optional(),
   model: DataModelSchema.optional(),
   workers: z.array(WorkerSchema).optional(),
-  results: z.array(ResultSchema).optional(),
+  results: z.array(ImportedResultSchema).optional(),
 });
 
 export type LegacyExportedCollection = z.infer<typeof LegacyExportedCollectionSchema>;

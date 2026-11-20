@@ -15,8 +15,10 @@ import {
   getTagRepository,
   getWorkerRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
+import { normalizeImportedCollection } from '@/data/utils/historicalDates';
 import { useAppDispatch } from '@/hooks/hooks';
 import { ProgressLoggerSetters } from '@/hooks/ui/useLogger';
+import { BaseError } from '@/utils/BaseError';
 import { FunctionResult } from '@/utils/functionResult';
 import { getErrorMessage } from '@/utils/utils';
 import { Cozy } from 'cozy-iiif';
@@ -122,13 +124,14 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
   );
 
   const parseImportedCollection = useCallback(
-    async (json: unknown): Promise<ExportedCollection> => {
-      const parsed = ExportedCollectionSchema.safeParse(json);
+    async (json: unknown, now: string): Promise<ExportedCollection> => {
+      const normalized = normalizeImportedCollection(json, now);
+      const parsed = ExportedCollectionSchema.safeParse(normalized);
       if (parsed.success) {
         return parsed.data;
       }
 
-      const legacy = LegacyExportedCollectionSchema.safeParse(json);
+      const legacy = LegacyExportedCollectionSchema.safeParse(normalized);
       if (legacy.success) {
         addLog(t('log_legacy_collection_detected'), 'warning');
         return convertLegacyCollection(legacy.data);
@@ -140,13 +143,13 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
   );
 
   const importCollection = useCallback(
-    async (filename: string, json: object) => {
+    async (filename: string, json: object, now: string) => {
       addLog(t('log_importing_collection_from_file', { filename }));
 
       let importedCollection: ExportedCollection;
 
       try {
-        importedCollection = await parseImportedCollection(json);
+        importedCollection = await parseImportedCollection(json, now);
       } catch (error) {
         addLog(
           t('error_import_collection', {
@@ -170,12 +173,7 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
       }
 
       try {
-        const collectionWithTimeStamps = {
-          ...collection,
-          createdAt: collection.createdAt ?? new Date().toISOString(),
-          updatedAt: collection.updatedAt ?? new Date().toISOString(),
-        };
-        await collectionRepository.add(collectionWithTimeStamps);
+        await collectionRepository.add(collection);
         addLog(t('log_collection_created', { id: collection.id }), 'success');
       } catch (e) {
         if (typeof e === 'object' && e !== null && 'name' in e && e.name === 'ConstraintError') {
@@ -220,16 +218,43 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
       if (annotations !== undefined && annotations.length > 0) {
         addLog(t('log_importing_annotations', { count: annotations.length, id: collection.id }));
         const annotationRepository = getAnnotationRepository();
-        const annotationsAdded = await annotationRepository.addAll(annotations);
-        addLog(t('log_imported_annotations', { count: annotationsAdded.length }), 'success');
+        // Overwrite-capable import: dedicated path preserving the imported dates.
+        const annotationsImportResult = await annotationRepository.importWithDates(annotations);
+        FunctionResult.match(annotationsImportResult, {
+          ok: (annotationsAdded) => {
+            addLog(t('log_imported_annotations', { count: annotationsAdded.length }), 'success');
+          },
+          err: (error) => {
+            addLog(t('error_importing_annotations', { error: getErrorMessage(error) }), 'error');
+          },
+        });
       }
 
       if (model !== undefined) {
         try {
           addLog(t('log_importing_model', { modelId: model.id, id: collection.id }));
           const modelRepository = getModelRepository();
-          await modelRepository.add(model);
-          addLog(t('log_model_imported', { modelId: model.id }), 'success');
+          // Former `add` protection: an existing row under the same id is left
+          // untouched and the failure stays isolated (the import continues).
+          const conflictingModel = await modelRepository.getById(model.id);
+          if (conflictingModel.ok) {
+            throw new BaseError('A model with the same id already exists', {
+              context: { id: model.id },
+            });
+          }
+          // Dedicated import path: the imported dates are validated and preserved.
+          const modelImportResult = await modelRepository.importWithDates(model);
+          if (!modelImportResult.ok) {
+            addLog(
+              t('error_importing_model', {
+                modelId: model.id,
+                error: getErrorMessage(modelImportResult.error),
+              }),
+              'error',
+            );
+          } else {
+            addLog(t('log_model_imported', { modelId: model.id }), 'success');
+          }
         } catch (error) {
           addLog(
             t('error_importing_model', { modelId: model.id, error: getErrorMessage(error) }),
@@ -264,8 +289,16 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
         try {
           addLog(t('log_importing_tags', { count: tags.length, id: collection.id }));
           const tagRepository = getTagRepository();
-          await tagRepository.addAll(tags);
-          addLog(t('log_imported_tags', { count: tags.length }), 'success');
+          // Overwrite-capable import: dedicated path preserving the imported dates.
+          const tagsImportResult = await tagRepository.importWithDates(tags);
+          if (!tagsImportResult.ok) {
+            addLog(
+              t('error_importing_tags', { error: getErrorMessage(tagsImportResult.error) }),
+              'error',
+            );
+          } else {
+            addLog(t('log_imported_tags', { count: tags.length }), 'success');
+          }
         } catch (error) {
           addLog(t('error_importing_tags', { error: getErrorMessage(error) }), 'error');
         }
@@ -281,6 +314,7 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
       setStatus('processing');
       addLog(t('log_starting_import_zip'));
       const zip = new JSZip();
+      const now = new Date().toISOString();
       const zipContent = await zip.loadAsync(data);
       const totalFiles = Object.keys(zipContent.files).length;
       for (let i = 0; i < totalFiles; i++) {
@@ -290,7 +324,7 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
           const fileContent = await file.async('string');
           try {
             const json = JSON.parse(fileContent) as object;
-            await importCollection(filename, json);
+            await importCollection(filename, json, now);
           } catch (e) {
             addLog(t('error_import_collection', { file: filename, error: getErrorMessage(e) }));
           }
@@ -306,7 +340,7 @@ export const useCollectionImporter = (setters: ProgressLoggerSetters) => {
     async (filename: string, json: object) => {
       setStatus('processing');
       try {
-        await importCollection(filename, json);
+        await importCollection(filename, json, new Date().toISOString());
       } catch (e) {
         addLog(
           t('error_import_collection', { file: filename, error: getErrorMessage(e) }),

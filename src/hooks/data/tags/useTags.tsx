@@ -1,4 +1,5 @@
-import { Tag } from '@/data/models/tag';
+import { Tag } from '@/data/models/tag/tag';
+import { TagDTO } from '@/data/models/tag/tag.dto';
 import { getTagLiveRepository, getTagRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useMemo } from 'react';
@@ -14,8 +15,9 @@ export const useTags = () => {
     [tags],
   );
 
-  const createNewTag = async (newTag: Tag) => {
+  const createNewTag = async (newTag: TagDTO) => {
     try {
+      // Timestamps are assigned by the repository (decision 1).
       await tagRepository.add(newTag);
     } catch (error) {
       console.warn(error);

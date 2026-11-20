@@ -1,4 +1,5 @@
 import { Annotation, ElementType } from '@/data/models/annotations/annotation';
+import { AnnotationDraft } from '@/data/models/annotations/annotation.dto';
 import { changeType, duplicateAnnotation } from '@/data/models/annotations/annotation.factory';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { CanvasScope } from '@/data/models/scope/scope';
@@ -71,7 +72,7 @@ const useAnnotationModifierActions = ({
       ? duplicateAnnotations(scopeAnnotations)
       : scopeAnnotations;
 
-    let annotations = [...annotationsToModify];
+    let annotations: AnnotationDraft[] = [...annotationsToModify];
     for (const modifier of modifiers) {
       const modifierValues = values[modifier.id];
       if (modifierValues !== undefined) {

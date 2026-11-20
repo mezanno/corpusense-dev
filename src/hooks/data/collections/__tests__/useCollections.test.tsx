@@ -994,9 +994,10 @@ describe('useCollections — updateCollection', () => {
     // TEL QUEL (caractérisation 7) : contentSize reste à la valeur d'enregistrement —
     // ni le hook ni repository.update n'écrivent ce champ ici, même contradictoire.
     expect(read.value.contentSize).toBe(2);
-    // Les timestamps ne sont pas dans la liste des champs écrits : intouchés.
+    // `createdAt` n'est pas dans la liste des champs écrits : intouché. En revanche,
+    // le hook d'horodatage re-stampe `updatedAt` à toute écriture, champ listé ou non.
     expect(read.value.createdAt).toBe('2026-01-01T00:00:00.000Z');
-    expect(read.value.updatedAt).toBe('2026-01-01T00:00:00.000Z');
+    expect(read.value.updatedAt).not.toBe('2026-01-01T00:00:00.000Z');
 
     expect(toasts(store.getState())).toEqual([infoToast('toast_collection_saved')]);
     await waitFor(() =>

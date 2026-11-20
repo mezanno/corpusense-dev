@@ -1,15 +1,27 @@
-import { AnnotationDTO } from '@/data/models/annotations/annotation.dto';
+import { AnnotationDraft, AnnotationDTO } from '@/data/models/annotations/annotation.dto';
 import { getAnnotationType } from '@/data/models/annotations/annotation.utils';
 import { Scope } from '@/data/models/scope/scope';
 import { isAnnotationScope, isCanvasScope } from '@/data/models/scope/scope.utils';
 import { containsAtLeast2Corners, getSurface } from '@/data/utils/annotations';
+import { BaseError } from '@/utils/BaseError';
 import { FunctionResult } from '@/utils/functionResult';
 import { Annotation, ElementType } from '../../models/annotations/annotation';
+import { InvalidImportedDatesError } from '../../utils/errors';
 import { EntityNotFoundError } from '../EntityNotFoundError';
 import { db } from './db';
+import { validateTimestamps } from './importWrite';
+import { markMigration } from './timestamps';
 import { AnnotationRepository } from './types';
 
 export class IndexedDBAnnotationRepository implements AnnotationRepository {
+  private async getWrittenAnnotations(annotations: Annotation[]): Promise<Annotation[]> {
+    const stored = await db.annotations.bulkGet(annotations.map(({ id }) => id));
+    return stored.map((annotation) => {
+      if (annotation === undefined) throw new BaseError('Written annotation not found');
+      return annotation;
+    });
+  }
+
   async getById(id: string): Promise<FunctionResult<Annotation, EntityNotFoundError>> {
     const annotation = await db.annotations.get(id);
     if (annotation === undefined) {
@@ -62,7 +74,7 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
    * This function is used to get the parent annotation of a text line annotation. The parent annotation is the annotation that has the same canvasId and collectionId, and contains at least 2 corners of the given annotation. If there are multiple annotations that satisfy this condition, we return the one that has the smallest area. If there is no annotation that satisfies this condition, we throw an error.
    */
   async getParent(
-    annotation: Annotation,
+    annotation: AnnotationDraft,
   ): Promise<FunctionResult<Annotation, EntityNotFoundError>> {
     if (
       getAnnotationType(annotation) !== ElementType.TEXT_LINE &&
@@ -127,18 +139,73 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
       );
 
       for (const annotation of annotationsByType[elementType]!) {
-        newAnnotations.push({ ...annotation, order: lastOrder });
+        newAnnotations.push(this.withCreationDates({ ...annotation, order: lastOrder }));
         lastOrder++;
       }
     }
-    await db.annotations.bulkPut(newAnnotations);
-    return newAnnotations;
+    return db.transaction('rw', db.annotations, async () => {
+      await db.annotations.bulkPut(newAnnotations);
+      return this.getWrittenAnnotations(newAnnotations);
+    });
   }
 
-  async update(annotation: Annotation) {
+  /**
+   * Dedicated overwrite-import path (decision 3): imported dates are validated,
+   * preserved and written under a migration-marked transaction, so existing rows
+   * are not re-stamped by the ordinary hooks. Invalid dates fail with an i18n
+   * FunctionResult error (decision 6). Order stays recomputed like addAll.
+   */
+  async importWithDates(
+    annotations: AnnotationDTO[],
+  ): Promise<FunctionResult<Annotation[], InvalidImportedDatesError>> {
+    if (annotations.length === 0) {
+      return FunctionResult.ok([]);
+    }
+    const validatedTimestamps = validateTimestamps(annotations, 'Annotation');
+    if (!validatedTimestamps.ok) {
+      return validatedTimestamps;
+    }
+
+    /* Same order recomputation as addAll, then assemble entities from the validated dates. */
+    const entities: Annotation[] = [];
+    const annotationsByType: { [key in ElementType]?: AnnotationDTO[] } = {};
+    for (const annotation of annotations) {
+      const type = getAnnotationType(annotation);
+      if (!annotationsByType[type]) {
+        annotationsByType[type] = [];
+      }
+      annotationsByType[type].push(annotation);
+    }
+    for (const type in annotationsByType) {
+      const elementType = type as ElementType;
+      let lastOrder = await this.getNextOrderByScopeAndType(
+        { collectionId: annotations[0].collectionId, canvasId: annotations[0].canvasId },
+        elementType,
+      );
+
+      for (const annotation of annotationsByType[elementType]!) {
+        const dates = validatedTimestamps.value[annotations.indexOf(annotation)];
+        entities.push({ ...annotation, order: lastOrder, ...dates });
+        lastOrder++;
+      }
+    }
+
+    await db.transaction('rw', db.annotations, async (tx) => {
+      markMigration(tx);
+      await db.annotations.bulkPut(entities);
+    });
+    return FunctionResult.ok(await this.getWrittenAnnotations(entities));
+  }
+
+  private withCreationDates(annotation: AnnotationDraft): Annotation {
+    const now = new Date().toISOString();
+    return { ...annotation, createdAt: now, updatedAt: now };
+  }
+
+  async update(annotation: AnnotationDraft) {
     const annotationToUpdate = await db.annotations.get(annotation.id);
 
-    const annotationsUpdated: Annotation[] = [];
+    const annotationsUpdated: AnnotationDraft[] = [];
     if (annotationToUpdate !== undefined) {
       /*
       if the annotation already exists, we need to check if the type changed.
@@ -169,11 +236,23 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
     }
     annotationsUpdated.push(annotation);
 
-    await db.transaction('rw', db.annotations, async () => {
-      await db.annotations.bulkPut(annotationsUpdated);
-    });
+    // The repository assigns updatedAt and keeps the stored createdAt (decision 1).
+    const now = new Date().toISOString();
+    const storedCreationDates = new Map(
+      (await db.annotations.bulkGet(annotationsUpdated.map(({ id }) => id))).map(
+        (stored, index) => [annotationsUpdated[index].id, stored?.createdAt] as const,
+      ),
+    );
+    const written: Annotation[] = annotationsUpdated.map((value) => ({
+      ...value,
+      createdAt: storedCreationDates.get(value.id) ?? now,
+      updatedAt: now,
+    }));
 
-    return annotationsUpdated;
+    return db.transaction('rw', db.annotations, async () => {
+      await db.annotations.bulkPut(written);
+      return this.getWrittenAnnotations(written);
+    });
   }
 
   async updateOrder(annotationId: string, order: number) {
@@ -196,18 +275,22 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
     updatedAnnotations.push({ ...annotationToUpdate, order });
     if (annotationToSwapWith !== undefined) {
       updatedAnnotations.push({ ...annotationToSwapWith, order: actualOrder });
-      //swap the order of the two annotations
-      await db.transaction('rw', db.annotations, async () => {
-        await db.annotations.bulkPut(updatedAnnotations);
-      });
-    } else {
-      //just update the order of the annotation
-      await db.annotations.update(annotationId, { order });
     }
-    return updatedAnnotations;
+    // The repository assigns updatedAt; createdAt comes from the stored records.
+    const now = new Date().toISOString();
+    const written = updatedAnnotations.map((value) => ({ ...value, updatedAt: now }));
+    return db.transaction('rw', db.annotations, async () => {
+      if (annotationToSwapWith !== undefined) {
+        await db.annotations.bulkPut(written);
+      } else {
+        await db.annotations.update(annotationId, { order, updatedAt: now });
+      }
+      return this.getWrittenAnnotations(written);
+    });
   }
 
   async deleteByIds(ids: string[]): Promise<string[]> {
+    const now = new Date().toISOString();
     //1. get the annotations to delete and order them by scope
     const annotationsToDelete = await db.annotations.bulkGet(ids);
     const annotationsToDeleteByScopeAndType: { [key in string]?: Annotation[] } = {};
@@ -245,7 +328,7 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
       let newOrder = minOrder;
       for (let i = 0; i < annotationsToUpdate.length; i++) {
         const a = annotationsToUpdate[i];
-        annotationsUpdated.push({ ...a, order: newOrder++ });
+        annotationsUpdated.push({ ...a, order: newOrder++, updatedAt: now });
       }
     }
 

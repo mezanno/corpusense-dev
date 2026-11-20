@@ -74,7 +74,7 @@
  */
 import { DataModel } from '@/data/models/dataModel/dataModel';
 import { Event, EventType } from '@/data/models/event';
-import { NamedEntity } from '@/data/models/namedEntity';
+import { NamedEntity } from '@/data/models/namedEntity/namedEntity';
 import { CanvasScope } from '@/data/models/scope/scope';
 import { db } from '@/data/repositories/indexeddb/db';
 import {
@@ -163,6 +163,8 @@ async function seedCanvasResult(
 async function seedCollectionWithModel(collectionId: string, modelId: string): Promise<void> {
   const model: DataModel = {
     id: modelId,
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
     name: `Modèle ${modelId}`,
     prompt: 'prompt de test',
     fields: [{ id: `${modelId}-field`, name: 'montant', type: 'number', color: '#a4d6f6' }],

@@ -53,7 +53,12 @@ describe('IndexedDBCollectionLiveRepository', () => {
         name: 'Renamed',
       });
 
-      await db.collectionContents.put({ id: 'c1', content: [] });
+      await db.collectionContents.put({
+        id: 'c1',
+        content: [],
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      });
       expect(await collection.until((item) => item?.content.length === 0)).toMatchObject({
         id: 'c1',
       });
@@ -78,10 +83,18 @@ describe('IndexedDBCollectionLiveRepository', () => {
     );
     try {
       expect(await canvases.next()).toEqual([]);
-      await db.sourceContents.put({ id: 'source-1', type: 'remote', manifest });
+      await db.sourceContents.put({
+        id: 'source-1',
+        type: 'remote',
+        manifest,
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      });
       await db.collectionContents.put({
         id: 'c1',
         content: [{ sourceId: 'source-1', canvasId: 'canvas-1' }],
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
       });
       expect(await canvases.until((items) => items[0]?.canvas.id === 'canvas-1')).toMatchObject([
         { sourceId: 'source-1', canvas: { id: 'canvas-1' } },

@@ -1,6 +1,7 @@
 import { Annotation } from '@/data/models/annotations/annotation';
 import { DataField } from '@/data/models/dataModel/dataModel';
-import { NamedEntity } from '@/data/models/namedEntity';
+import { NamedEntity } from '@/data/models/namedEntity/namedEntity';
+import { NamedEntityDTO } from '@/data/models/namedEntity/namedEntity.dto';
 import { CanvasScope } from '@/data/models/scope/scope';
 import {
   getAnnotationRepository,
@@ -98,7 +99,7 @@ const useNamedEntities = (annotationIds: string[]) => {
     //parse the result value and for each value, create a named entity if possible
     const dataParsed = JSON.parse(value as string) as unknown;
     const dataParsedArray = (Array.isArray(dataParsed) ? dataParsed : [dataParsed]) as unknown[];
-    const entities: NamedEntity[] = [];
+    const entities: NamedEntityDTO[] = [];
     dataParsedArray.forEach((item) => {
       if (
         item !== undefined &&

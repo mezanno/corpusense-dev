@@ -59,7 +59,8 @@
  * avant `put`, les trois fonctions).
  */
 import { Event } from '@/data/models/event';
-import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
+import { ModifierChain } from '@/data/models/modifiers/Modifier';
+import { ModifierChainDTO } from '@/data/models/modifiers/modifierChain.dto';
 import { modifierRegistry } from '@/data/models/modifiers/ModifierFactory';
 import { EntityNotFoundError } from '@/data/repositories/EntityNotFoundError';
 import {
@@ -98,23 +99,23 @@ function makeModifier(type: 'FilterModifier' | 'ReOrderModifier') {
 }
 
 /** Écriture d'une ligne chaîne par le VRAI repository. */
-async function putChain(chain: ModifierChainDTO): Promise<void> {
-  await getModifierChainRepository().put(chain);
+async function putChain(chain: ModifierChainDTO): Promise<ModifierChain> {
+  return await getModifierChainRepository().put(chain);
 }
 
 /** Relecture par id (undefined si absente). */
-async function readChain(id: string): Promise<ModifierChainDTO | undefined> {
+async function readChain(id: string): Promise<ModifierChain | undefined> {
   const read = await getModifierChainRepository().getById(id);
   return read.ok ? read.value : undefined;
 }
 
 /** Relecture par nom (undefined si absente). */
-async function chainNamed(name: string): Promise<ModifierChainDTO | undefined> {
+async function chainNamed(name: string): Promise<ModifierChain | undefined> {
   const read = await getModifierChainRepository().getByName(name);
   return read.ok ? read.value : undefined;
 }
 
-async function allChains(): Promise<ModifierChainDTO[]> {
+async function allChains(): Promise<ModifierChain[]> {
   return await getModifierChainRepository().getAll();
 }
 
@@ -175,11 +176,16 @@ describe('useModifierChainIO — saveModifierChain sur le repository chaînes r�
 
     // Le modificateur d'origine a disparu de la ligne (remplacement, pas de fusion) et les
     // valeurs sont les défauts du schéma : la clé fournie était vide (branche `?? {}`).
-    expect(await readChain('mco-existing')).toEqual({
+    const storedChain = await readChain('mco-existing');
+    expect({ ...storedChain, createdAt: '', updatedAt: '' }).toEqual({
       id: 'mco-existing',
       name,
       modifiers: [{ id: reorder.id, type: 'ReOrderModifier', values: { order: 'TL2BR' } }],
+      createdAt: '',
+      updatedAt: '',
     });
+    expect(z.iso.datetime().safeParse(storedChain?.createdAt ?? '').success).toBe(true);
+    expect(z.iso.datetime().safeParse(storedChain?.updatedAt ?? '').success).toBe(true);
     expect(await allChains()).toHaveLength(1);
 
     unmount();
@@ -189,7 +195,7 @@ describe('useModifierChainIO — saveModifierChain sur le repository chaînes r�
     const kept = uniqueName('gardée');
     const fresh = uniqueName('jamais créée');
     const seed = { id: 'mco-keep', name: kept, modifiers: [] } satisfies ModifierChainDTO;
-    await putChain(seed);
+    const storedSeed = await putChain(seed);
     const { result, store, unmount } = renderChainIO();
 
     await act(async () => {
@@ -197,7 +203,7 @@ describe('useModifierChainIO — saveModifierChain sur le repository chaînes r�
       await result.current.saveModifierChain(fresh, [], {});
     });
 
-    expect(await allChains()).toEqual([seed]);
+    expect(await allChains()).toEqual([storedSeed]);
     expect(await chainNamed(fresh)).toBeUndefined();
     expect(toasts(store.getState())).toEqual([]);
 
@@ -238,7 +244,7 @@ describe('useModifierChainIO — saveModifierChain sur le repository chaînes r�
       name,
       modifiers: [{ id: 'mco-intact', type: 'FilterModifier', values: {} }],
     } satisfies ModifierChainDTO;
-    await putChain(seed);
+    const storedSeed = await putChain(seed);
     const filter = makeModifier('FilterModifier');
     const otherName = uniqueName('autre rejet');
     const { result, unmount } = renderChainIO();
@@ -249,7 +255,7 @@ describe('useModifierChainIO — saveModifierChain sur le repository chaînes r�
         result.current.saveModifierChain(name, [filter], { [filter.id]: { threshold: -5 } }),
       ).rejects.toBeInstanceOf(z.ZodError);
     });
-    expect(await readChain('mco-bad-name')).toEqual(seed);
+    expect(await readChain('mco-bad-name')).toEqual(storedSeed);
 
     // Nom libre : le rejet part avant le `put`, aucune ligne n'est créée.
     await act(async () => {
@@ -257,7 +263,7 @@ describe('useModifierChainIO — saveModifierChain sur le repository chaînes r�
         result.current.saveModifierChain(otherName, [filter], { [filter.id]: { threshold: -5 } }),
       ).rejects.toBeInstanceOf(z.ZodError);
     });
-    expect(await allChains()).toEqual([seed]);
+    expect(await allChains()).toEqual([storedSeed]);
 
     unmount();
   });
@@ -339,12 +345,12 @@ describe('useModifierChainIO — removeModifierChain sur le repository chaînes 
       name: uniqueName('intacte'),
       modifiers: [],
     } satisfies ModifierChainDTO;
-    await putChain(kept);
+    const storedKept = await putChain(kept);
     const { result, store, unmount } = renderChainIO();
 
     await expect(result.current.removeModifierChain('mco-absent')).resolves.toBeUndefined();
 
-    expect(await allChains()).toEqual([kept]);
+    expect(await allChains()).toEqual([storedKept]);
     expect(toasts(store.getState())).toEqual([]);
 
     unmount();

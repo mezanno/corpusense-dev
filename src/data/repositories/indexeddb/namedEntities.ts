@@ -1,4 +1,5 @@
-import { NamedEntity } from '@/data/models/namedEntity';
+import { NamedEntity } from '@/data/models/namedEntity/namedEntity';
+import { NamedEntityDTO } from '@/data/models/namedEntity/namedEntity.dto';
 import { db } from './db';
 import { NamedEntityRepository } from './types';
 
@@ -9,9 +10,13 @@ export class IndexedDBNamedEntityRepository implements NamedEntityRepository {
   async getByAnnotationIds(annotationIds: string[]): Promise<NamedEntity[]> {
     return await db.namedEntities.where('annotationIds').anyOf(annotationIds).distinct().toArray();
   }
-  async add(entity: NamedEntity): Promise<void> {
+  async add(entity: NamedEntityDTO): Promise<NamedEntity> {
     //TODO! vérifier si un mot de l'entité existe déjà dans une autre entité
-    await db.namedEntities.add(entity);
+    // Creation path: the repository initializes both timestamps (decision 1).
+    const now = new Date().toISOString();
+    const newEntity: NamedEntity = { ...entity, createdAt: now, updatedAt: now };
+    await db.namedEntities.add(newEntity);
+    return newEntity;
   }
 
   async deleteByAnnotationIds(annotationIds: string[]): Promise<void> {

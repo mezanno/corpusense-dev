@@ -17,5 +17,8 @@ export function makeAnnotation(
       value: id,
     }),
     order,
+    // Persisted fixtures carry their timestamps, like any stored record.
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
   };
 }

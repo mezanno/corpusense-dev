@@ -15,6 +15,7 @@ function worker(id: string, collectionId: string): Worker {
     params: {},
     status: WorkerStatus.INPROGRESS,
     createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
     estimatedDuration: 0,
     queue: [],
   };

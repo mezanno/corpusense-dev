@@ -1,4 +1,4 @@
-import { NamedEntity } from '@/data/models/namedEntity';
+import { NamedEntity } from '@/data/models/namedEntity/namedEntity';
 import { useModels } from '@/hooks/data/models/useModels';
 
 const EntityViewer = ({ entity }: { entity: NamedEntity }) => {

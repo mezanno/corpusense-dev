@@ -17,6 +17,8 @@ describe('Annotation', () => {
     ...annotationFromEdwin[0],
     type: ElementType.TEXT_REGION,
     order: 0,
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
   } as Annotation;
   describe('getAnnotationType', () => {
     it('should get the correct annotation type', () => {

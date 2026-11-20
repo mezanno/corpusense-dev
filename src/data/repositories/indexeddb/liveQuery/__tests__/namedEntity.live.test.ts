@@ -1,4 +1,4 @@
-import type { NamedEntity } from '@/data/models/namedEntity';
+import type { NamedEntity } from '@/data/models/namedEntity/namedEntity';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createTestDb } from '../../__tests__/testDb';
 import { db } from '../../db';
@@ -8,6 +8,9 @@ import { observe } from './liveQueryTestUtils';
 const entity = (id: string, annotationIds: string[], value = id): NamedEntity => ({
   id,
   dataFieldId: 'field-1',
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+
   value,
   selector: [],
   annotationIds,
@@ -56,7 +59,7 @@ describe('IndexedDBNamedEntityLiveRepository', () => {
       expect(await live.next()).toEqual([]);
       await db.namedEntities.put(entity('linked', ['a1', 'a2']));
 
-      expect(await live.until((items) => items.length > 0)).toEqual([
+      expect(await live.until((items) => items.length > 0)).toMatchObject([
         entity('linked', ['a1', 'a2']),
       ]);
     } finally {

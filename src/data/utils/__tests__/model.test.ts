@@ -11,6 +11,8 @@ vi.mock('i18next', () => ({
 describe('model utils', () => {
   const mockModel: DataModel = {
     id: 'model-1',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
     name: 'Test Model',
     description: 'Description',
     prompt: 'Prompt',

@@ -25,13 +25,20 @@ const localFile = {
   folderName: 'converted-document',
 };
 
+// Persisted rows always carry valid timestamps (v33/v34 guarantee).
+const FIXED_DATES = {
+  createdAt: '2020-01-01T00:00:00.000Z',
+  updatedAt: '2020-01-01T00:00:00.000Z',
+};
+
 const importedRemoteSource = (id: string, manifestId: string): SourceWithContentAndThumbnail => ({
   id,
+  ...FIXED_DATES,
   name: `Source ${id}`,
   type: 'remote',
   pageCount: 1,
   thumbnailBlobId: `thumbnail-${id}`,
-  content: { id, type: 'remote', manifest: manifest(manifestId) },
+  content: { id, ...FIXED_DATES, type: 'remote', manifest: manifest(manifestId) },
   thumbnailBase64: 'data:image/png;base64,dGh1bWJuYWls',
 });
 
@@ -65,7 +72,7 @@ describe('IndexedDBSourceRepository', () => {
       type: 'remote',
       thumbnailBlobId: result.value.thumbnailBlobId,
     });
-    expect(await repository.getContentById(result.value.id)).toEqual({
+    expect(await repository.getContentById(result.value.id)).toMatchObject({
       ok: true,
       value: { id: result.value.id, type: 'remote', manifest: sourceManifest },
     });
@@ -90,7 +97,7 @@ describe('IndexedDBSourceRepository', () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(await repository.getContentById(result.value.id)).toEqual({
+    expect(await repository.getContentById(result.value.id)).toMatchObject({
       ok: true,
       value: {
         id: result.value.id,
@@ -109,7 +116,7 @@ describe('IndexedDBSourceRepository', () => {
       ok: true,
       value: true,
     });
-    expect(await repository.getSourceWithContentAndThumbnailById(source.id)).toEqual({
+    expect(await repository.getSourceWithContentAndThumbnailById(source.id)).toMatchObject({
       ok: true,
       value: source,
     });
@@ -119,6 +126,7 @@ describe('IndexedDBSourceRepository', () => {
     const source = importedRemoteSource('conflicting-source', 'existing-manifest');
     await db.sourceContents.add({
       id: source.id,
+      ...FIXED_DATES,
       type: 'remote',
       manifest: manifest('existing-manifest'),
     });
@@ -300,17 +308,23 @@ describe('IndexedDBSourceRepository', () => {
   it('counts only legacy manifests and files that have not already been migrated', async () => {
     const migratedManifest = manifest('https://example.test/migrated.json');
     await db.storedManifests.bulkAdd([
-      { id: migratedManifest.id, name: 'Already migrated' },
-      { id: 'https://example.test/pending.json', name: 'Pending' },
+      { id: migratedManifest.id, name: 'Already migrated', ...FIXED_DATES },
+      { id: 'https://example.test/pending.json', name: 'Pending', ...FIXED_DATES },
     ]);
-    await db.storedManifestContents.add({ id: migratedManifest.id, content: migratedManifest });
+    await db.storedManifestContents.add({
+      id: migratedManifest.id,
+      content: migratedManifest,
+      ...FIXED_DATES,
+    });
     await db.sourceContents.add({
       id: 'source-migrated',
+      ...FIXED_DATES,
       type: 'remote',
       manifest: migratedManifest,
     });
     const migratedLocalContent: SourceContent = {
       id: 'file-migrated',
+      ...FIXED_DATES,
       type: 'local',
       manifest: manifest('file-manifest'),
       localFile,
@@ -322,6 +336,7 @@ describe('IndexedDBSourceRepository', () => {
         title: 'Already migrated',
         pageCount: 1,
         thumbnailBlob: new Blob(),
+        ...FIXED_DATES,
         ...localFile,
       },
       {
@@ -329,6 +344,7 @@ describe('IndexedDBSourceRepository', () => {
         title: 'Pending',
         pageCount: 1,
         thumbnailBlob: new Blob(),
+        ...FIXED_DATES,
         ...localFile,
       },
     ]);
@@ -340,19 +356,29 @@ describe('IndexedDBSourceRepository', () => {
     vi.spyOn(manifestUtils, 'getManifestFromConvertedFile').mockResolvedValue(null);
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     const legacyManifest = manifest('https://example.test/legacy.json', ['legacy-canvas']);
-    await db.storedManifests.add({ id: legacyManifest.id, name: 'Legacy remote' });
-    await db.storedManifestContents.add({ id: legacyManifest.id, content: legacyManifest });
-    await db.storedManifests.add({ id: 'manifest-without-content', name: 'Retry later' });
+    await db.storedManifests.add({ id: legacyManifest.id, name: 'Legacy remote', ...FIXED_DATES });
+    await db.storedManifestContents.add({
+      id: legacyManifest.id,
+      content: legacyManifest,
+      ...FIXED_DATES,
+    });
+    await db.storedManifests.add({
+      id: 'manifest-without-content',
+      name: 'Retry later',
+      ...FIXED_DATES,
+    });
     await db.convertedFiles.add({
       id: 'legacy-file',
       title: 'Legacy local',
       pageCount: 1,
       thumbnailBlob: new Blob(['old-thumbnail']),
       githubManifestUrl: 'https://github.com/example/legacy-manifest.json',
+      ...FIXED_DATES,
       ...localFile,
     });
     await db.collectionContents.add({
       id: 'collection-1',
+      ...FIXED_DATES,
       content: [
         { canvasId: 'legacy-canvas', sourceId: '', manifestId: legacyManifest.id },
         { canvasId: 'local-canvas', sourceId: '', manifestId: 'legacy-file' },
@@ -385,11 +411,67 @@ describe('IndexedDBSourceRepository', () => {
         { sourceId: 'unrelated-manifest' },
       ],
     });
-    expect(await db.storedManifests.toArray()).toEqual([
+    expect(await db.storedManifests.toArray()).toMatchObject([
       { id: 'manifest-without-content', name: 'Retry later' },
     ]);
     expect(await db.storedManifestContents.count()).toBe(0);
     expect(await db.convertedFiles.count()).toBe(0);
     expect(await repository.getPendingMigrationCount()).toBe(1);
+  });
+
+  it('preserves legacy timestamps and leaves unrelated collections unchanged', async () => {
+    vi.spyOn(manifestUtils, 'getManifestFromConvertedFile').mockResolvedValue(null);
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const remoteDates = {
+      createdAt: '2020-01-01T00:00:00.000Z',
+      updatedAt: '2020-02-01T00:00:00.000Z',
+    };
+    const contentDates = {
+      createdAt: '2021-01-01T00:00:00.000Z',
+      updatedAt: '2021-02-01T00:00:00.000Z',
+    };
+    const localDates = {
+      createdAt: '2022-01-01T00:00:00.000Z',
+      updatedAt: '2022-02-01T00:00:00.000Z',
+    };
+    const legacyManifest = manifest('https://example.test/legacy.json');
+    await db.storedManifests.add({ id: legacyManifest.id, name: 'Legacy', ...remoteDates });
+    await db.storedManifestContents.add({
+      id: legacyManifest.id,
+      content: legacyManifest,
+      ...contentDates,
+    });
+    await db.convertedFiles.add({
+      id: 'legacy-file',
+      title: 'Local',
+      pageCount: 1,
+      thumbnailBlob: new Blob(['thumbnail']),
+      ...localFile,
+      ...localDates,
+    });
+    await db.collectionContents.bulkAdd([
+      {
+        id: 'changed',
+        content: [{ canvasId: 'canvas', sourceId: '', manifestId: legacyManifest.id }],
+        ...remoteDates,
+      },
+      { id: 'unchanged', content: [{ canvasId: 'canvas', sourceId: 'other' }], ...remoteDates },
+    ]);
+
+    await repository.migrateAllSources();
+
+    const remoteContent = await repository.getContentByManifestUrl(legacyManifest.id);
+    expect(remoteContent.ok).toBe(true);
+    if (!remoteContent.ok) return;
+    expect(remoteContent.value).toMatchObject(contentDates);
+    expect(await db.sources.get(remoteContent.value.id)).toMatchObject(remoteDates);
+    const localSource = await db.sources.get('legacy-file');
+    expect(localSource).toMatchObject(localDates);
+    expect(await db.sourceContents.get('legacy-file')).toMatchObject(localDates);
+    expect(await db.storedBlobs.get(localSource?.thumbnailBlobId ?? '')).toMatchObject(localDates);
+    expect(await db.collectionContents.get('unchanged')).toMatchObject(remoteDates);
+    const changed = await db.collectionContents.get('changed');
+    expect(changed?.createdAt).toBe(remoteDates.createdAt);
+    expect(changed?.updatedAt).not.toBe(remoteDates.updatedAt);
   });
 });

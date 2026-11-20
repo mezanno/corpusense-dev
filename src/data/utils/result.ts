@@ -1,6 +1,7 @@
 import { AnnotationPage } from '@iiif/presentation-3';
 import z from 'zod';
 import { Annotation, ElementType } from '../models/annotations/annotation';
+import { AnnotationDraft } from '../models/annotations/annotation.dto';
 import { changeValue, createAnnotation } from '../models/annotations/annotation.factory';
 import { convertW3CAnnotationsToIIIF } from '../models/converters/iiif';
 import { Result } from '../models/result/result';
@@ -63,7 +64,7 @@ export const convertResultToIIIFAnnotation = async (result: Result): Promise<Ann
   }
   const dataParsedArray = dataValidation.data;
 
-  const entityAnnotations: Annotation[] = [];
+  const entityAnnotations: AnnotationDraft[] = [];
   dataParsedArray.forEach((item) => {
     console.log(item);
 

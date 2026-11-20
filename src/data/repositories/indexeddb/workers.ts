@@ -64,11 +64,13 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
   }
 
   async add(worker: WorkerCreateDTO, queue: Task[] = []): Promise<Worker> {
+    const now = new Date().toISOString();
     const newWorker: Worker = {
       ...worker,
       scopeKey: computeScopeKey(worker.scope),
       status: WorkerStatus.INPROGRESS,
-      createdAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
       queue,
       estimatedDuration: 0, // Default to 0, can be updated later
     };
@@ -81,7 +83,8 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
   }
 
   async patch(id: string, changes: Partial<Omit<Worker, 'status' | 'queue'>>): Promise<void> {
-    await db.workers.update(id, changes);
+    // Modification path: updatedAt is assigned by the repository, createdAt is preserved.
+    await db.workers.update(id, { ...changes, updatedAt: new Date().toISOString() });
   }
 
   async updateWorkerStatus(
@@ -96,8 +99,14 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
       const statusResult = transitionWorkerStatus(worker, event);
       if (!statusResult.ok) return statusResult;
 
-      const updatedWorker = { ...worker, status: statusResult.value };
-      await db.workers.update(workerId, { status: updatedWorker.status });
+      await db.workers.update(workerId, {
+        status: statusResult.value,
+        updatedAt: new Date().toISOString(),
+      });
+      const updatedWorker = await db.workers.get(workerId);
+      if (!updatedWorker) {
+        return FunctionResult.err(new EntityNotFoundError({ entity: 'Worker', id: workerId }));
+      }
       return FunctionResult.ok(updatedWorker);
     });
   }
@@ -136,7 +145,11 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
         ? worker.status
         : workerStatusOf(updatedQueue);
 
-      await db.workers.update(workerId, { status, queue: updatedQueue });
+      await db.workers.update(workerId, {
+        status,
+        queue: updatedQueue,
+        updatedAt: new Date().toISOString(),
+      });
       return FunctionResult.ok(updatedTask);
     });
   }

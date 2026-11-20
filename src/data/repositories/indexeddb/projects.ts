@@ -1,4 +1,5 @@
-import { Project } from '@/data/models/project';
+import { Project } from '@/data/models/project/project';
+import { ProjectDTO } from '@/data/models/project/project.dto';
 import { SourceAlreadyInProjectError } from '@/data/utils/errors';
 import { FunctionResult } from '@/utils/functionResult';
 import { NotFoundError } from '@/utils/NotFoundError';
@@ -19,8 +20,12 @@ export class IndexedDBProjectRepository implements ProjectRepository {
     return FunctionResult.ok(project);
   }
 
-  async add(project: Project): Promise<void> {
-    await db.projects.add(project);
+  async add(project: ProjectDTO): Promise<Project> {
+    // Creation path: the repository initializes both timestamps (decision 1).
+    const now = new Date().toISOString();
+    const newProject: Project = { ...project, createdAt: now, updatedAt: now };
+    await db.projects.add(newProject);
+    return newProject;
   }
 
   async addSource(
@@ -36,7 +41,8 @@ export class IndexedDBProjectRepository implements ProjectRepository {
       return FunctionResult.err(new SourceAlreadyInProjectError({ projectId, sourceId }));
     }
     project.sources.push(sourceId);
-    await db.projects.put(project);
+    // Modification path: createdAt is the stored one, updatedAt is assigned here.
+    await db.projects.put({ ...project, updatedAt: new Date().toISOString() });
     return FunctionResult.ok(undefined);
   }
 }

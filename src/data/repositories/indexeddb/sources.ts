@@ -26,8 +26,11 @@ export class IndexedDBSourceRepository implements SourceRepository {
   async add(dto: AddSourceDTO): Promise<FunctionResult<SourceWithContent, DBError>> {
     const sourceId = uuid();
     const thumbnailBlobId = uuid();
+    const now = new Date().toISOString();
     const newSource = {
       id: sourceId,
+      createdAt: now,
+      updatedAt: now,
       name: dto.name,
       type: dto.type,
       pageCount: dto.pageCount,
@@ -37,6 +40,8 @@ export class IndexedDBSourceRepository implements SourceRepository {
       dto.type === 'local'
         ? {
             id: sourceId,
+            createdAt: now,
+            updatedAt: now,
             type: 'local',
             manifest: dto.manifest,
             localFile: {
@@ -45,6 +50,8 @@ export class IndexedDBSourceRepository implements SourceRepository {
           }
         : {
             id: sourceId,
+            createdAt: now,
+            updatedAt: now,
             type: 'remote',
             manifest: dto.manifest,
           };
@@ -52,6 +59,8 @@ export class IndexedDBSourceRepository implements SourceRepository {
       await db.transaction('rw', db.storedBlobs, db.sources, db.sourceContents, async () => {
         await db.storedBlobs.add({
           id: thumbnailBlobId,
+          createdAt: now,
+          updatedAt: now,
           blob: dto.thumbnailBlob,
         });
         await db.sources.add(newSource);
@@ -79,6 +88,9 @@ export class IndexedDBSourceRepository implements SourceRepository {
         if (thumbnailBlobResult.ok) {
           await db.storedBlobs.add({
             id: sourceWithoutContent.thumbnailBlobId,
+            // Import path: the imported entity's validated dates are kept for the blob row.
+            createdAt: sourceWithoutContent.createdAt,
+            updatedAt: sourceWithoutContent.updatedAt,
             blob: thumbnailBlobResult.value,
           });
         }
@@ -184,7 +196,7 @@ export class IndexedDBSourceRepository implements SourceRepository {
   }
 
   async updateName(sourceId: string, name: string): Promise<void> {
-    await db.sources.update(sourceId, { name });
+    await db.sources.update(sourceId, { name, updatedAt: new Date().toISOString() });
   }
 
   async update(
@@ -194,8 +206,10 @@ export class IndexedDBSourceRepository implements SourceRepository {
     },
   ): Promise<void> {
     const { githubManifestUrl, ...sourceChanges } = changes;
+    // Modification path: updatedAt is assigned by the repository, createdAt is preserved.
+    const now = new Date().toISOString();
     if (Object.keys(sourceChanges).length > 0) {
-      await db.sources.update(id, sourceChanges);
+      await db.sources.update(id, { ...sourceChanges, updatedAt: now });
     }
     if (githubManifestUrl !== undefined) {
       await db.sourceContents
@@ -204,6 +218,7 @@ export class IndexedDBSourceRepository implements SourceRepository {
         .modify((obj) => {
           if (obj.type === 'local') {
             obj.githubManifestUrl = githubManifestUrl;
+            obj.updatedAt = now;
           }
         });
     }
@@ -294,18 +309,28 @@ export class IndexedDBSourceRepository implements SourceRepository {
 
       try {
         await db.transaction('rw', db.storedBlobs, db.sources, db.sourceContents, async () => {
-          await db.storedBlobs.add({ id: thumbnailBlobId, blob: thumbnailBlob });
+          await db.storedBlobs.add({
+            id: thumbnailBlobId,
+            // Manual migration: the historical dates are preserved, not refreshed.
+            createdAt: manifest.createdAt,
+            updatedAt: manifest.updatedAt,
+            blob: thumbnailBlob,
+          });
           await db.sources.add({
             id: sourceId,
             name: manifest.name,
             type: 'remote',
             pageCount: content.content?.items?.length ?? 0,
             thumbnailBlobId,
+            createdAt: manifest.createdAt,
+            updatedAt: manifest.updatedAt,
           });
           await db.sourceContents.add({
             id: sourceId,
             type: 'remote',
             manifest: content.content,
+            createdAt: content.createdAt,
+            updatedAt: content.updatedAt,
           });
         });
         manifestIdMap.set(manifest.id, sourceId);
@@ -327,18 +352,27 @@ export class IndexedDBSourceRepository implements SourceRepository {
           (await getManifestFromConvertedFile(file)) ?? reconstructManifestFromConvertedFile(file);
 
         await db.transaction('rw', db.storedBlobs, db.sources, db.sourceContents, async () => {
-          await db.storedBlobs.add({ id: thumbnailBlobId, blob: file.thumbnailBlob });
+          await db.storedBlobs.add({
+            id: thumbnailBlobId,
+            blob: file.thumbnailBlob,
+            createdAt: file.createdAt,
+            updatedAt: file.updatedAt,
+          });
           await db.sources.add({
             id: file.id,
             name: file.title,
             type: 'local',
             pageCount: file.pageCount,
             thumbnailBlobId,
+            createdAt: file.createdAt,
+            updatedAt: file.updatedAt,
           });
           await db.sourceContents.add({
             id: file.id,
             type: 'local',
             manifest,
+            createdAt: file.createdAt,
+            updatedAt: file.updatedAt,
             localFile: {
               outputDirectoryHandle: file.outputDirectoryHandle,
               timestamp: file.timestamp,
@@ -363,17 +397,24 @@ export class IndexedDBSourceRepository implements SourceRepository {
     console.log('manifestIdMap: ', manifestIdMap);
 
     await db.collectionContents.toCollection().modify((collection) => {
+      let changed = false;
       for (const element of collection.content) {
         const oldId = element.manifestId;
         if (oldId !== undefined) {
           const newId = manifestIdMap.get(oldId);
-          if (newId !== undefined && newId !== '') {
-            element.sourceId = newId;
-          } else if (element.sourceId === undefined || element.sourceId === '') {
-            element.sourceId = oldId;
+          const targetId =
+            newId !== undefined && newId !== ''
+              ? newId
+              : element.sourceId === undefined || element.sourceId === ''
+                ? oldId
+                : element.sourceId;
+          if (element.sourceId !== targetId) {
+            element.sourceId = targetId;
+            changed = true;
           }
         }
       }
+      if (!changed) return false;
     });
 
     // ----------------------------

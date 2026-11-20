@@ -26,6 +26,8 @@ describe('CollectionMetadataForm', () => {
     const user = userEvent.setup();
     const collection: Collection = {
       id: 'collection-1',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
       name: 'Collection',
       tags: [],
       content: [],

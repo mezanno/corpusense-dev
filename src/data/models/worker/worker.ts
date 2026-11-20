@@ -1,5 +1,6 @@
 import z from 'zod';
 import { ScopeSchema } from '../scope/scope';
+import { TimeStampSchema } from '../timeStampSchema';
 import { WorkerCreateDTOSChema } from './worker.dto';
 import { TaskStatus, WorkerEvent, WorkerStatus } from './workerStatusLaw';
 
@@ -25,14 +26,15 @@ const TaskSchema = z
 
 export type Task = z.infer<typeof TaskSchema>;
 
-export const WorkerSchema = WorkerCreateDTOSChema.extend({
-  scopeKey: z.string(),
-  status: WorkerStatusSchema,
-  statusMessage: z.string().optional(),
-  createdAt: z.string(),
-  estimatedDuration: z.number(),
-  queue: z.array(TaskSchema),
-}).strict();
+export const WorkerSchema = TimeStampSchema.extend(WorkerCreateDTOSChema.shape)
+  .extend({
+    scopeKey: z.string(),
+    status: WorkerStatusSchema,
+    statusMessage: z.string().optional(),
+    estimatedDuration: z.number(),
+    queue: z.array(TaskSchema),
+  })
+  .strict();
 
 export type Worker = z.infer<typeof WorkerSchema>;
 

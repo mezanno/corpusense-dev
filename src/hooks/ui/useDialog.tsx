@@ -30,7 +30,7 @@ import { CollectionDetails } from '@/data/models/collection/collection';
 import { DataModel } from '@/data/models/dataModel/dataModel';
 import { LLMProfile } from '@/data/models/LLMProfile';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
-import { Project } from '@/data/models/project';
+import { Project } from '@/data/models/project/project';
 import { CanvasScope, Scope } from '@/data/models/scope/scope';
 import { Source, SourceWithContent } from '@/data/models/source/source';
 import { Worker } from '@/data/models/worker/worker';

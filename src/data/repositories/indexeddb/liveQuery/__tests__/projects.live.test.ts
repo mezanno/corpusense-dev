@@ -1,4 +1,4 @@
-import type { Project } from '@/data/models/project';
+import type { Project } from '@/data/models/project/project';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createTestDb } from '../../__tests__/testDb';
 import { db } from '../../db';
@@ -8,8 +8,8 @@ import { observe } from './liveQueryTestUtils';
 const project = (id: string, name: string): Project => ({
   id,
   name,
-  createdAt: new Date('2026-01-01T00:00:00.000Z'),
-  updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
   sources: [],
   collections: [],
 });

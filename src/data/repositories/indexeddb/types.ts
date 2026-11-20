@@ -1,13 +1,18 @@
 import { Annotation, ElementType } from '@/data/models/annotations/annotation';
-import { AnnotationDTO } from '@/data/models/annotations/annotation.dto';
+import { AnnotationDTO, AnnotationDraft } from '@/data/models/annotations/annotation.dto';
 import { Collection, CollectionDetails } from '@/data/models/collection/collection';
 import { CollectionCreateDTO } from '@/data/models/collection/collection.dto';
 import { CollectionElement } from '@/data/models/collectionElement';
 import { DataModel } from '@/data/models/dataModel/dataModel';
-import { FSHandle } from '@/data/models/fSHandle';
-import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
-import { NamedEntity } from '@/data/models/namedEntity';
-import { Project } from '@/data/models/project';
+import { DataModelDTO } from '@/data/models/dataModel/dataModel.dto';
+import { FSHandle } from '@/data/models/fSHandle/fSHandle';
+import { FSHandleDTO } from '@/data/models/fSHandle/fSHandle.dto';
+import { ModifierChain } from '@/data/models/modifiers/Modifier';
+import { ModifierChainDTO } from '@/data/models/modifiers/modifierChain.dto';
+import { NamedEntity } from '@/data/models/namedEntity/namedEntity';
+import { NamedEntityDTO } from '@/data/models/namedEntity/namedEntity.dto';
+import { Project } from '@/data/models/project/project';
+import { ProjectDTO } from '@/data/models/project/project.dto';
 import { Result } from '@/data/models/result/result';
 import { ResultCreateDTO } from '@/data/models/result/result.dto';
 import { AnnotationScope, CanvasScope, Scope } from '@/data/models/scope/scope';
@@ -19,7 +24,8 @@ import {
   StoredBlob,
 } from '@/data/models/source/source';
 import { AddSourceDTO } from '@/data/models/source/source.dto';
-import { Tag } from '@/data/models/tag';
+import { Tag } from '@/data/models/tag/tag';
+import { TagDTO } from '@/data/models/tag/tag.dto';
 import { Task, Worker } from '@/data/models/worker/worker';
 import { WorkerCreateDTO } from '@/data/models/worker/worker.dto';
 import {
@@ -27,7 +33,11 @@ import {
   TaskEvent,
   WorkerLifecycleEvent,
 } from '@/data/models/worker/workerStatusLaw';
-import { DBError, SourceAlreadyInProjectError } from '@/data/utils/errors';
+import {
+  DBError,
+  InvalidImportedDatesError,
+  SourceAlreadyInProjectError,
+} from '@/data/utils/errors';
 import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import { FunctionResult } from '@/utils/functionResult';
 import { NotFoundError } from '@/utils/NotFoundError';
@@ -43,19 +53,26 @@ export interface AnnotationRepository {
 
   addAll(annotations: AnnotationDTO[]): Promise<Annotation[]>;
 
+  importWithDates(
+    annotations: AnnotationDTO[],
+  ): Promise<FunctionResult<Annotation[], InvalidImportedDatesError>>;
+
   deleteById(id: string): Promise<void>;
   deleteByIds(ids: string[]): Promise<string[]>;
   deleteByScope(scope: Scope): Promise<string[]>;
   deleteByScopeAndType(scope: Scope, types?: ElementType[]): Promise<string[]>;
 
-  update(annotation: Annotation): Promise<Annotation[]>;
+  update(annotation: AnnotationDraft): Promise<Annotation[]>;
   updateOrder(annotationId: string, order: number): Promise<Annotation[]>;
 }
 
 export interface AnnotationTempRepository {
   getAll(): Promise<Annotation[]>;
   getByCanvas(scope: CanvasScope): Promise<Annotation[]>;
-  addAll(annotations: AnnotationDTO[]): Promise<Annotation[]>;
+  addAll(annotations: AnnotationDraft[]): Promise<Annotation[]>;
+  importWithDates(
+    annotations: Annotation[],
+  ): Promise<FunctionResult<Annotation[], InvalidImportedDatesError>>;
   deleteByCollection(collectionId: string): Promise<void>;
 }
 
@@ -148,8 +165,9 @@ export interface TagRepository {
   getByIds(ids: string[]): Promise<Tag[]>;
   getAll(): Promise<Tag[]>;
 
-  add(tag: Tag): Promise<Tag>;
-  addAll(tags: Tag[]): Promise<void>;
+  add(tag: TagDTO): Promise<Tag>;
+
+  importWithDates(tags: Tag[]): Promise<FunctionResult<void, InvalidImportedDatesError>>;
 }
 
 export interface ModelRepository {
@@ -157,9 +175,11 @@ export interface ModelRepository {
   getAll(): Promise<DataModel[]>;
   getByName(name: string): Promise<FunctionResult<DataModel, EntityNotFoundError>>;
 
-  add(model: DataModel): Promise<void>;
+  add(model: DataModelDTO): Promise<DataModel>;
 
-  update(model: DataModel): Promise<void>;
+  update(model: DataModelDTO): Promise<DataModel>;
+
+  importWithDates(model: DataModel): Promise<FunctionResult<void, InvalidImportedDatesError>>;
 
   deleteById(id: string): Promise<void>;
 }
@@ -168,7 +188,7 @@ export interface NamedEntityRepository {
   getByAnnotationId(annotationId: string): Promise<NamedEntity[]>;
   getByAnnotationIds(annotationIds: string[]): Promise<NamedEntity[]>;
 
-  add(entity: NamedEntity): Promise<void>;
+  add(entity: NamedEntityDTO): Promise<NamedEntity>;
 
   deleteByAnnotationIds(annotationIds: string[]): Promise<void>;
 }
@@ -217,17 +237,17 @@ export interface WorkerRepository {
 
 export interface FSHandleRepository {
   getAll(): Promise<FSHandle[]>;
-  put(handle: FSHandle): Promise<void>;
+  put(handle: FSHandleDTO): Promise<FSHandle>;
 }
 
 export interface ModifierChainRepository {
-  getAll(): Promise<ModifierChainDTO[]>;
-  getById(id: string): Promise<FunctionResult<ModifierChainDTO, EntityNotFoundError>>;
-  getByName(name: string): Promise<FunctionResult<ModifierChainDTO, EntityNotFoundError>>;
+  getAll(): Promise<ModifierChain[]>;
+  getById(id: string): Promise<FunctionResult<ModifierChain, EntityNotFoundError>>;
+  getByName(name: string): Promise<FunctionResult<ModifierChain, EntityNotFoundError>>;
 
-  add(chain: ModifierChainDTO): Promise<void>;
+  add(chain: ModifierChainDTO): Promise<ModifierChain>;
 
-  put(chain: ModifierChainDTO): Promise<void>;
+  put(chain: ModifierChainDTO): Promise<ModifierChain>;
 
   delete(id: string): Promise<void>;
 }
@@ -236,7 +256,7 @@ export interface ProjectRepository {
   getAll(): Promise<Project[]>;
   getById(id: string): Promise<FunctionResult<Project, EntityNotFoundError>>;
 
-  add(project: Project): Promise<void>;
+  add(project: ProjectDTO): Promise<Project>;
 
   addSource(
     projectId: string,

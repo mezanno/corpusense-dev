@@ -1,13 +1,13 @@
 import { Annotation, ElementType } from '@/data/models/annotations/annotation';
 import { Collection, CollectionDetails } from '@/data/models/collection/collection';
 import { DataModel } from '@/data/models/dataModel/dataModel';
-import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
-import { NamedEntity } from '@/data/models/namedEntity';
-import { Project } from '@/data/models/project';
+import { ModifierChain } from '@/data/models/modifiers/Modifier';
+import { NamedEntity } from '@/data/models/namedEntity/namedEntity';
+import { Project } from '@/data/models/project/project';
 import { Result } from '@/data/models/result/result';
 import { CanvasScope, CollectionScope, Scope } from '@/data/models/scope/scope';
 import { Source } from '@/data/models/source/source';
-import { Tag } from '@/data/models/tag';
+import { Tag } from '@/data/models/tag/tag';
 import { Worker } from '@/data/models/worker/worker';
 import { Canvas } from '@iiif/presentation-3';
 
@@ -56,7 +56,7 @@ export interface ResultLiveRepository {
 }
 
 export interface ModifierChainLiveRepository {
-  getAll(): () => Promise<ModifierChainDTO[]>;
+  getAll(): () => Promise<ModifierChain[]>;
 }
 
 export interface ProjectLiveRepository {

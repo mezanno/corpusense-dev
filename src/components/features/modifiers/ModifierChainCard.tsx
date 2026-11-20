@@ -2,7 +2,7 @@ import { cardSelection } from '@/components/common/cardSelection';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
+import { ModifierChainDTO } from '@/data/models/modifiers/modifierChain.dto';
 import useModifierChainIO from '@/hooks/data/modifiers/useModifierChainIO';
 import { cn } from '@/lib/utils';
 import { Trash2 } from 'lucide-react';

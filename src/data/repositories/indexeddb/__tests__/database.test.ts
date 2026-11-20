@@ -13,14 +13,24 @@ describe('IndexedDBDatabaseRepository', () => {
 
   it('exports representative data and imports it while replacing existing tables', async () => {
     await db.tags.bulkAdd([
-      { id: 'tag-1', label: 'Exported tag' },
-      { id: 'tag-2', label: 'Another exported tag' },
+      {
+        id: 'tag-1',
+        label: 'Exported tag',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      },
+      {
+        id: 'tag-2',
+        label: 'Another exported tag',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      },
     ]);
     await db.projects.add({
       id: 'project-1',
       name: 'Exported project',
-      createdAt: new Date('2026-01-01T00:00:00.000Z'),
-      updatedAt: new Date('2026-01-02T00:00:00.000Z'),
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-02T00:00:00.000Z',
       sources: ['source-1'],
       collections: ['collection-1'],
     });
@@ -41,13 +51,23 @@ describe('IndexedDBDatabaseRepository', () => {
     expect(typeof finalExportProgress?.completedRows).toBe('number');
     expect(finalExportProgress?.done).toBe(true);
 
-    await db.tags.put({ id: 'tag-1', label: 'Stale tag' });
-    await db.tags.add({ id: 'stale-tag', label: 'Must be removed by import' });
+    await db.tags.put({
+      id: 'tag-1',
+      label: 'Stale tag',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    });
+    await db.tags.add({
+      id: 'stale-tag',
+      label: 'Must be removed by import',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    });
     await db.projects.add({
       id: 'stale-project',
       name: 'Must be removed by import',
-      createdAt: new Date('2026-02-01T00:00:00.000Z'),
-      updatedAt: new Date('2026-02-01T00:00:00.000Z'),
+      createdAt: '2026-02-01T00:00:00.000Z',
+      updatedAt: '2026-02-01T00:00:00.000Z',
       sources: [],
       collections: [],
     });
@@ -60,12 +80,14 @@ describe('IndexedDBDatabaseRepository', () => {
 
     const importedTags = await db.tags.toArray();
     expect(importedTags).toHaveLength(2);
-    expect(importedTags).toEqual(
-      expect.arrayContaining([
-        { id: 'tag-1', label: 'Exported tag' },
-        { id: 'tag-2', label: 'Another exported tag' },
-      ]),
-    );
+    expect(importedTags).toMatchObject([
+      { id: 'tag-1', label: 'Exported tag' },
+      { id: 'tag-2', label: 'Another exported tag' },
+    ]);
+    for (const tag of importedTags) {
+      expect(typeof tag.createdAt).toBe('string');
+      expect(typeof tag.updatedAt).toBe('string');
+    }
     const importedProjects = await db.projects.toArray();
     expect(importedProjects).toHaveLength(1);
     expect(importedProjects).toEqual(
@@ -73,8 +95,8 @@ describe('IndexedDBDatabaseRepository', () => {
         {
           id: 'project-1',
           name: 'Exported project',
-          createdAt: new Date('2026-01-01T00:00:00.000Z'),
-          updatedAt: new Date('2026-01-02T00:00:00.000Z'),
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-02T00:00:00.000Z',
           sources: ['source-1'],
           collections: ['collection-1'],
         },
@@ -91,12 +113,17 @@ describe('IndexedDBDatabaseRepository', () => {
   });
 
   it('clears the database and allows it to be reopened cleanly', async () => {
-    await db.tags.add({ id: 'tag-1', label: 'Persisted tag' });
+    await db.tags.add({
+      id: 'tag-1',
+      label: 'Persisted tag',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    });
     await db.projects.add({
       id: 'project-1',
       name: 'Persisted project',
-      createdAt: new Date('2026-01-01T00:00:00.000Z'),
-      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
       sources: [],
       collections: [],
     });

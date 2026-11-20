@@ -25,6 +25,7 @@ export function makeWorker(overrides: Partial<Worker> = {}): Worker {
     scopeKey: computeScopeKey(input.scope),
     status: WorkerStatus.INPROGRESS,
     createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
     estimatedDuration: 0,
     queue: [makeTask()],
     ...overrides,

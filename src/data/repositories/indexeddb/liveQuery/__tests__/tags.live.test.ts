@@ -11,7 +11,12 @@ describe('IndexedDBTagLiveRepository', () => {
     const live = observe(new IndexedDBTagLiveRepository().getAll());
     try {
       expect(await live.next()).toEqual([]);
-      await db.tags.put({ id: 'tag-1', label: 'First' });
+      await db.tags.put({
+        id: 'tag-1',
+        label: 'First',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      });
       expect(await live.until((tags) => tags.length === 1)).toMatchObject([{ label: 'First' }]);
       await db.tags.update('tag-1', { label: 'Updated' });
       expect(await live.until((tags) => tags[0]?.label === 'Updated')).toMatchObject([

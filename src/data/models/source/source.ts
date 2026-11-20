@@ -1,26 +1,21 @@
 import { Manifest } from '@iiif/presentation-3';
 import z from 'zod';
+import { TimeStampSchema } from '../timeStampSchema';
 
 const SourceTypeSchema = z.enum(['local', 'remote']);
 
-const StoredBlobSchema = z
-  .object({
-    id: z.string(),
-    blob: z.instanceof(Blob),
-  })
-  .strict();
+const StoredBlobSchema = TimeStampSchema.extend({
+  blob: z.instanceof(Blob),
+}).strict();
 
 export type StoredBlob = z.infer<typeof StoredBlobSchema>;
 
-const SourceSchema = z
-  .object({
-    id: z.string(),
-    name: z.string(),
-    type: SourceTypeSchema,
-    pageCount: z.number().int().nonnegative(),
-    thumbnailBlobId: z.string(),
-  })
-  .strict();
+const SourceSchema = TimeStampSchema.extend({
+  name: z.string(),
+  type: SourceTypeSchema,
+  pageCount: z.number().int().nonnegative(),
+  thumbnailBlobId: z.string(),
+}).strict();
 
 export type Source = z.infer<typeof SourceSchema>;
 
@@ -36,14 +31,12 @@ export const LocalFileSchema = z
   .strict();
 
 const SourceContentSchema = z.discriminatedUnion('type', [
-  z.object({
-    id: z.string(),
+  TimeStampSchema.extend({
     type: z.literal('remote'),
     manifest: ManifestSchema,
   }),
 
-  z.object({
-    id: z.string(),
+  TimeStampSchema.extend({
     type: z.literal('local'),
     manifest: ManifestSchema,
     localFile: LocalFileSchema,

@@ -139,7 +139,7 @@ describe('IndexedDBCollectionRepository', () => {
     );
     await repository.updateTags('collection-1', ['tag-1', 'missing-tag']);
 
-    expect(await repository.getTagsByCollectionId('collection-1')).toEqual({
+    expect(await repository.getTagsByCollectionId('collection-1')).toMatchObject({
       ok: true,
       value: [{ id: 'tag-1', label: 'Topic' }],
     });
@@ -331,7 +331,9 @@ describe('IndexedDBCollectionRepository', () => {
     });
     await db.results.bulkAdd([
       {
-        id: 1,
+        id: 'result-1',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
         scope: { collectionId: 'collection-1' },
         scopeKey: 'collection-1',
         workerName: 'worker-one',
@@ -341,7 +343,9 @@ describe('IndexedDBCollectionRepository', () => {
         params: {},
       },
       {
-        id: 2,
+        id: 'result-2',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
         scope: { collectionId: 'collection-2' },
         scopeKey: 'collection-2',
         workerName: 'worker-two',
@@ -360,7 +364,7 @@ describe('IndexedDBCollectionRepository', () => {
     expect(await db.collectionContents.toArray()).toMatchObject([{ id: 'collection-2' }]);
     expect((await db.annotations.toArray()).map(({ id }) => id)).toEqual(['annotation-2']);
     expect((await db.workers.toArray()).map(({ id }) => id)).toEqual(['worker-2']);
-    expect((await db.results.toArray()).map(({ id }) => id)).toEqual([2]);
+    expect((await db.results.toArray()).map(({ id }) => id)).toEqual(['result-2']);
 
     expect(await repository.deleteMultiple(['collection-2', 'already-absent'])).toMatchObject({
       ok: true,
@@ -386,12 +390,20 @@ describe('IndexedDBCollectionRepository', () => {
   });
 
   it('rolls back collection details when writing collection content fails', async () => {
-    await db.collectionContents.add({ id: 'conflict', content: [] });
+    await db.collectionContents.add({
+      id: 'conflict',
+      content: [],
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    });
 
     const result = await repository.add(makeCollection('conflict'));
 
     expect(result.ok).toBe(false);
     expect(await db.collections.get('conflict')).toBeUndefined();
-    expect(await db.collectionContents.get('conflict')).toEqual({ id: 'conflict', content: [] });
+    expect(await db.collectionContents.get('conflict')).toMatchObject({
+      id: 'conflict',
+      content: [],
+    });
   });
 });

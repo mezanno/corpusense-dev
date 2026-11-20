@@ -1,7 +1,7 @@
 import z from 'zod';
+import { TimeStampSchema } from '../timeStampSchema';
 
-const FSHandleSchema = z.object({
-  id: z.string(),
+const FSHandleSchema = TimeStampSchema.extend({
   handle: z.instanceof(FileSystemDirectoryHandle),
 });
 

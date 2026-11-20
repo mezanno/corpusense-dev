@@ -11,6 +11,8 @@ describe('namedEntity utils', () => {
   const mockAnnotations: Annotation[] = [
     {
       id: 'anno-1',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
       canvasId: 'c1',
       collectionId: 'col1',
       order: 0,
@@ -33,6 +35,8 @@ describe('namedEntity utils', () => {
     } as Annotation,
     {
       id: 'anno-2',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
       canvasId: 'c1',
       collectionId: 'col1',
       order: 1,

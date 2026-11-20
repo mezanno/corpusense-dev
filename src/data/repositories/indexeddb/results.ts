@@ -2,6 +2,7 @@ import { Result } from '@/data/models/result/result';
 import { ResultCreateDTO } from '@/data/models/result/result.dto';
 import { Scope } from '@/data/models/scope/scope';
 import { FunctionResult } from '@/utils/functionResult';
+import { v4 as uuid } from 'uuid';
 import { EntityNotFoundError } from '../EntityNotFoundError';
 import { db } from './db';
 import { ResultRepository } from './types';
@@ -11,10 +12,13 @@ export class IndexedDBResultRepository implements ResultRepository {
   async add(result: ResultCreateDTO): Promise<Result> {
     const newResult = {
       ...result,
+      id: uuid(),
+      createdAt: new Date().toISOString(),
       scopeKey: computeScopeKey(result.scope),
     };
-    const id = await db.results.add(newResult);
-    return { ...newResult, id };
+    const storedResult = { ...newResult, updatedAt: newResult.createdAt };
+    await db.results.add(storedResult);
+    return storedResult;
   }
 
   async addAll(results: Result[]): Promise<void> {

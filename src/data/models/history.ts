@@ -1,6 +1,7 @@
 import z from 'zod';
+import { TimeStampSchema } from './timeStampSchema';
 
-const HistorySchema = z.object({
+const HistorySchema = TimeStampSchema.extend({
   url: z.string(),
 });
 

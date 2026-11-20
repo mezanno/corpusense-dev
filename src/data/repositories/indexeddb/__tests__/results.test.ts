@@ -51,8 +51,10 @@ describe('IndexedDBResultRepository', () => {
     await repository.add(makeResult(2));
     await repository.add(makeResult(5, canvasScope));
     const otherWorker: Result = {
-      id: 20,
+      id: 'result-20',
       ...makeResult(1),
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
       workerId: 'worker-2',
       workerName: 'Other worker',
       scopeKey: 'collection-1',
@@ -63,7 +65,7 @@ describe('IndexedDBResultRepository', () => {
       2, 5, 9,
     ]);
     expect(await repository.getAllByWorkerId('worker-2')).toEqual([otherWorker]);
-    expect((await repository.getAll()).map(({ id }) => id)).toEqual([1, 2, 3, 20]);
+    expect(await repository.getAll()).toHaveLength(4);
   });
 
   it('returns a typed error when no result matches a scope and worker name', async () => {

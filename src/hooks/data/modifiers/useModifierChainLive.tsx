@@ -1,5 +1,5 @@
 import { ElementType } from '@/data/models/annotations/annotation';
-import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
+import { ModifierChainDTO } from '@/data/models/modifiers/modifierChain.dto';
 import { CollectionScope } from '@/data/models/scope/scope';
 import { getModifierChainLiveRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { applyModifiersToScope, getModifiersAndValues } from '@/data/utils/modifierChain';

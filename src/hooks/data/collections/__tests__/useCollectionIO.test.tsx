@@ -55,8 +55,8 @@
  *   `ok:false` / liste vide qui sont exercées à leur place ;
  * - dédoublonnage des sources par `getSourceIdsByCollectionId` (Set) : un content avec
  *   deux canevas de la même source ne produit qu'une lecture de source ; si TOUTES les
- *   sources manquent, la clé `sources` existe mais vaut `[]` (elle est absente quand le
- *   content est vide) ;
+ *   sources manquent, la clé `sources` existe et vaut `[]` (elle est désormais présente
+ *   même quand le content est vide) ;
  * - l'`id` du manifest exporté est codé en dur (`https://1.rp.mezanno.xyz/toto.json`,
  *   TODO au source de `data/utils/export.ts`) ;
  * - cycle import→export : le JSON d'une collection exportée valide l'`ExportedCollectionSchema`
@@ -256,6 +256,8 @@ const FIXED_DATE = '2026-01-01T00:00:00.000Z';
 function makeExportedModel(id: string, name: string): DataModel {
   return {
     id,
+    createdAt: FIXED_DATE,
+    updatedAt: FIXED_DATE,
     name,
     prompt: `Prompt de ${name}`,
     fields: [{ id: `${id}-champ-1`, name: 'Champ', type: 'string', color: '#111111' }],
@@ -266,12 +268,16 @@ function makeExportedModel(id: string, name: string): DataModel {
 function makeExportedSource(id: string): SourceWithContentAndThumbnail {
   return {
     id,
+    createdAt: FIXED_DATE,
+    updatedAt: FIXED_DATE,
     name: `Source ${id}`,
     type: 'remote',
     pageCount: FIXTURE_CANVAS_IDS.length,
     thumbnailBlobId: `blob-${id}`,
     content: {
       id,
+      createdAt: FIXED_DATE,
+      updatedAt: FIXED_DATE,
       type: 'remote',
       manifest: {
         ...manifestFixture,
@@ -296,14 +302,17 @@ function makeExportedWorker(id: string, scope: Worker['scope']): Worker {
     scopeKey,
     status: WorkerStatus.COMPLETED,
     createdAt: FIXED_DATE,
+    updatedAt: FIXED_DATE,
     estimatedDuration: 0,
     queue: [],
   };
 }
 
-function makeExportedResult(id: number, workerId: string, taskId: number): Result {
+function makeExportedResult(id: string, workerId: string, taskId: number): Result {
   return {
     id,
+    createdAt: FIXED_DATE,
+    updatedAt: FIXED_DATE,
     scope: { collectionId: 'e2e' },
     workerName: 'ocr-test',
     workerId,
@@ -418,9 +427,9 @@ describe('useCollectionIO — exportCollections (matrice d’options)', () => {
     expect('workers' in alpha).toBe(false);
     expect('results' in alpha).toBe(false);
 
-    // Collection sans content : clé `sources` ABSENTE (et pas `[]`) — cf. en-tête.
+    // Collection sans content : clé `sources` présente et vide — cf. en-tête.
     const beta = await jsonFile(zip, 'Beta io.json');
-    expect('sources' in beta).toBe(false);
+    expect(beta.sources).toEqual([]);
     expect('tags' in beta).toBe(false);
 
     const { logger, progressCalls, statusCalls } = rendered.result.current;
@@ -524,7 +533,7 @@ describe('useCollectionIO — exportCollections (matrice d’options)', () => {
     const expectedResults = [
       ...(await resultRepository.getAllByWorkerId(workerCol.id)),
       ...(await resultRepository.getAllByWorkerId(workerCanvas.id)),
-    ].sort((a, b) => a.id - b.id);
+    ].sort((a, b) => a.id.localeCompare(b.id));
 
     const rendered = renderIO();
     await exportCollections(rendered, ['io-workers'], { workers: true, workersScope: 'all' });
@@ -532,7 +541,9 @@ describe('useCollectionIO — exportCollections (matrice d’options)', () => {
     expect(zipAll.workers?.map((worker) => worker.id).sort()).toEqual(
       [workerCol.id, workerCanvas.id].sort(),
     );
-    expect(zipAll.results?.slice().sort((a, b) => a.id - b.id)).toEqual(expectedResults);
+    expect(zipAll.results?.slice().sort((a, b) => a.id.localeCompare(b.id))).toEqual(
+      expectedResults,
+    );
     // Le worker d'une autre collection n'est jamais inclus.
     expect(zipAll.workers?.map((worker) => worker.id)).not.toContain(workerAutre.id);
 
@@ -542,7 +553,9 @@ describe('useCollectionIO — exportCollections (matrice d’options)', () => {
     expect(zipSansScope.workers?.map((worker) => worker.id).sort()).toEqual(
       zipAll.workers?.map((worker) => worker.id).sort(),
     );
-    expect(zipSansScope.results?.slice().sort((a, b) => a.id - b.id)).toEqual(expectedResults);
+    expect(zipSansScope.results?.slice().sort((a, b) => a.id.localeCompare(b.id))).toEqual(
+      expectedResults,
+    );
 
     rendered.unmount();
   });
@@ -759,8 +772,8 @@ describe('useCollectionIO — cycle import → base réelle → export', () => {
       model: makeExportedModel('modele-e2e', 'Modèle e2e'),
       workers: [workerCol, workerCanvas],
       results: [
-        makeExportedResult(700, 'worker-e2e-col', 1),
-        makeExportedResult(701, 'worker-e2e-canvas', 1),
+        makeExportedResult('700', 'worker-e2e-col', 1),
+        makeExportedResult('701', 'worker-e2e-canvas', 1),
       ],
       tags: [makeTag({ id: 'tag-e2e' })],
     };
@@ -809,10 +822,10 @@ describe('useCollectionIO — cycle import → base réelle → export', () => {
     );
     // Agrégation par worker (ordre d'itération des workers non garanti par la
     // requête) : comparaison triée par id, base = les deux lignes de la table.
-    expect(exported.results?.slice().sort((a, b) => a.id - b.id)).toEqual(
+    expect(exported.results?.slice().sort((a, b) => a.id.localeCompare(b.id))).toEqual(
       await getResultRepository().getAll(),
     );
-    expect(exported.results?.map((result) => result.id).sort()).toEqual([700, 701]);
+    expect(exported.results?.map((result) => result.id).sort()).toEqual(['700', '701']);
     expect(exported.tags).toEqual(await getTagRepository().getByIds(['tag-e2e']));
 
     const manifest = await manifestFile(zipOut, 'Cycle e2e_manifest.json');

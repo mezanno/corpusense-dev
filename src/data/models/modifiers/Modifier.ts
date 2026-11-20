@@ -1,5 +1,6 @@
 import z from 'zod';
-import { Annotation } from '../annotations/annotation';
+import { AnnotationDraft } from '../annotations/annotation.dto';
+import { TimeStampSchema } from '../timeStampSchema';
 
 type MaybePromise<T> = T | Promise<T>;
 
@@ -70,19 +71,34 @@ export abstract class Modifier<TSchema extends z.ZodTypeAny> {
     this.description = description;
   }
 
-  abstract apply(data: Annotation[], values: z.infer<TSchema>): MaybePromise<Annotation[]>;
+  // Modifiers reshape annotation content and geometry only; timestamps are set
+  // by the repositories when the resulting drafts are written.
+  abstract apply(
+    data: AnnotationDraft[],
+    values: z.infer<TSchema>,
+  ): MaybePromise<AnnotationDraft[]>;
 }
 
 export type AnyModifier = Modifier<z.ZodObject<z.ZodRawShape>>;
 
-interface ModifierDTO {
+/** One saved modifier inside a chain: type-specific values only. */
+export interface ModifierDTO {
   id: string;
   type: string;
   values: unknown;
 }
-export interface ModifierChainDTO {
-  id: string;
-  name: string;
-  description?: string;
-  modifiers: ModifierDTO[];
-}
+
+/** Persisted entity: timestamps are mandatory, like every TimeStampSchema record. */
+export const ModifierChainSchema = TimeStampSchema.extend({
+  name: z.string(),
+  description: z.string().optional(),
+  modifiers: z
+    .object({
+      id: z.string(),
+      type: z.string(),
+      values: z.unknown(),
+    })
+    .array(),
+}).strict();
+
+export type ModifierChain = z.infer<typeof ModifierChainSchema>;

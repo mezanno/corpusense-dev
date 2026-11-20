@@ -181,6 +181,8 @@ function makeModel(id: string, name: string): DataModel {
   return {
     id,
     name,
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
     prompt: 'prompt de test',
     fields: [{ id: `${id}-field`, name: 'titre', type: 'string', color: '#a4d6f6' }],
   };

@@ -1,4 +1,4 @@
-import { Project } from '@/data/models/project';
+import { Project } from '@/data/models/project/project';
 import { getProjectLiveRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';

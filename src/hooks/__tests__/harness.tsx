@@ -23,7 +23,7 @@ import { Collection } from '@/data/models/collection/collection';
 import { CollectionElement } from '@/data/models/collectionElement';
 import { SourceWithContent } from '@/data/models/source/source';
 import { AddSourceDTO } from '@/data/models/source/source.dto';
-import { Tag } from '@/data/models/tag';
+import { Tag } from '@/data/models/tag/tag';
 import {
   countLiveQuerySubscribers,
   createTestDb,
@@ -64,6 +64,8 @@ function nextId(prefix: string): string {
 export function makeTag(overrides: Partial<Tag> = {}): Tag {
   return {
     id: nextId('tag'),
+    createdAt: FIXED_DATE,
+    updatedAt: FIXED_DATE,
     label: 'Étiquette de test',
     ...overrides,
   };
@@ -130,7 +132,12 @@ export function makeAnnotation(
     value: overrides.value ?? 'Valeur de test',
     ...bounds,
   });
-  return { ...annotation, order: overrides.order ?? 1 };
+  return {
+    ...annotation,
+    order: overrides.order ?? 1,
+    createdAt: FIXED_DATE,
+    updatedAt: FIXED_DATE,
+  };
 }
 
 /* ------------------------------------------------------------------ */
@@ -144,7 +151,7 @@ function unwrap<T>(result: FunctionResult<T, Error>): T {
 
 export async function seedTags(tags: Tag[] = [makeTag()]): Promise<Tag[]> {
   const tagRepository = getTagRepository();
-  await tagRepository.addAll(tags);
+  unwrap(await tagRepository.importWithDates(tags));
   return tagRepository.getByIds(tags.map((tag) => tag.id));
 }
 

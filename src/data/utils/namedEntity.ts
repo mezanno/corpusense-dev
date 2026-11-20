@@ -3,7 +3,8 @@ import { v4 as uuid } from 'uuid';
 import { Annotation } from '../models/annotations/annotation';
 import { getAnnotationText } from '../models/annotations/annotation.utils';
 import { DataField } from '../models/dataModel/dataModel';
-import { NamedEntity, NamedEntitySelector } from '../models/namedEntity';
+import { NamedEntitySelector } from '../models/namedEntity/namedEntity';
+import { NamedEntityDTO } from '../models/namedEntity/namedEntity.dto';
 
 const computeSelector = (
   namedEntityValue: string,
@@ -34,7 +35,7 @@ const generateNamedEntity = (
   type: DataField,
   value: string,
   annotations: Annotation[],
-): NamedEntity => {
+): NamedEntityDTO => {
   const selector = computeSelector(value, annotations);
   return {
     id: uuid(),

@@ -1,9 +1,11 @@
 import { DataModel, DataModelSchema } from '@/data/models/dataModel/dataModel';
 import { getModelRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { InvalidModelStructureError } from '@/data/utils/errors';
+import { normalizeImportedEntity } from '@/data/utils/historicalDates';
 import { useAppDispatch } from '@/hooks/hooks';
 import i18n from '@/i18n';
 import { pushError, pushInfo } from '@/state/reducers/events';
+import { BaseError } from '@/utils/BaseError';
 import { getErrorMessage } from '@/utils/utils';
 import FileSaver from 'file-saver';
 import { useMemo } from 'react';
@@ -43,7 +45,9 @@ export const useModelIO = () => {
 
   const importModel = async (data: unknown, overwrite: boolean) => {
     try {
-      const validation = DataModelSchema.safeParse(data);
+      const validation = DataModelSchema.safeParse(
+        normalizeImportedEntity(data, new Date().toISOString()),
+      );
       if (!validation.success) {
         throw new InvalidModelStructureError({ issues: validation.error.message });
       }
@@ -58,9 +62,22 @@ export const useModelIO = () => {
         } else {
           model.id = existingModel.id;
         }
-        await modelRepository.update(model);
       } else {
-        await modelRepository.add(model);
+        // Preserve the former `add` protection: never silently overwrite the row
+        // of an unrelated model sharing the imported id.
+        const conflicting = await modelRepository.getById(model.id);
+        if (conflicting.ok) {
+          throw new BaseError('A model with the same id already exists', {
+            context: { id: model.id },
+          });
+        }
+      }
+      // Imports always go through the dedicated path: valid imported dates are
+      // preserved and invalid ones fail with a translated message (decisions 3, 6).
+      const importResult = await modelRepository.importWithDates(model);
+      if (!importResult.ok) {
+        appDispatch(pushError(getErrorMessage(importResult.error)));
+        return;
       }
     } catch (error) {
       //TODO: faire une gestion des erreurs plus user friendly

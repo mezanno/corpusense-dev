@@ -20,7 +20,7 @@ describe('manifest utils', () => {
       { id: 'canvas-1', type: 'Canvas' },
       { id: 'canvas-2', type: 'Canvas' },
     ],
-  } as Manifest;
+  };
 
   describe('extractManifestDetails', () => {
     it('should extract name from summary preferentially', () => {
@@ -31,13 +31,13 @@ describe('manifest utils', () => {
 
     it('should extract name from label if summary is missing', () => {
       const manifestWithoutSummary = { ...mockManifest, summary: undefined };
-      const { name } = extractManifestDetails(manifestWithoutSummary as Manifest);
+      const { name } = extractManifestDetails(manifestWithoutSummary);
       expect(name).toBe('Manifest Label');
     });
 
     it('should return empty name fallback key if both summary and label are missing', () => {
       const emptyManifest = { ...mockManifest, summary: undefined, label: {} };
-      const { name } = extractManifestDetails(emptyManifest as Manifest);
+      const { name } = extractManifestDetails(emptyManifest);
       expect(name).toBe('error_manifest_empty_name');
     });
   });

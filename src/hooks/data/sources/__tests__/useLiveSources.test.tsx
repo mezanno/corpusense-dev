@@ -132,6 +132,7 @@ import { RootState } from '@/state/store';
 import { act, waitFor } from '@testing-library/react';
 import { Component, type ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import useLiveSources from '../useLiveSources';
 
 resetTestDbBeforeEach();
@@ -211,15 +212,19 @@ describe('useLiveSources — coquille liveQuery (contrat commun)', () => {
       expect(result.current.isLoadingRemoteSources).toBe(false);
       expect(result.current.isLoadingLocalSources).toBe(false);
     });
-    expect(result.current.remoteSources).toEqual([
-      {
-        id: remote.id,
-        name: 'Nominal',
-        type: 'remote',
-        pageCount: FIXTURE_CANVAS_IDS.length,
-        thumbnailBlobId: remote.thumbnailBlobId,
-      },
-    ]);
+    expect(result.current.remoteSources).toHaveLength(1);
+    const remoteSource = result.current.remoteSources[0];
+    expect({ ...remoteSource, createdAt: '', updatedAt: '' }).toEqual({
+      id: remote.id,
+      name: 'Nominal',
+      type: 'remote',
+      pageCount: FIXTURE_CANVAS_IDS.length,
+      thumbnailBlobId: remote.thumbnailBlobId,
+      createdAt: '',
+      updatedAt: '',
+    });
+    expect(z.iso.datetime().safeParse(remoteSource.createdAt).success).toBe(true);
+    expect(z.iso.datetime().safeParse(remoteSource.updatedAt).success).toBe(true);
     expect(result.current.localSources).toEqual([]);
     expect(result.current.sourcesCount).toEqual({ remote: 1, local: 0 });
 

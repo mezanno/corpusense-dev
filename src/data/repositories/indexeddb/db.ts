@@ -2,21 +2,27 @@ import { Annotation } from '@/data/models/annotations/annotation';
 import { CollectionContent, CollectionDetails } from '@/data/models/collection/collection';
 import { ConvertedFile } from '@/data/models/convertedFile';
 import { DataModel } from '@/data/models/dataModel/dataModel';
-import { FSHandle } from '@/data/models/fSHandle';
+import { FSHandle } from '@/data/models/fSHandle/fSHandle';
 import { History } from '@/data/models/history';
 import { ItemMetadata } from '@/data/models/metadata';
-import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
-import { NamedEntity } from '@/data/models/namedEntity';
-import { Project } from '@/data/models/project';
+import { ModifierChain } from '@/data/models/modifiers/Modifier';
+import { NamedEntity } from '@/data/models/namedEntity/namedEntity';
+import { Project } from '@/data/models/project/project';
 import { Result } from '@/data/models/result/result';
 import { Source, SourceContent, StoredBlob } from '@/data/models/source/source';
 import { StoredManifestContent, StoredManifestDetails } from '@/data/models/storedManifest';
-import { Tag } from '@/data/models/tag';
+import { Tag } from '@/data/models/tag/tag';
 import { TaskStatus, Worker, WorkerStatus } from '@/data/models/worker/worker';
 import { workerStatusOf } from '@/data/models/worker/workerStatusLaw';
 import { BaseError } from '@/utils/BaseError';
 import Dexie, { type EntityTable } from 'dexie';
 import 'dexie-observable';
+import {
+  installTimestampHooks,
+  markMigration,
+  migrateStrictTimestamps,
+  migrateTimestamps,
+} from './timestamps';
 
 const db = new Dexie('mezanno') as Dexie & {
   collections: EntityTable<CollectionDetails, 'id'>;
@@ -34,7 +40,7 @@ const db = new Dexie('mezanno') as Dexie & {
   workers: EntityTable<Worker, 'id'>;
   handles: EntityTable<FSHandle, 'id'>;
   convertedFiles: EntityTable<ConvertedFile, 'id'>;
-  modifierChains: EntityTable<ModifierChainDTO, 'id'>;
+  modifierChains: EntityTable<ModifierChain, 'id'>;
   projects: EntityTable<Project, 'id'>;
   sources: EntityTable<Source, 'id'>;
   sourceContents: EntityTable<SourceContent, 'id'>;
@@ -102,6 +108,7 @@ db.version(31)
     storedBlobs: '&id',
   })
   .upgrade(async (tx) => {
+    markMigration(tx);
     // Le champ position de CollectionElement est supprimé : l'ordre est désormais donné par l'ordre dans le tableau content.
     // On fige ici l'ordre existant en triant sur l'ancienne valeur (potentiellement trouée) puis on retire le champ.
     await tx
@@ -119,6 +126,7 @@ db.version(32)
     workers: '&id, name, status, [scopeKey+name]',
   })
   .upgrade(async (tx) => {
+    markMigration(tx);
     await tx
       .table('workers')
       .toCollection()
@@ -191,5 +199,10 @@ db.version(32)
         worker.status = persistedStatus;
       });
   });
+
+db.version(33).stores({}).upgrade(migrateTimestamps);
+db.version(34).stores({}).upgrade(migrateStrictTimestamps);
+
+installTimestampHooks(db);
 
 export { db };

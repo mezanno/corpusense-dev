@@ -8,6 +8,9 @@ import { observe } from './liveQueryTestUtils';
 const source = (id: string, type: Source['type'], name = id): Source => ({
   id,
   name,
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+
   type,
   pageCount: 1,
   thumbnailBlobId: `${id}-thumb`,

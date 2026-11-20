@@ -20,7 +20,14 @@ describe('ModelCard', () => {
     const user = userEvent.setup();
     render(
       <ModelCard
-        model={{ id: 'm1', name: 'Modèle', prompt: '', fields: [] }}
+        model={{
+          id: 'm1',
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-01T00:00:00.000Z',
+          name: 'Modèle',
+          prompt: '',
+          fields: [],
+        }}
         selectedModelId={null}
         setSelectedModelId={onSelect}
       />,

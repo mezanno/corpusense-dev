@@ -1,5 +1,5 @@
 import AddCardButton from '@/components/common/AddCardButton';
-import { Project } from '@/data/models/project';
+import { Project } from '@/data/models/project/project';
 import useProjectsIO from '@/hooks/data/projects/useProjectsIO';
 import useDialog from '@/hooks/ui/useDialog';
 import { useEffect, useEffectEvent, useState } from 'react';

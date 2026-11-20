@@ -1,7 +1,7 @@
 import z from 'zod';
-import { ObjectWithStringIdSchema } from './objectWithStringId';
+import { TimeStampSchema } from '../timeStampSchema';
 
-export const TagSchema = ObjectWithStringIdSchema.extend({
+export const TagSchema = TimeStampSchema.extend({
   label: z.string(),
   category: z.string().optional(),
 }).strict();

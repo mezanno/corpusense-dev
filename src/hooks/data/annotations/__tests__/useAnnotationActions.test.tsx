@@ -167,6 +167,7 @@ import { NotFoundError } from '@/utils/NotFoundError';
 import { ImageAnnotation, ShapeType } from '@annotorious/annotorious';
 import { act } from 'react';
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import {
   DuplicateDistribution,
   DuplicateLimit,
@@ -449,8 +450,13 @@ describe('useAnnotationActions — updateAnnotation', () => {
     });
 
     // Le repository ne throw jamais sur une absence : c'est la branche `!ok` du hook, qui
-    // écrit (création) et toaste comme pour toute différence.
-    expect(await readAnnotation('aa-u-new')).toEqual(fresh);
+    // écrit (création) et toaste comme pour toute différence. À la création, le
+    // repository initialise les deux horodatages ; celles de la fixture sont ignorées.
+    const created = await readAnnotation('aa-u-new');
+    const { createdAt: _createdAt, updatedAt: _updatedAt, ...draft } = fresh;
+    expect(created).toMatchObject(draft);
+    expect(z.iso.datetime().safeParse(created?.createdAt ?? '').success).toBe(true);
+    expect(created?.updatedAt).toBe(created?.createdAt);
     expect(toasts(store)).toEqual([savedToast()]);
 
     unmount();

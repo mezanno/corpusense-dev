@@ -7,7 +7,7 @@ import {
   W3CMotivation,
 } from '@iiif/presentation-3';
 import { uniq } from 'lodash';
-import { Annotation } from '../annotations/annotation';
+import { AnnotationDraft } from '../annotations/annotation.dto';
 import { createAnnotation } from '../annotations/annotation.factory';
 import { convertToElementTypeEnum } from '../annotations/annotation.utils';
 
@@ -24,7 +24,7 @@ const URL_ANNOTATIONPAGE = 'annotationpage/corpusense';
  * @throws Error if the annotations are empty or if the canvasId is undefined
  */
 export function convertW3CAnnotationsToIIIF(
-  annotations: Annotation[],
+  annotations: AnnotationDraft[],
   purposes?: string[],
 ): AnnotationPage {
   if (annotations.length === 0) {
@@ -81,13 +81,13 @@ export function convertW3CAnnotationsToIIIF(
 export function convertAnnotationPageToW3CAnnotations(
   aPage: AnnotationPage,
   collectionId: string,
-): Annotation[] {
+): AnnotationDraft[] {
   const allItems = aPage.items;
   if (allItems === undefined || allItems.length === 0) {
     throw new Error('Annotation items are undefined or empty');
   }
 
-  const annotations: Annotation[] = [];
+  const annotations: AnnotationDraft[] = [];
   const targets = uniq(allItems.map((i) => i.target));
   for (let r = 0; r < targets.length; r++) {
     const target = targets[r] as ContentResourceString;

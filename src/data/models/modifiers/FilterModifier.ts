@@ -2,7 +2,7 @@ import { getDimensions } from '@/data/utils/annotations';
 import i18n from '@/i18n';
 import { v4 as uuid } from 'uuid';
 import z from 'zod';
-import { Annotation } from '../annotations/annotation';
+import { AnnotationDraft } from '../annotations/annotation.dto';
 import { Modifier } from './Modifier';
 
 const hpSchema = z.object({
@@ -44,7 +44,7 @@ export class FilterModifier extends Modifier<typeof hpSchema> {
     this.thresholdMax = hpThresholdMax;
   }
 
-  apply = (data: Annotation[], values: z.infer<typeof hpSchema>) => {
+  apply = (data: AnnotationDraft[], values: z.infer<typeof hpSchema>) => {
     if (data.length > 1) {
       const sizeThreshold = values.threshold ?? 0;
       const criterion = values.dimension ?? hpSchema.shape.dimension.def.defaultValue;

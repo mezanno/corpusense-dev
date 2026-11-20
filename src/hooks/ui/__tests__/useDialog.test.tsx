@@ -149,6 +149,8 @@ const DialogHarness = () => {
 
 const TEST_SOURCE: Source = {
   id: 'source-1',
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
   name: 'Source de test',
   type: 'local',
   pageCount: 2,
@@ -251,6 +253,7 @@ const TEST_WORKER: Worker = {
   scopeKey: 'collection-1',
   status: WorkerStatus.INPROGRESS,
   createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
   estimatedDuration: 0,
   queue: [],
 };
@@ -267,6 +270,8 @@ const TEST_PROFILE: LLMProfile = {
 // dialogue d'aperçu, et `modelId` sert de discriminant au dialogue d'usage.
 const TEST_MODEL: DataModel = {
   id: 'model-1',
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
   name: 'Modèle de test',
   prompt: 'invite de test',
   fields: [{ id: 'field-1', name: 'champ-apercu', type: 'string', color: '#123456' }],

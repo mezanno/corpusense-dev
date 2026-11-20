@@ -21,6 +21,7 @@ function makeStoredWorker(id: string, overrides: Partial<Worker> = {}): Worker {
     scopeKey: overrides.scopeKey ?? computeScopeKey(scope),
     status: WorkerStatus.INPROGRESS,
     createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
     estimatedDuration: 0,
     queue: [],
     ...overrides,
@@ -29,7 +30,9 @@ function makeStoredWorker(id: string, overrides: Partial<Worker> = {}): Worker {
 
 function makeResult(id: number, workerId: string, taskId: number) {
   return {
-    id,
+    id: String(id),
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
     scope: { collectionId: 'collection-1' },
     scopeKey: 'collection-1',
     workerName: `worker-${workerId}`,
@@ -253,7 +256,7 @@ describe('IndexedDBWorkerRepository status characterization', () => {
     await repository.deleteById('worker-delete');
 
     expect((await repository.getAll()).map((worker) => worker.id)).toEqual(['worker-keep']);
-    expect((await db.results.toArray()).map((result) => result.id)).toEqual([2]);
+    expect((await db.results.toArray()).map((result) => result.id)).toEqual(['2']);
   });
 
   it('deletes only the result matching both worker and task ids', async () => {
@@ -267,7 +270,7 @@ describe('IndexedDBWorkerRepository status characterization', () => {
 
     const remainingResults = (await db.results.toArray()).map((result) => result.id);
     expect(remainingResults).toHaveLength(2);
-    expect(remainingResults).toEqual(expect.arrayContaining([2, 3]));
+    expect(remainingResults).toEqual(expect.arrayContaining(['2', '3']));
   });
 
   it('persists a task transition and derives the worker status', async () => {
@@ -351,7 +354,9 @@ describe('IndexedDBWorkerRepository status characterization', () => {
     });
     await db.results.bulkAdd([
       {
-        id: 1,
+        id: '1',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
         scope: { collectionId: 'collection-1' },
         scopeKey: 'collection-1',
         workerName: 'collection-worker',
@@ -361,7 +366,9 @@ describe('IndexedDBWorkerRepository status characterization', () => {
         params: {},
       },
       {
-        id: 2,
+        id: '2',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
         scope: { collectionId: 'COLLECTION-1', canvasId: 'canvas-1' },
         scopeKey: 'COLLECTION-1-canvas-1',
         workerName: 'canvas-worker',
@@ -371,7 +378,9 @@ describe('IndexedDBWorkerRepository status characterization', () => {
         params: {},
       },
       {
-        id: 3,
+        id: '3',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
         scope: { collectionId: 'collection-2' },
         scopeKey: 'collection-2',
         workerName: 'other-worker',
@@ -381,7 +390,9 @@ describe('IndexedDBWorkerRepository status characterization', () => {
         params: {},
       },
       {
-        id: 4,
+        id: '4',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
         scope: { collectionId: 'collection-10' },
         scopeKey: 'collection-10',
         workerName: 'prefix-collision-worker',
@@ -401,7 +412,7 @@ describe('IndexedDBWorkerRepository status characterization', () => {
     );
     const remainingResults = (await db.results.toArray()).map((result) => result.id);
     expect(remainingResults).toHaveLength(2);
-    expect(remainingResults).toEqual(expect.arrayContaining([3, 4]));
+    expect(remainingResults).toEqual(expect.arrayContaining(['3', '4']));
   });
 
   it('deletes only workers with an exact non-collection scope key', async () => {

@@ -9,7 +9,7 @@ import i18n from '@/i18n';
 import { Bounds } from '@annotorious/annotorious';
 import { v4 as uuid } from 'uuid';
 import z from 'zod';
-import { Annotation } from '../annotations/annotation';
+import { AnnotationDraft } from '../annotations/annotation.dto';
 import { Modifier } from './Modifier';
 
 const mergeSchema = z.object({
@@ -55,7 +55,7 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
     this.horizontalThresholdMax = horizontalThresholdMax;
   }
 
-  apply = (data: Annotation[], values: z.infer<typeof mergeSchema>) => {
+  apply = (data: AnnotationDraft[], values: z.infer<typeof mergeSchema>) => {
     if (data.length <= 1) return data;
 
     const { origin, verticalThreshold, horizontalThreshold } = mergeSchema.parse(values);
@@ -71,7 +71,7 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
       (a, b) => a.target.selector.geometry.bounds.minY - b.target.selector.geometry.bounds.minY,
     );
 
-    const getBounds = (a: Annotation) => a.target.selector.geometry.bounds;
+    const getBounds = (a: AnnotationDraft) => a.target.selector.geometry.bounds;
     const overlap = (aMin: number, aMax: number, bMin: number, bMax: number) =>
       Math.max(0, Math.min(aMax, bMax) - Math.max(aMin, bMin));
 
@@ -97,9 +97,9 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
   };
 
   applyToCenters = async (
-    annotations: Annotation[],
+    annotations: AnnotationDraft[],
     values: z.infer<typeof mergeSchema>,
-    getBounds: (a: Annotation) => Bounds,
+    getBounds: (a: AnnotationDraft) => Bounds,
     overlap: (aMin: number, aMax: number, bMin: number, bMax: number) => number,
     verticalActive: boolean,
     horizontalActive: boolean,
@@ -115,7 +115,7 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
     //   getAnnotationType(a) === getAnnotationType(b) &&
     //   getAnnotationType(a) === ElementType.TEXT_LINE
     // ) {
-    const parents = new Map<string, Annotation | null>();
+    const parents = new Map<string, AnnotationDraft | null>();
     await Promise.all(
       annotations.map(async (a) => {
         const result = await annotationRepository.getParent(a);
@@ -189,9 +189,9 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
   };
 
   applyToBorders = (
-    annotations: Annotation[],
+    annotations: AnnotationDraft[],
     values: z.infer<typeof mergeSchema>,
-    getBounds: (a: Annotation) => Bounds,
+    getBounds: (a: AnnotationDraft) => Bounds,
     overlap: (aMin: number, aMax: number, bMin: number, bMax: number) => number,
     verticalActive: boolean,
     horizontalActive: boolean,

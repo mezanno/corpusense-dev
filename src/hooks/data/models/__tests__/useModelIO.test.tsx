@@ -63,6 +63,7 @@ import i18n from '@/i18n';
 import { RootState } from '@/state/store';
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { z } from 'zod';
 import { useModelIO } from '../useModelIO';
 
 // Frontière navigateur (cf. en-tête) : `FileSaver.saveAs` est un espion.
@@ -90,6 +91,8 @@ function makeModel(overrides: Partial<DataModel> = {}): DataModel {
   sequence += 1;
   return {
     id: overrides.id ?? `mio-model-${sequence}`,
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
     name: overrides.name ?? `Modèle ${sequence}`,
     prompt: overrides.prompt ?? 'prompt de test',
     fields: overrides.fields ?? [
@@ -104,9 +107,10 @@ function makeModel(overrides: Partial<DataModel> = {}): DataModel {
   };
 }
 
-/** Écriture d'une ligne modèle par le VRAI repository (`update` = put). */
+/** Écriture d'une ligne modèle par le VRAI repository, dates de fixture préservées. */
 async function putModel(model: DataModel): Promise<void> {
-  await getModelRepository().update(model);
+  const written = await getModelRepository().importWithDates(model);
+  if (!written.ok) throw written.error;
 }
 
 /** Relecture d'une ligne modèle par le VRAI repository (undefined si absente). */
@@ -172,7 +176,16 @@ describe('useModelIO — saveModel sur le repository modèles réel', () => {
       await result.current.saveModel(fresh);
     });
 
-    expect(await readModel('mio-save-new')).toEqual(fresh);
+    // Upsert de création : le repository initialise ses propres horodatages.
+    const stored = await readModel('mio-save-new');
+    expect(stored).toMatchObject({
+      id: fresh.id,
+      name: fresh.name,
+      prompt: fresh.prompt,
+      fields: fresh.fields,
+    });
+    expect(z.iso.datetime().safeParse(stored?.createdAt ?? '').success).toBe(true);
+    expect(stored?.updatedAt).toBe(stored?.createdAt);
     expect(toasts(store.getState())).toEqual([
       { message: i18n.t('info_model_saved'), type: EventType.INFO },
     ]);
@@ -327,7 +340,15 @@ describe('useModelIO — importModel sur le repository modèles réel', () => {
       await result.current.importModel(imported, false);
     });
 
-    expect(await readModel('mio-import-1')).toEqual(imported);
+    // Horodatages initialisés par le repository à l'écriture, tout le reste conservé.
+    const stored = await readModel('mio-import-1');
+    expect({ ...stored, createdAt: '', updatedAt: '' }).toEqual({
+      ...imported,
+      createdAt: '',
+      updatedAt: '',
+    });
+    expect(z.iso.datetime().safeParse(stored?.createdAt ?? '').success).toBe(true);
+    expect(z.iso.datetime().safeParse(stored?.updatedAt ?? '').success).toBe(true);
     expect(toasts(store.getState())).toEqual([]);
 
     unmount();

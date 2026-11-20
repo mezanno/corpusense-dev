@@ -123,7 +123,7 @@
  *   artefact de test documenté (constat des lots 8 et 11–12), asserté au test 2
  *   pour qu'il ne soit jamais confondu avec un comportement de production.
  */
-import { FSHandle } from '@/data/models/fSHandle';
+import { FSHandle } from '@/data/models/fSHandle/fSHandle';
 import { db } from '@/data/repositories/indexeddb/db';
 import { getFSHandleRepository } from '@/data/repositories/indexeddb/dbFactory';
 import {

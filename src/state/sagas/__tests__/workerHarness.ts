@@ -24,6 +24,7 @@ export function makeWorker(overrides: Partial<Worker> = {}): Worker {
     scopeKey: 'collection-1-canvas-1',
     params: {},
     createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
     estimatedDuration: 0,
     status: WorkerStatus.INPROGRESS,
     queue: [{ id: 0, scope, status: TaskStatus.WAITING }],

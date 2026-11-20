@@ -6,7 +6,10 @@ import { IndexedDBResultLiveRepository } from '../results.live';
 import { observe } from './liveQueryTestUtils';
 
 const result = (id: number, value: string): Result => ({
-  id,
+  id: String(id),
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+
   scope: { collectionId: 'c1' },
   scopeKey: 'c1',
   workerName: 'worker',
@@ -24,14 +27,17 @@ describe('IndexedDBResultLiveRepository', () => {
     try {
       expect(await live.next()).toEqual([]);
       await db.results.bulkPut([result(2, 'second'), result(1, 'first')]);
-      expect((await live.until((items) => items.length === 2)).map(({ id }) => id)).toEqual([1, 2]);
-      await db.results.update(1, { value: 'updated' });
-      expect(await live.until((items) => items[0]?.value === 'updated')).toMatchObject([
-        { id: 1, value: 'updated' },
-        { id: 2, value: 'second' },
+      expect((await live.until((items) => items.length === 2)).map(({ id }) => id)).toEqual([
+        '1',
+        '2',
       ]);
-      await db.results.delete(2);
-      expect(await live.until((items) => items.length === 1)).toMatchObject([{ id: 1 }]);
+      await db.results.update('1', { value: 'updated' });
+      expect(await live.until((items) => items[0]?.value === 'updated')).toMatchObject([
+        { id: '1', value: 'updated' },
+        { id: '2', value: 'second' },
+      ]);
+      await db.results.delete('2');
+      expect(await live.until((items) => items.length === 1)).toMatchObject([{ id: '1' }]);
     } finally {
       live.unsubscribe();
     }

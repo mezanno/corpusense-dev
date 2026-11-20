@@ -14,16 +14,13 @@ const useProjectsIO = () => {
   };
 
   const createProject = async (name: string) => {
-    const newProject = {
+    // Timestamps are assigned by the repository (decision 1).
+    return await projectRespository.add({
       id: uuid(),
       name,
-      createdAt: new Date(),
-      updatedAt: new Date(),
       sources: [],
       collections: [],
-    };
-    await projectRespository.add(newProject);
-    return newProject;
+    });
   };
 
   const addSourceToProject = async (projectId: string, sourceId: string) => {

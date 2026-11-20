@@ -417,6 +417,8 @@
   "log_importing_tags": "Importation de {{count}} étiquettes pour la collection {{id}}...",
   "log_imported_tags": "{{count}} étiquettes importées",
   "error_importing_tags": "Erreur lors de l'import des étiquettes : {{error}}",
+  "error_importing_annotations": "Erreur lors de l'import des annotations : {{error}}",
+  "error_invalid_imported_dates": "Les horodatages fournis pour {{entity}} sont invalides : écriture refusée.",
   "log_collection_imported_success": "Collection {{id}} importée avec succès depuis le fichier : {{filename}}",
   "log_starting_import_zip": "Démarrage de l'importation des collections depuis le fichier zip...",
   "tab_configuration_general": "Général",

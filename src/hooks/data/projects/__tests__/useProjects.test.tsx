@@ -64,7 +64,7 @@
  *   directe de la déviation d'état initial ci-dessus, verrouillée comme
  *   caractérisation dans le test « défaut [] », pas corrigée.
  */
-import { Project } from '@/data/models/project';
+import { Project } from '@/data/models/project/project';
 import { db } from '@/data/repositories/indexeddb/db';
 import { getProjectRepository } from '@/data/repositories/indexeddb/dbFactory';
 import {
@@ -79,7 +79,7 @@ import useProjects from '../useProjects';
 
 resetTestDbBeforeEach();
 
-const PROJECT_DATE = new Date('2026-01-01T00:00:00.000Z');
+const PROJECT_DATE = '2026-01-01T00:00:00.000Z';
 
 function makeProject(id: string, name: string): Project {
   return {

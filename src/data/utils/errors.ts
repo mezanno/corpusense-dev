@@ -80,7 +80,7 @@ export class NothingToMergeError extends BaseError {
 }
 
 export class ResultConversionError extends BaseError {
-  constructor(context: { resultId: number; reason: string }) {
+  constructor(context: { resultId: string; reason: string }) {
     super(`Result conversion failed for result ${context.resultId}: ${context.reason}`, {
       context,
     });
@@ -90,5 +90,12 @@ export class ResultConversionError extends BaseError {
 export class UnknownModifierTypeError extends BaseError {
   constructor(context: { type: string }) {
     super(`No factory found for modifier type: ${context.type}`, { context });
+  }
+}
+
+/** Returned (not thrown) when an import-overwrite path rejects invalid timestamps. */
+export class InvalidImportedDatesError extends BaseError {
+  constructor(context: { entity: string }) {
+    super(i18n.t('error_invalid_imported_dates', { entity: context.entity }), { context });
   }
 }

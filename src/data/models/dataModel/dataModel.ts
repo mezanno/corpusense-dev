@@ -1,4 +1,5 @@
 import z from 'zod';
+import { TimeStampSchema } from '../timeStampSchema';
 
 const DataFieldSchema = z
   .object({
@@ -15,14 +16,11 @@ const DataFieldSchema = z
 
 export type DataField = z.infer<typeof DataFieldSchema>;
 
-export const DataModelSchema = z
-  .object({
-    id: z.string(),
-    name: z.string(),
-    description: z.string().optional(),
-    prompt: z.string(),
-    fields: z.array(DataFieldSchema),
-  })
-  .strict();
+export const DataModelSchema = TimeStampSchema.extend({
+  name: z.string(),
+  description: z.string().optional(),
+  prompt: z.string(),
+  fields: z.array(DataFieldSchema),
+}).strict();
 
 export type DataModel = z.infer<typeof DataModelSchema>;

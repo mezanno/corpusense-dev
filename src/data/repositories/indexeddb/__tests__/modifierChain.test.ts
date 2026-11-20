@@ -1,11 +1,15 @@
-import type { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { ModifierChainDTO } from '@/data/models/modifiers/modifierChain.dto';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { EntityNotFoundError } from '../../EntityNotFoundError';
 import { IndexedDBModifierChainRepository } from '../modifierChain';
 import { createTestDb } from './testDb';
 
+const CREATED_AT = '2026-01-01T00:00:00.000Z';
+const MODIFIED_AT = '2026-01-02T00:00:00.000Z';
+
 describe('IndexedDBModifierChainRepository', () => {
   const repository = new IndexedDBModifierChainRepository();
+  // Entry DTOs never carry timestamps: the repository assigns them (decision 8).
   const makeChain = (id: string, name: string): ModifierChainDTO => ({
     id,
     name,
@@ -14,15 +18,19 @@ describe('IndexedDBModifierChainRepository', () => {
 
   beforeEach(async () => {
     await createTestDb();
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(CREATED_AT));
   });
+  afterEach(() => vi.useRealTimers());
 
-  it('adds a chain and finds it by id and name', async () => {
+  it('adds a chain with initialized timestamps and finds it by id and name', async () => {
     const chain = makeChain('chain-1', 'Trim text');
-    await repository.add(chain);
+    const created = await repository.add(chain);
 
-    expect(await repository.getById('chain-1')).toEqual({ ok: true, value: chain });
-    expect(await repository.getByName('Trim text')).toEqual({ ok: true, value: chain });
-    expect(await repository.getAll()).toEqual([chain]);
+    expect(created).toEqual({ ...chain, createdAt: CREATED_AT, updatedAt: CREATED_AT });
+    expect(await repository.getById('chain-1')).toEqual({ ok: true, value: created });
+    expect(await repository.getByName('Trim text')).toEqual({ ok: true, value: created });
+    expect(await repository.getAll()).toEqual([created]);
   });
 
   it('returns typed not-found results for missing chains', async () => {
@@ -35,12 +43,19 @@ describe('IndexedDBModifierChainRepository', () => {
     expect(byName.ok === false && byName.error).toBeInstanceOf(EntityNotFoundError);
   });
 
-  it('replaces a chain by id and deletes it', async () => {
-    await repository.add(makeChain('chain-1', 'Original'));
-    const replacement = makeChain('chain-1', 'Updated');
-    await repository.put(replacement);
+  it('replaces a chain preserving createdAt, then deletes it', async () => {
+    const original = await repository.add(makeChain('chain-1', 'Original'));
 
-    expect(await repository.getByName('Updated')).toEqual({ ok: true, value: replacement });
+    vi.setSystemTime(new Date(MODIFIED_AT));
+    const replacement = makeChain('chain-1', 'Updated');
+    const written = await repository.put(replacement);
+
+    expect(written).toEqual({
+      ...replacement,
+      createdAt: original.createdAt,
+      updatedAt: MODIFIED_AT,
+    });
+    expect(await repository.getByName('Updated')).toEqual({ ok: true, value: written });
     await repository.delete('chain-1');
     expect(await repository.getAll()).toEqual([]);
   });

@@ -48,7 +48,7 @@ export const useCollectionIO = (setters: ProgressLoggerSetters) => {
       const collection = collectionResult.value;
       addLog(`Exporting collection ${collection.name} (${i + 1}/${collectionIds.length})`);
 
-      const exportedCollection = { collection };
+      const exportedCollection = { collection, sources: [] as SourceWithContentAndThumbnail[] };
 
       if (collection.tags.length > 0) {
         const tagRepository = getTagRepository();

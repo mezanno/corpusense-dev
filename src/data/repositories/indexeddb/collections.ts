@@ -1,7 +1,7 @@
 import { CollectionCreateDTO } from '@/data/models/collection/collection.dto';
 import { CollectionElement } from '@/data/models/collectionElement';
 import { AnnotationScope, CanvasScope } from '@/data/models/scope/scope';
-import { Tag } from '@/data/models/tag';
+import { Tag } from '@/data/models/tag/tag';
 import { DBError } from '@/data/utils/errors';
 import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import { FunctionResult } from '@/utils/functionResult';
@@ -133,6 +133,8 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
         await db.collections.add(collectionDetails);
         await db.collectionContents.add({
           id: collectionId,
+          createdAt: now,
+          updatedAt: now,
           content: content ?? [],
         });
       });
@@ -149,6 +151,8 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
         await db.collections.add(collectionDetails);
         await db.collectionContents.add({
           id: collection.id,
+          createdAt: collection.createdAt,
+          updatedAt: collection.updatedAt,
           content: content ?? [],
         });
       });
@@ -170,9 +174,12 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     const content = await db.collectionContents.get(collectionId);
 
     const newCollectionId = uuid();
+    const now = new Date().toISOString();
     const newCollection: CollectionDetails = {
       ...collection,
       id: newCollectionId,
+      createdAt: now,
+      updatedAt: now,
       name: newName,
       contentSize: content?.content.length ?? 0,
     };
@@ -181,6 +188,8 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
       await db.collections.add(newCollection);
       await db.collectionContents.add({
         id: newCollectionId,
+        createdAt: now,
+        updatedAt: now,
         content: content?.content ?? [],
       });
       const annotationRepository = getAnnotationRepository();
@@ -190,6 +199,8 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
       const duplicatedAnnotations = annotationsToDuplicate.map((annotation) => ({
         ...annotation,
         id: uuid(),
+        createdAt: now,
+        updatedAt: now,
         collectionId: newCollectionId,
       }));
       await annotationRepository.addAll(duplicatedAnnotations);
@@ -218,6 +229,7 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
       postOcrModifierChainId?: string;
     },
   ): Promise<void> {
+    const now = new Date().toISOString();
     await db.transaction('rw', db.collections, db.collectionContents, async () => {
       await db.collections.update(id, {
         name,
@@ -226,9 +238,11 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
         modelId,
         postLayoutModifierChainId,
         postOcrModifierChainId,
+        updatedAt: now,
       });
       await db.collectionContents.update(id, {
         content,
+        updatedAt: now,
       });
     });
   }
@@ -236,6 +250,7 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
   async updateTags(id: string, tags: string[]): Promise<void> {
     await db.collections.update(id, {
       tags,
+      updatedAt: new Date().toISOString(),
     });
   }
 
@@ -270,16 +285,29 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     const [movedElement] = content.splice(sourcePosition, 1);
     content.splice(targetPosition, 0, movedElement);
 
-    await db.collectionContents.update(collectionId, { content });
+    await db.collectionContents.update(collectionId, {
+      content,
+      updatedAt: new Date().toISOString(),
+    });
     return FunctionResult.ok(undefined);
   }
 
   async addContentToCollection(collection: Collection): Promise<void> {
     const { content, ...collectionDetails } = collection;
     await db.transaction('rw', db.collections, db.collectionContents, async () => {
-      await db.collections.put(collectionDetails);
+      // Modification path: stored createdAt is preserved, updatedAt is assigned here.
+      const now = new Date().toISOString();
+      const existingDetails = await db.collections.get(collection.id);
+      const existingContent = await db.collectionContents.get(collection.id);
+      await db.collections.put({
+        ...collectionDetails,
+        createdAt: existingDetails?.createdAt ?? collection.createdAt,
+        updatedAt: now,
+      });
       await db.collectionContents.put({
         id: collection.id,
+        createdAt: existingContent?.createdAt ?? collection.createdAt,
+        updatedAt: now,
         content: collection.content,
       });
     });
@@ -357,8 +385,11 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     });
 
     const updatedCollection = { ...updatedDetails, content: updatedContent };
-    await this.addContentToCollection(updatedCollection);
+    if (updatedContent.length !== content.length) {
+      // Collection inchangée : pas d'écriture, updatedAt n'avance pas.
+      await this.addContentToCollection(updatedCollection);
+    }
 
-    return FunctionResult.ok(updatedCollection);
+    return this.getById(collectionId);
   }
 }

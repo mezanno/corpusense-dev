@@ -1,11 +1,17 @@
-import type { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
+import type { ModifierChain } from '@/data/models/modifiers/Modifier';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createTestDb } from '../../__tests__/testDb';
 import { db } from '../../db';
 import { IndexedDBModifierChainlLiveRepository } from '../modifierChain.live';
 import { observe } from './liveQueryTestUtils';
 
-const chain = (id: string, name: string): ModifierChainDTO => ({ id, name, modifiers: [] });
+const chain = (id: string, name: string): ModifierChain => ({
+  id,
+  name,
+  modifiers: [],
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+});
 
 describe('IndexedDBModifierChainlLiveRepository', () => {
   beforeEach(createTestDb);

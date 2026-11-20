@@ -47,7 +47,7 @@ export function getBodies(annotation: Annotation) {
   };
 }
 
-export function getAnnotationText(annotation: Annotation) {
+export function getAnnotationText(annotation: Annotation | AnnotationDTO) {
   return getAnnotationValue(annotation) ?? '';
 }
 
@@ -56,7 +56,7 @@ export function getAnnotationType(annotation: Annotation | AnnotationDTO) {
   return type === undefined ? ElementType.UNKNOWN : convertToElementTypeEnum(type);
 }
 
-export function getAnnotationValue(annotation: Annotation) {
+export function getAnnotationValue(annotation: Annotation | AnnotationDTO) {
   const value = getValueForMotivation(annotation, 'tagging');
   return value === undefined ? '' : getValueForMotivation(annotation, 'tagging');
 }
